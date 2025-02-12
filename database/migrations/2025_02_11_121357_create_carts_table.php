@@ -14,12 +14,9 @@ return new class extends Migration
         Schema::create('carts', function (Blueprint $table) {
             $table->id();
             $table->string('uuid')->unique();
-            $table->foreignId('user_id')->constrained('users');
-            $table->foreignId('domain_id')->constrained('domains');
-            $table->foreignId('host_id')->constrained('hosts');
-            $table->integer('quantity');
+            $table->foreignId('user_id')->nullable()->constrained('users');
+            $table->string('domain');
             $table->integer('price');
-            $table->integer('total');
             $table->timestamps();
         });
     }

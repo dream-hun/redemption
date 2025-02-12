@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Services\Epp\EppService;
 use App\Models\DomainPricing;
+use App\Services\Epp\EppService;
 use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -52,25 +52,25 @@ class DomainController extends Controller
 
             $results = [];
             foreach ($tlds as $tld) {
-                $domainWithTld = $domain . '.' . ltrim($tld->tld, '.');
+                $domainWithTld = $domain.'.'.ltrim($tld->tld, '.');
                 Log::debug('Checking domain:', ['domain' => $domainWithTld]);
 
                 // Check domain availability with EPP
                 $eppResults = $this->eppService->checkDomain([$domainWithTld]);
                 Log::debug('EPP results:', ['results' => $eppResults]);
 
-                if (!empty($eppResults) && isset($eppResults[$domainWithTld])) {
+                if (! empty($eppResults) && isset($eppResults[$domainWithTld])) {
                     $result = $eppResults[$domainWithTld];
                     $results[$domainWithTld] = (object) [
                         'name' => $domainWithTld,
                         'available' => $result->available,
                         'reason' => $result->reason,
                         'tld' => $tld->tld,
-                        'register_price' => $tld->formatedRegisterPrice(),
-                        'transfer_price' => $tld->formatedTransferPrice(),
-                        'renew_price' => $tld->formatedRenewPrice(),
+                        'register_price' => $tld->register_price,
+                        'transfer_price' => $tld->transfer_price,
+                        'renew_price' => $tld->renew_price,
                         'grace' => $tld->grace,
-                        'redemption_price' => $tld->formatedRedemptionPrice()
+                        'redemption_price' => $tld->redemption_price,
                     ];
                 }
             }
@@ -91,7 +91,7 @@ class DomainController extends Controller
         } catch (Exception $e) {
             Log::error('Domain check error:', [
                 'message' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
+                'trace' => $e->getTraceAsString(),
             ]);
 
             return response()->json([

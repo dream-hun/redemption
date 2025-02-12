@@ -108,7 +108,7 @@ class EppService
     {
         try {
             Log::debug('Starting domain check for domains:', $domains);
-            
+
             // Ensure we're connected before making the request
             $this->connect();
             Log::debug('Successfully connected to EPP server');
@@ -121,31 +121,31 @@ class EppService
 
             $response = $this->client->request($frame);
             Log::debug('Received response from EPP server', ['success' => $response ? $response->success() : false]);
-            
+
             $results = [];
 
             if ($response && $response->success()) {
                 $data = $response->data();
-                
-                if (!empty($data) && is_array($data) && isset($data['chkData']['cd'])) {
+
+                if (! empty($data) && is_array($data) && isset($data['chkData']['cd'])) {
                     // Ensure we have a consistent array structure even for single items
                     $items = isset($data['chkData']['cd'][0]) ? $data['chkData']['cd'] : [$data['chkData']['cd']];
-                    
+
                     foreach ($items as $cd) {
                         $domainName = $cd['name'];
-                        $isAvailable = (bool)$cd['@name']['avail'];
+                        $isAvailable = (bool) $cd['@name']['avail'];
                         $reason = $cd['reason'] ?? null;
-                        
+
                         $results[$domainName] = (object) [
                             'name' => $domainName,
                             'available' => $isAvailable,
-                            'reason' => $reason
+                            'reason' => $reason,
                         ];
-                        
+
                         Log::debug('Processed domain result', [
                             'domain' => $domainName,
                             'available' => $isAvailable,
-                            'reason' => $reason
+                            'reason' => $reason,
                         ]);
                     }
                 } else {
@@ -155,7 +155,7 @@ class EppService
                 $result = $response ? $response->results()[0] : null;
                 Log::error('EPP response was not successful', [
                     'code' => $result ? $result->code() : 'unknown',
-                    'message' => $result ? $result->message() : 'No response'
+                    'message' => $result ? $result->message() : 'No response',
                 ]);
             }
 
@@ -167,11 +167,11 @@ class EppService
         } catch (Exception $e) {
             // Make sure to disconnect even if there's an error
             $this->disconnect();
-            Log::error('Domain check failed: ' . $e->getMessage(), [
+            Log::error('Domain check failed: '.$e->getMessage(), [
                 'exception' => get_class($e),
                 'file' => $e->getFile(),
                 'line' => $e->getLine(),
-                'trace' => $e->getTraceAsString()
+                'trace' => $e->getTraceAsString(),
             ]);
             throw $e;
         }
