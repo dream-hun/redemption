@@ -15,8 +15,9 @@ return new class extends Migration
             $table->id();
             $table->string('uuid')->unique();
             $table->foreignId('user_id')->nullable()->constrained('users');
-            $table->string('domain');
-            $table->integer('price');
+            $table->string('session_id')->nullable()->index(); // Added session_id column
+            $table->string('domain')->nullable();
+            $table->integer('price')->nullable();
             $table->timestamps();
         });
     }

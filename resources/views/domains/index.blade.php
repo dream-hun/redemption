@@ -4,9 +4,42 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>Domain Checker</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <meta name="description" content="Your reliable and Secure web hosting service provider">
+    <meta name="keywords" content="Hosting, Domain, Transfer, Buy Domain">
+    <link rel="canonical" href="https://bluhub.rw">
+    <meta name="robots" content="index, follow">
+    <!-- for open graph social media -->
+    <meta property="og:title" content="{{ config('app.name') }} - Your reliable and Secure hosting service provider">
+    <meta property="og:description" content="Your reliable and Secure hosting service provider">
+    <meta property="og:image" content="{{ asset('assets/images/banner/slider-img-01.webp') }}">
+    <meta property="og:url" content="https:://bluhub.rw">
+    <!-- for twitter sharing -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="{{ config('app.name') }} - Your reliable and Secure hosting service provider">
+    <meta name="twitter:description" content="Your reliable and Secure hosting service provider">
+    <meta name="twitter:image" content="{{ asset('assets/images/banner/slider-img-01.webp') }}">
+    <!-- favicon -->
+    <link rel="shortcut icon" type="image/x-icon" href="assets/images/fav.png">
+
+    <title>{{ config('app.name') }} - Your reliable and Secure hosting service provider </title>
+    <!-- Preconnect to Google Fonts and Google Fonts Static -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+    <!-- Importing Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,500;0,600;0,700;1,400;1,800&display=swap"
+        rel="stylesheet">
+    <!-- all styles -->
+    <link rel="preload stylesheet" href="assets/css/plugins.min.css" as="style">
+    <!-- fontawesome css -->
+    <link rel="preload stylesheet" href="assets/css/plugins/fontawesome.min.css" as="style">
+    <!-- Custom css -->
+    <link rel="preload stylesheet" href="assets/css/style.css" as="style">
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 
     <script>
@@ -15,39 +48,232 @@
     </script>
 </head>
 
-<body class="bg-gray-100">
-    <div class="container mx-auto px-4 py-8">
-        <div class="max-w-2xl mx-auto bg-white rounded-lg shadow-md p-6">
-            <h1 class="text-2xl font-bold mb-6">Domain Availability Checker</h1>
+<body class="page-template template-resell">
+    <!-- HEADER AREA -->
+    <header class="rts-header style-one header__default">
+        <!-- HEADER TOP AREA -->
+        <div class="rts-ht rts-ht__bg">
+            <div class="container">
+                <div class="row">
+                    <div class="rts-ht__wrapper">
+                        <div class="rts-ht__email">
+                            <a href="mailto:{{ $settings->email }}"><img src="assets/images/icon/email.svg"
+                                    alt="" class="icon">{{ $settings->email }}</a>
+                        </div>
 
-            <!-- Form -->
-            <form id="domainForm" class="space-y-4" action="{{ route('domain.check') }}" method="POST">
-                @csrf
-                <div class="flex gap-4">
-                    <div class="flex-1">
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Domain Name</label>
-                        <input type="text" name="domains" id="domainText"
-                            class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
-                            placeholder="Enter domain name">
+                        <div class="rts-ht__links">
+                            <div class="live-chat-has-dropdown">
+                                <a href="#" class="live__chat"><img src="assets/images/icon/forum.svg"
+                                        alt="" class="icon">Live Chat</a>
+                            </div>
+                            <div class="login-btn-has-dropdown">
+                                <a href="#" class="login__link"><img src="assets/images/icon/person.svg"
+                                        alt="" class="icon">Login</a>
+                                <div class="login-submenu">
+                                    <form action="#">
+                                        <div class="form-inner">
+                                            <div class="single-wrapper">
+                                                <input type="email" placeholder="Your email" required>
+                                            </div>
+                                            <div class="single-wrapper">
+                                                <input type="password" placeholder="Password" required>
+                                            </div>
+                                            <div class="form-btn">
+                                                <button type="submit" class="primary__btn">Log In</button>
+                                            </div>
+                                            <a href="#" class="forgot-password">Forgot your password?</a>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
-
-                <button type="submit" id="checkButton"
-                    class="w-full bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600 focus:ring-2 focus:ring-blue-500">
-                    Check Availability
-                </button>
-            </form>
-
-            <!-- Results -->
-            <div id="results" class="mt-6 hidden">
-                <h2 class="text-lg font-semibold mb-3">Results:</h2>
-                <div id="resultsContainer" class="space-y-3"></div>
             </div>
-
-            <!-- Error Message -->
-            <div id="errorMessage" class="mt-4 p-4 bg-red-100 text-red-700 rounded-lg hidden"></div>
         </div>
-    </div>
+        <!-- HEADER TOP AREA END -->
+        <div class="container">
+            <div class="row">
+                <div class="rts-header__wrapper">
+                    <!-- FOR LOGO -->
+                    <div class="rts-header__logo">
+                        <a href="index.html" class="site-logo">
+                            <img class="logo-white" src="assets/images/logo/logo-1.svg" alt="Hostie">
+                            <img class="logo-dark" src="assets/images/logo/logo-4.svg" alt="Hostie">
+                        </a>
+                    </div>
+                    <!-- FOR NAVIGATION MENU -->
+
+                    <nav class="rts-header__menu" id="mobile-menu">
+                        <div class="hostie-menu">
+                            <ul class="list-unstyled hostie-desktop-menu">
+                                <li class="menu-item hostie">
+                                    <a href="{{ route('home') }}" class="hostie-dropdown-main-element">Home</a>
+                                </li>
+
+                                <li class="menu-item hostie-has-dropdown mega-menu">
+                                    <a href="#" class="hostie-dropdown-main-element">Hosting</a>
+                                    <div class="rts-mega-menu">
+                                        <div class="wrapper">
+                                            <div class="row g-0">
+                                                <div class="col-lg-12">
+                                                    <ul class="mega-menu-item">
+                                                        <li>
+                                                            <a href="#">
+                                                                <img src="{{ asset('assets/images/mega-menu/22.svg') }}"
+                                                                    alt="icon">
+                                                                <div class="info">
+                                                                    <p>Shared Hosting</p>
+                                                                    <span>Manage Shared Hosting</span>
+                                                                </div>
+                                                            </a>
+                                                        </li>
+                                                        <li>
+                                                            <a href="#">
+                                                                <img src="{{ asset('assets/images/mega-menu/27.svg') }}"
+                                                                    alt="icon">
+                                                                <div class="info">
+                                                                    <p>VPS - High Storage</p>
+                                                                    <span>Get your highest storage VPS</span>
+                                                                </div>
+                                                            </a>
+                                                        </li>
+                                                        <li>
+                                                            <a href="#">
+                                                                <img src="{{ asset('assets/images/mega-menu/24.svg') }}"
+                                                                    alt="icon">
+                                                                <div class="info">
+                                                                    <p>VPS High Performance</p>
+                                                                    <span>Dedicated resources</span>
+                                                                </div>
+                                                            </a>
+                                                        </li>
+                                                    </ul>
+                                                </div>
+
+                                            </div>
+                                        </div>
+                                    </div>
+                                </li>
+                                <li class="menu-item hostie-has-dropdown">
+                                    <a href="#" class="hostie-dropdown-main-element">Domain</a>
+                                    <ul class="hostie-submenu list-unstyled menu-pages">
+                                        <li class="nav-item"><a class="nav-link"
+                                                href="{{ route('domains.index') }}">Domain
+                                                Checker</a></li>
+                                        <li class="nav-item"><a class="nav-link" href="#">Domain
+                                                Transfer</a></li>
+                                        <li class="nav-item"><a class="nav-link"
+                                                href="{{ route('domains.index') }}">Domain
+                                                Registration</a></li>
+                                        <li class="nav-item"><a class="nav-link" href="#">Whois</a></li>
+                                    </ul>
+                                </li>
+                                <li class="menu-item hostie-has-dropdown">
+                                    <a href="#" class="hostie-dropdown-main-element">Services</a>
+                                    <ul class="hostie-submenu list-unstyled menu-pages">
+                                        <li class="nav-item"><a class="nav-link" href="#">Web Application</a>
+                                        </li>
+                                        <li class="nav-item"><a class="nav-link" href="#">Mobile
+                                                Development</a></li>
+                                        <li class="nav-item"><a class="nav-link" href="#">Mobile data
+                                                Collection</a>
+                                        </li>
+                                        <li class="nav-item"><a class="nav-link" href="#">IT Consultancy</a>
+                                        </li>
+                                    </ul>
+                                </li>
+                                <li class="menu-item hostie-has-dropdown">
+                                    <a href="#" class="hostie-dropdown-main-element">Help Center</a>
+                                    <ul class="hostie-submenu list-unstyled menu-pages">
+                                        <li class="nav-item"><a class="nav-link" href="#">FAQ</a></li>
+                                        <li class="nav-item"><a class="nav-link" href="#">Support</a></li>
+                                        <li class="nav-item"><a class="nav-link" href="#">Contact</a></li>
+                                        <li class="nav-item"><a class="nav-link"
+                                                href="knowledgebase.html">Knowledgebase</a></li>
+
+                                    </ul>
+                                </li>
+                            </ul>
+                        </div>
+                    </nav>
+                    <!-- FOR HEADER RIGHT -->
+                    <div class="rts-header__right">
+                        <a href="#" class="login__btn" target="_blank">Client Area</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+    <!-- HEADER AREA END -->
+    <section class="rts-hero-three rts-hero__one rts-hosting-banner domain-checker-padding banner-default-height">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-lg-12">
+                    <div class="rts-hero__content domain">
+                        <h1 data-sal="slide-down" data-sal-delay="100" data-sal-duration="800" class="sal-animate">
+                            Find
+                            Best Unique Domains
+                            Checker!
+                        </h1>
+                        <p class="description sal-animate" data-sal="slide-down" data-sal-delay="200"
+                            data-sal-duration="800">Web
+                            Hosting, Domain Name and Hosting Center Solutions</p>
+                        <form id="domainForm" action="{{ route('domain.check') }}" method="POST"
+                            data-sal-delay="300" data-sal-duration="800">
+                            @csrf
+                            <div class="rts-hero__form-area">
+
+                                <input type="text" placeholder="Type your domain without extension Ex: jhonsmith"
+                                    name="domains" id="domainText" autocomplete="off">
+                                <div class="select-button-area">
+
+                                    <button id="checkButton" type="submit">Search</button>
+                                </div>
+                            </div>
+                        </form>
+                        <div class="banner-content-tag" data-sal-delay="400" data-sal-duration="800">
+                            <p class="desc">Popular Domain:</p>
+                            <ul class="tag-list">
+                                @foreach ($tlds as $tld)
+                                    <li><span>{{ $tld->tld }}</span><span>{{ $tld->formatedRegisterPrice() }}</span>
+                                    </li>
+                                @endforeach
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="banner-shape-area">
+            <img class="three" src="assets/images/banner/banner-bg-element.svg" alt="">
+        </div>
+    </section>
+    <section class="rts-domain-pricing-area pt--120 pb--120">
+        <div class="container">
+
+            <div class="row justify-content-center">
+                <div class="section-title-area w-570">
+                    <h2 class="section-title sal-animate" data-sal="slide-down" data-sal-delay="100"
+                        data-sal-duration="800">Bluhub
+                        Straight forward Domain Pricing</h2>
+                    <p class="desc sal-animate" data-sal="slide-down" data-sal-delay="200" data-sal-duration="800">
+                        Straightforward
+                        Domain Pricing</p>
+                </div>
+            </div>
+            <div class="section-inner" id="results">
+                <div class="row g-5">
+                    <div id="errorMessage" class="alert alert-danger hidden"></div>
+                    <div id="resultsContainer" class="col-lg-12">
+                        <!-- Results will be appended here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <x-faq-component />
 
     <script>
         $(document).ready(function() {
@@ -57,6 +283,9 @@
                     'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
                 }
             });
+
+            // Initially hide the error message
+            $('#errorMessage').hide();
 
             // Handle domain check form submission
             $('#domainForm').on('submit', function(e) {
@@ -95,41 +324,36 @@
                         if (response.error) {
                             $errorMessage.text(response.error).show();
                         } else if (response.results) {
+                            $resultsContainer.empty(); // Clear previous results
+
                             Object.entries(response.results).forEach(([domain, result]) => {
+                                const availabilityClass = result.available ?
+                                    'available' :
+                                    'unavailable';
                                 const resultHtml = `
-                            <div class="p-4 rounded-lg ${result.available ? 'bg-green-100' : 'bg-red-100'}">
-                                <div class="flex justify-between items-center">
-                                    <div>
-                                        <span class="font-semibold">${domain}</span>
-                                        <span class="ml-2 ${result.available ? 'text-green-600' : 'text-red-600'}">
-                                            ${result.available ? 'Available' : 'Not Available'}
-                                        </span>
+                                <div class="col-lg-4 col-xl-3 col-md-3 col-sm-6 sal-animate" data-sal="slide-down" data-sal-delay="200" data-sal-duration="800">
+                                    <div class="pricing-wrapper ${availabilityClass}">
+                                        <div class="logo"><img src="assets/images/pricing/domain-01.svg" alt=""></div>
+                                        <div class="content">
+                                            <p class="desc">${domain} is ${result.available ? 'available!' : 'unavailable.'}</p>
+                                            <div class="price-area">
+                                                ${result.available ? `<span class="now">RWF ${result.register_price}</span>` : ''}
+                                            </div>
+                                            <div class="button-area">
+                                                ${result.available ? `
+                                                                                                                                <button type="button" class="pricing-btn rts-btn addToCartButton"
+                                                                                                                                    data-domain="${domain}" data-price="${result.register_price}">
+                                                                                                                                    Add to Cart
+                                                                                                                                </button>
+                                                                                                                            ` : `<p>${result.reason || 'Not available'}</p>`}
+                                            </div>
+                                        </div>
                                     </div>
-                                    ${result.available ? `
-                                                                            <div class="text-right">
-                                                                                <div class="text-sm text-gray-600">
-                                                                                    Register: ${result.register_price}
-                                                                                </div>
-                                                                                <button type="button"
-                                                                                    class="addToCartButton px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 focus:ring-2 focus:ring-blue-500"
-                                                                                    data-domain="${domain}"
-                                                                                    data-price="${result.register_price}">
-                                                                                    Add to Cart
-                                                                                </button>
-                                                                            </div>
-                                                                        ` : ''}
                                 </div>
-                                ${result.available ? `
-                                                                        <div class="mt-2 grid grid-cols-3 gap-4 text-sm text-gray-600">
-                                                                            <div><span class="font-medium">Transfer:</span> ${result.transfer_price}</div>
-                                                                            <div><span class="font-medium">Renew:</span> ${result.renew_price}</div>
-                                                                            <div><span class="font-medium">Grace Period:</span> ${result.grace} days</div>
-                                                                        </div>
-                                                                    ` : result.reason ? `<p class="mt-2 text-sm text-gray-600">${result.reason}</p>` : ''}
-                            </div>
-                        `;
+                            `;
                                 $resultsContainer.append(resultHtml);
                             });
+                            $resultsContainer.addClass('row g-5');
                         }
                     },
                     error: function(xhr) {
@@ -142,12 +366,12 @@
                 });
             });
 
+
             // Handle Add to Cart using event delegation
             $(document).on('click', '.addToCartButton', function() {
                 const button = $(this);
                 const domain = button.data('domain');
-                // Convert to an integer!
-                const price = parseInt(button.data('price'), 10); // Radix 10 for decimal numbers
+                const price = button.data('price');
 
                 button.prop('disabled', true).text('Adding...');
 
@@ -163,7 +387,7 @@
                     },
                     success: function(response) {
                         alert(response.message);
-                        button.prop('disabled', false).text('Add to Cart');
+                        window.location.href = "{{ route('register') }}";
                     },
                     error: function(xhr) {
                         console.log(xhr.responseJSON);
@@ -173,10 +397,6 @@
                     }
                 });
             });
-
-
-
-
         });
     </script>
 </body>

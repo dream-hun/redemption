@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Cknow\Money\Money;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Facades\Auth;
@@ -11,6 +12,7 @@ class Cart extends Model
 {
     protected $fillable = [
         'user_id',
+        'session_id',
         'domain',
         'host_id',
         'price',
@@ -31,10 +33,19 @@ class Cart extends Model
         parent::boot();
         static::creating(function ($model) {
             $model->uuid = Str::uuid();
-        });
-
-        static::updating(function ($model) {
-            $model->user_id = Auth::user()->id;
+            $model->session_id = session()->getId();
+            if (Auth::check()) {
+                $model->user_id = Auth::id();
+            }
         });
     }
+
+    public function formatedPrice(): Money
+    {
+        return Money::RWF($this->price);
+    }
+
+    protected $casts = [
+        'session_id' => 'string',
+    ];
 }

@@ -21,7 +21,7 @@ class DomainController extends Controller
 
     public function index(): View
     {
-        $tlds = DomainPricing::where('status', true)
+        $tlds = DomainPricing::where('status', 'active')
             ->select('tld', 'register_price')
             ->get();
 
