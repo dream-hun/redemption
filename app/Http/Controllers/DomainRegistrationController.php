@@ -91,20 +91,71 @@ class DomainRegistrationController extends Controller
             // Register each domain
             $registeredDomains = [];
             foreach ($cartItems as $item) {
+                // First check if domain is available
+                $availability = $this->eppService->checkDomain([$item->domain]);
+                
+                if (empty($availability) || !isset($availability[$item->domain]) || !$availability[$item->domain]->available) {
+                    $reason = isset($availability[$item->domain]) ? $availability[$item->domain]->reason : 'Domain not available';
+                    throw new Exception("Domain {$item->domain} is not available for registration. Reason: {$reason}");
+                }
+
+                // Get nameservers from config
+                $nameservers = config('app.default_nameservers', [
+                    'ns1.ricta.org.rw',
+                    'ns2.ricta.org.rw'
+                ]);
+
                 // Create domain with EPP
                 $frame = $this->eppService->createDomain(
                     $item->domain,
-                    (string) $item->period . 'y',
-                    [], // hostAttrs - empty for now, can be added later
+                    (string) $item->period . 'y', // Period in years
+                    [], // Empty hostAttr array since we're using hostObj
                     $contacts['registrant']['id'],
                     $contacts['admin']['id'],
                     $contacts['tech']['id']
                 );
 
+                // Add nameservers as hostObj
+                foreach ($nameservers as $ns) {
+                    $frame->addHostObj($ns);
+                }
+
+                Log::info('EPP Domain Registration Frame:', [
+                    'domain' => $item->domain,
+                    'period' => $item->period . 'y',
+                    'nameservers' => $nameservers,
+                    'frame' => $frame,
+                    'contacts' => [
+                        'registrant' => $contacts['registrant']['id'],
+                        'admin' => $contacts['admin']['id'],
+                        'tech' => $contacts['tech']['id']
+                    ]
+                ]);
+
                 $response = $this->eppService->getClient()->request($frame);
 
                 if (!$response || !$response->success()) {
-                    throw new Exception("Failed to register domain: {$item->domain}");
+                    $errorDetails = [];
+                    if ($response) {
+                        $results = $response->results();
+                        if (!empty($results)) {
+                            $result = $results[0];
+                            $errorDetails = [
+                                'code' => $result->code(),
+                                'message' => $result->message()
+                            ];
+                        }
+                    }
+                    
+                    Log::error('EPP Domain Registration Failed:', [
+                        'domain' => $item->domain,
+                        'error' => $errorDetails,
+                        'period' => $item->period . 'y',
+                        'reason' => $response && !empty($results) ? $result->message() : 'No response'
+                    ]);
+
+                    throw new Exception("Failed to register domain: {$item->domain}. " . 
+                        ($response && !empty($results) ? "Error {$result->code()}: {$result->message()}" : 'No response from EPP server'));
                 }
 
                 // Create domain record in database
@@ -117,7 +168,7 @@ class DomainRegistrationController extends Controller
                     'expires_at' => now()->addYears($item->period),
                     'registration_period' => $item->period,
                     'auth_code' => Str::random(16),
-                    'nameservers' => config('app.default_nameservers', []),
+                    'nameservers' => $nameservers,
                     'whois_privacy' => true
                 ]);
 
