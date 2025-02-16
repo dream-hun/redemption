@@ -16,12 +16,9 @@ class Cart extends Model
         'domain',
         'host_id',
         'price',
+        'period',
+        'subtotal',
     ];
-
-    public function domain(): BelongsTo
-    {
-        return $this->belongsTo(Domain::class);
-    }
 
     public function user(): BelongsTo
     {
@@ -34,6 +31,7 @@ class Cart extends Model
         static::creating(function ($model) {
             $model->uuid = Str::uuid();
             $model->session_id = session()->getId();
+            $model->period = $model->period ?? 1; // Set default period if not provided
             if (Auth::check()) {
                 $model->user_id = Auth::id();
             }
@@ -42,10 +40,43 @@ class Cart extends Model
 
     public function formatedPrice(): Money
     {
+        return Money::RWF($this->price * $this->period);
+    }
+
+    public function getBasePrice(): Money
+    {
         return Money::RWF($this->price);
+    }
+
+    public function subTotal(): Money
+    {
+        $subtotal = Cart::all()->sum(function($item) {
+            return $item->price * $item->period;
+        });
+
+        return Money::RWF($subtotal);
+    }
+
+    public function getTax(): Money
+    {
+        $subtotal = $this->subTotal()->getAmount();
+        $tax = $subtotal * 18 / 100;
+
+        return Money::RWF($tax);
+    }
+
+    public function getTotal(): Money
+    {
+        $subtotal = $this->subTotal()->getAmount();
+        $tax = $subtotal * 18 / 100;
+        $total = $subtotal + $tax;
+
+        return Money::RWF($total);
     }
 
     protected $casts = [
         'session_id' => 'string',
+        'price' => 'integer',
+        'period' => 'integer',
     ];
 }

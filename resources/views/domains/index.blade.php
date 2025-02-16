@@ -341,11 +341,11 @@
                                             </div>
                                             <div class="button-area">
                                                 ${result.available ? `
-                                                                                                                                <button type="button" class="pricing-btn rts-btn addToCartButton"
-                                                                                                                                    data-domain="${domain}" data-price="${result.register_price}">
-                                                                                                                                    Add to Cart
-                                                                                                                                </button>
-                                                                                                                            ` : `<p>${result.reason || 'Not available'}</p>`}
+                                                                                                                                            <button type="button" class="pricing-btn rts-btn addToCartButton"
+                                                                                                                                                data-domain="${domain}" data-price="${result.register_price}">
+                                                                                                                                                Add to Cart
+                                                                                                                                            </button>
+                                                                                                                                        ` : `<p>${result.reason || 'Not available'}</p>`}
                                             </div>
                                         </div>
                                     </div>
@@ -386,8 +386,8 @@
                         price: price
                     },
                     success: function(response) {
-                        alert(response.message);
-                        window.location.href = "{{ route('register') }}";
+
+                        window.location.href = `/register`;
                     },
                     error: function(xhr) {
                         console.log(xhr.responseJSON);

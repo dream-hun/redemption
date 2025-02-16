@@ -13,7 +13,6 @@
         "ext-dom": "*",
         "africc/php-epp2": "^2.0",
         "cknow/laravel-money": "^8.3",
-        "darryldecode/cart": "^4.2",
         "laravel/framework": "^11.31",
         "laravel/tinker": "^2.9",
         "opcodesio/log-viewer": "^3.14"

@@ -18,6 +18,7 @@ return new class extends Migration
             $table->string('session_id')->nullable()->index(); // Added session_id column
             $table->string('domain')->nullable();
             $table->integer('price')->nullable();
+            $table->integer('period')->default(1);
             $table->timestamps();
         });
     }
