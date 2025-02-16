@@ -3,6 +3,7 @@
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\DomainContactController;
 use App\Http\Controllers\DomainController;
+use App\Http\Controllers\DomainRegistrationController;
 use App\Http\Controllers\HostingController;
 use App\Http\Controllers\LandingController;
 use App\Http\Controllers\ProfileController;
@@ -30,7 +31,8 @@ Route::get('/dashboard', function () {
 })->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::middleware('auth')->group(function () {
-    Route::get('/domain-registration', [DomainContactController::class, 'create'])->name('contacts.create');
+    Route::get('/domain-registration', [DomainRegistrationController::class, 'create'])->name('contacts.create');
+    Route::post('/domains/register', [DomainRegistrationController::class, 'registerDomains'])->name('domains.register');
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
