@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 
 class Domain extends Model
 {
@@ -53,5 +54,20 @@ class Domain extends Model
     public function getDaysUntilExpiration()
     {
         return now()->diffInDays($this->expires_at);
+    }
+    // Mutator for created_at
+    protected function createdAt(): Attribute
+    {
+        return Attribute::get(fn ($value) => $value ? $value->format('Y-m-d') : null);
+    }
+
+    // Mutator for expiry_date
+    protected function expiryDate(): Attribute
+    {
+        return Attribute::get(fn ($value) => $value ? $value->format('Y-m-d') : null);
+    }
+    protected function registeredAt(): Attribute
+    {
+        return Attribute::get(fn ($value) => $value ? $value->format('Y-m-d') : null);
     }
 }
