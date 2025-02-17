@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Casts\Attribute;
@@ -55,19 +56,32 @@ class Domain extends Model
     {
         return now()->diffInDays($this->expires_at);
     }
-    // Mutator for created_at
-    protected function createdAt(): Attribute
-    {
-        return Attribute::get(fn ($value) => $value ? $value->format('Y-m-d') : null);
-    }
 
-    // Mutator for expiry_date
-    protected function expiryDate(): Attribute
-    {
-        return Attribute::get(fn ($value) => $value ? $value->format('Y-m-d') : null);
-    }
     protected function registeredAt(): Attribute
     {
-        return Attribute::get(fn ($value) => $value ? $value->format('Y-m-d') : null);
+        return Attribute::make(
+            get: fn ($value) => Carbon::parse($value)->format('M d, Y')
+        );
+    }
+
+    protected function expiresAt(): Attribute
+    {
+        return Attribute::make(
+            get: fn ($value) => Carbon::parse($value)->format('M d, Y')
+        );
+    }
+
+    protected function sslExpiresAt(): Attribute
+    {
+        return Attribute::make(
+            get: fn ($value) => $value ? Carbon::parse($value)->format('M d, Y') : null
+        );
+    }
+
+    protected function lastRenewalAt(): Attribute
+    {
+        return Attribute::make(
+            get: fn ($value) => $value ? Carbon::parse($value)->format('M d, Y') : null
+        );
     }
 }
