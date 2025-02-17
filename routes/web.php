@@ -31,9 +31,33 @@ Route::get('/dashboard', function () {
 })->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::middleware('auth')->group(function () {
+    // Client Domains
     Route::get('/my-domains', [ClientDomainsController::class, 'index'])->name('client.domains');
+    Route::get('/my-domains/{domain}', [ClientDomainsController::class, 'show'])->name('client.domains.show');
+    
+    // Domain Management
+    Route::get('/my-domains/{domain}/edit-contacts', [DomainRegistrationController::class, 'editContacts'])
+        ->name('client.domains.edit-contacts');
+    Route::put('/my-domains/{domain}/contacts', [DomainRegistrationController::class, 'updateContacts'])
+        ->name('client.domains.update-contacts');
+    
+    Route::get('/my-domains/{domain}/edit-nameservers', [DomainRegistrationController::class, 'editNameservers'])
+        ->name('client.domains.edit-nameservers');
+    Route::put('/my-domains/{domain}/nameservers', [DomainRegistrationController::class, 'updateNameservers'])
+        ->name('client.domains.update-nameservers');
+    
+    Route::get('/my-domains/{domain}/renew', [DomainRegistrationController::class, 'renewForm'])
+        ->name('client.domains.renew');
+    Route::put('/my-domains/{domain}/renew', [DomainRegistrationController::class, 'renew']);
+    
+    Route::delete('/my-domains/{domain}', [DomainRegistrationController::class, 'destroy'])
+        ->name('client.domains.destroy');
+    
+    // Domain Registration
     Route::get('/domain-registration', [DomainRegistrationController::class, 'create'])->name('contacts.create');
     Route::post('/domains/register', [DomainRegistrationController::class, 'registerDomains'])->name('domains.register');
+    
+    // Profile
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');

@@ -3,9 +3,9 @@
 namespace App\Models;
 
 use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Casts\Attribute;
 
 class Domain extends Model
 {
@@ -25,6 +25,9 @@ class Domain extends Model
         'whois_privacy',
         'registration_period',
         'last_renewal_at',
+        'registrant_contact_id',
+        'admin_contact_id',
+        'tech_contact_id',
     ];
 
     protected $casts = [
@@ -40,6 +43,21 @@ class Domain extends Model
     public function owner(): BelongsTo
     {
         return $this->belongsTo(User::class, 'owner_id');
+    }
+
+    public function registrantContact(): BelongsTo
+    {
+        return $this->belongsTo(Contact::class, 'registrant_contact_id');
+    }
+
+    public function adminContact(): BelongsTo
+    {
+        return $this->belongsTo(Contact::class, 'admin_contact_id');
+    }
+
+    public function techContact(): BelongsTo
+    {
+        return $this->belongsTo(Contact::class, 'tech_contact_id');
     }
 
     public function isExpiring($days = 30)
