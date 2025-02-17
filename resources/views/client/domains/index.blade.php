@@ -33,8 +33,8 @@
                                             <td class="px-6 py-4 whitespace-nowrap">{{ $domain->registered_at }}</td>
                                             <td class="px-6 py-4 whitespace-nowrap">{{ $domain->expires_at }}</td>
                                             <td class="px-6 py-4 whitespace-nowrap text-sm">
-                                                <a href="{{ route('client.domains.show', $domain) }}" class="text-indigo-600 hover:text-indigo-900 mr-3">View</a>
-                                                <a href="{{ route('client.domains.edit', $domain) }}" class="text-indigo-600 hover:text-indigo-900">Manage</a>
+                                                <a href="#" class="text-indigo-600 hover:text-indigo-900 mr-3">View</a>
+                                                <a href="#" class="text-indigo-600 hover:text-indigo-900">Manage</a>
                                             </td>
                                         </tr>
                                     @endforeach
