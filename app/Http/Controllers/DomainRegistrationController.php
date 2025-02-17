@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Cart;
+use App\Models\Country;
 use App\Models\Domain;
 use App\Services\Epp\EppService;
 use Exception;
@@ -10,7 +11,6 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-use App\Models\Country;
 use Illuminate\Support\Str;
 
 class DomainRegistrationController extends Controller
@@ -26,7 +26,6 @@ class DomainRegistrationController extends Controller
     {
         $countries = Country::all();
         $cartItems = Cart::where('user_id', Auth::id())->get();
-
 
         return view('domains.create-contact', compact('countries', 'cartItems'));
     }
@@ -59,9 +58,9 @@ class DomainRegistrationController extends Controller
 
             // Create contact IDs for registrant, admin, and tech
             $contactIds = [
-                'registrant' => 'REG-' . Str::random(8),
-                'admin' => 'ADM-' . Str::random(8),
-                'tech' => 'TECH-' . Str::random(8)
+                'registrant' => 'REG-'.Str::random(8),
+                'admin' => 'ADM-'.Str::random(8),
+                'tech' => 'TECH-'.Str::random(8),
             ];
 
             // Create contacts with EPP
@@ -72,19 +71,19 @@ class DomainRegistrationController extends Controller
                 $contactData = array_merge($contactInfo, [
                     'id' => $id,
                     'fax' => ['number' => '', 'ext' => ''],
-                    'disclose' => []
+                    'disclose' => [],
                 ]);
 
                 $result = $this->eppService->createContacts($contactData);
                 $response = $this->eppService->getClient()->request($result['frame']);
 
-                if (!$response || !$response->success()) {
+                if (! $response || ! $response->success()) {
                     throw new Exception("Failed to create {$type} contact");
                 }
 
                 $contacts[$type] = [
                     'id' => $id,
-                    'auth_info' => $result['auth']
+                    'auth_info' => $result['auth'],
                 ];
             }
 
@@ -93,8 +92,8 @@ class DomainRegistrationController extends Controller
             foreach ($cartItems as $item) {
                 // First check if domain is available
                 $availability = $this->eppService->checkDomain([$item->domain]);
-                
-                if (empty($availability) || !isset($availability[$item->domain]) || !$availability[$item->domain]->available) {
+
+                if (empty($availability) || ! isset($availability[$item->domain]) || ! $availability[$item->domain]->available) {
                     $reason = isset($availability[$item->domain]) ? $availability[$item->domain]->reason : 'Domain not available';
                     throw new Exception("Domain {$item->domain} is not available for registration. Reason: {$reason}");
                 }
@@ -102,13 +101,13 @@ class DomainRegistrationController extends Controller
                 // Get nameservers from config
                 $nameservers = config('app.default_nameservers', [
                     'ns1.ricta.org.rw',
-                    'ns2.ricta.org.rw'
+                    'ns2.ricta.org.rw',
                 ]);
 
                 // Create domain with EPP
                 $frame = $this->eppService->createDomain(
                     $item->domain,
-                    (string) $item->period . 'y', // Period in years
+                    (string) $item->period.'y', // Period in years
                     [], // Empty hostAttr array since we're using hostObj
                     $contacts['registrant']['id'],
                     $contacts['admin']['id'],
@@ -122,40 +121,40 @@ class DomainRegistrationController extends Controller
 
                 Log::info('EPP Domain Registration Frame:', [
                     'domain' => $item->domain,
-                    'period' => $item->period . 'y',
+                    'period' => $item->period.'y',
                     'nameservers' => $nameservers,
                     'frame' => $frame,
                     'contacts' => [
                         'registrant' => $contacts['registrant']['id'],
                         'admin' => $contacts['admin']['id'],
-                        'tech' => $contacts['tech']['id']
-                    ]
+                        'tech' => $contacts['tech']['id'],
+                    ],
                 ]);
 
                 $response = $this->eppService->getClient()->request($frame);
 
-                if (!$response || !$response->success()) {
+                if (! $response || ! $response->success()) {
                     $errorDetails = [];
                     if ($response) {
                         $results = $response->results();
-                        if (!empty($results)) {
+                        if (! empty($results)) {
                             $result = $results[0];
                             $errorDetails = [
                                 'code' => $result->code(),
-                                'message' => $result->message()
+                                'message' => $result->message(),
                             ];
                         }
                     }
-                    
+
                     Log::error('EPP Domain Registration Failed:', [
                         'domain' => $item->domain,
                         'error' => $errorDetails,
-                        'period' => $item->period . 'y',
-                        'reason' => $response && !empty($results) ? $result->message() : 'No response'
+                        'period' => $item->period.'y',
+                        'reason' => $response && ! empty($results) ? $result->message() : 'No response',
                     ]);
 
-                    throw new Exception("Failed to register domain: {$item->domain}. " . 
-                        ($response && !empty($results) ? "Error {$result->code()}: {$result->message()}" : 'No response from EPP server'));
+                    throw new Exception("Failed to register domain: {$item->domain}. ".
+                        ($response && ! empty($results) ? "Error {$result->code()}: {$result->message()}" : 'No response from EPP server'));
                 }
 
                 // Create domain record in database
@@ -169,7 +168,7 @@ class DomainRegistrationController extends Controller
                     'registration_period' => $item->period,
                     'auth_code' => Str::random(16),
                     'nameservers' => $nameservers,
-                    'whois_privacy' => true
+                    'whois_privacy' => true,
                 ]);
 
                 $registeredDomains[] = $domain;
@@ -185,11 +184,11 @@ class DomainRegistrationController extends Controller
 
         } catch (Exception $e) {
             DB::rollBack();
-            Log::error('Domain registration failed: ' . $e->getMessage(), [
+            Log::error('Domain registration failed: '.$e->getMessage(), [
                 'user_id' => Auth::id(),
                 'cart_items' => $cartItems ?? [],
                 'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
+                'trace' => $e->getTraceAsString(),
             ]);
 
             return redirect()->back()

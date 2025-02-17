@@ -57,7 +57,7 @@ class CartController extends Controller
             $cartItem->save();
 
             // Return updated cart totals
-            $items = Cart::where(function($query) {
+            $items = Cart::where(function ($query) {
                 if (Auth::check()) {
                     $query->where('user_id', Auth::id());
                 } else {
@@ -72,16 +72,16 @@ class CartController extends Controller
                     'base_price' => $cartItem->getBasePrice(),
                 ],
                 'cart' => [
-                    'subtotal' => $items->sum(function($item) {
+                    'subtotal' => $items->sum(function ($item) {
                         return $item->price * $item->period;
                     }),
-                    'tax' => $items->sum(function($item) {
+                    'tax' => $items->sum(function ($item) {
                         return $item->price * $item->period * 0.18;
                     }),
-                    'total' => $items->sum(function($item) {
+                    'total' => $items->sum(function ($item) {
                         return $item->price * $item->period * 1.18;
-                    })
-                ]
+                    }),
+                ],
             ]);
         } catch (Exception $e) {
             Log::error('Error updating period:', [
@@ -96,7 +96,7 @@ class CartController extends Controller
     public function removeItem(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'item_id' => 'required|string|exists:carts,uuid'
+            'item_id' => 'required|string|exists:carts,uuid',
         ]);
 
         if ($validator->fails()) {
@@ -120,7 +120,7 @@ class CartController extends Controller
 
     public function cart(Request $request)
     {
-        $items = Cart::where(function($query) {
+        $items = Cart::where(function ($query) {
             if (Auth::check()) {
                 $query->where('user_id', Auth::id());
             } else {

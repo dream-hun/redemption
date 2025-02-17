@@ -1,7 +1,7 @@
 <?php
 
 use App\Http\Controllers\CartController;
-use App\Http\Controllers\DomainContactController;
+use App\Http\Controllers\ClientDomainsController;
 use App\Http\Controllers\DomainController;
 use App\Http\Controllers\DomainRegistrationController;
 use App\Http\Controllers\HostingController;
@@ -31,6 +31,7 @@ Route::get('/dashboard', function () {
 })->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::middleware('auth')->group(function () {
+    Route::get('/my-domains', [ClientDomainsController::class, 'index'])->name('client.domains');
     Route::get('/domain-registration', [DomainRegistrationController::class, 'create'])->name('contacts.create');
     Route::post('/domains/register', [DomainRegistrationController::class, 'registerDomains'])->name('domains.register');
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
