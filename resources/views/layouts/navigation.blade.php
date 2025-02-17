@@ -21,8 +21,13 @@
                 </div>
             </div>
 
-            <!-- Settings Dropdown -->
             <div class="hidden sm:flex sm:items-center sm:ms-6">
+                <!-- Shopping Cart Link -->
+                <x-nav-link :href="route('cart.index')" :active="request()->routeIs('cart.index')" class="me-4">
+                    {{ __('Shopping Cart') }}
+                </x-nav-link>
+
+                <!-- Settings Dropdown -->
                 <x-dropdown align="right" width="56">
                     <x-slot name="trigger">
                         <button
@@ -47,7 +52,6 @@
                         <x-dropdown-link :href="route('profile.edit')">
                             {{ __('Customer Number') }} {{ Auth::user()->client_code }}
                         </x-dropdown-link>
-
 
                         <!-- Authentication -->
                         <form method="POST" action="{{ route('logout') }}">
@@ -84,6 +88,10 @@
         <div class="pt-2 pb-3 space-y-1">
             <x-responsive-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
                 {{ __('Dashboard') }}
+            </x-responsive-nav-link>
+            <!-- Added Shopping Cart to mobile menu -->
+            <x-responsive-nav-link :href="route('cart.index')" :active="request()->routeIs('cart.index')">
+                {{ __('Shopping Cart') }}
             </x-responsive-nav-link>
         </div>
 
