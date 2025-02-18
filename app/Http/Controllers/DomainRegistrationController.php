@@ -395,7 +395,7 @@ class DomainRegistrationController extends Controller
                 $domain->name,
                 [$contacts['admin']['id']],
                 [$contacts['tech']['id']],
-                [], // No host objects to update
+                [], // Empty hostAttr array since we're using hostObj
                 [], // No host attributes to update
                 [], // No statuses to update
                 []  // No host attributes to remove
@@ -464,17 +464,21 @@ class DomainRegistrationController extends Controller
                 throw new Exception('Failed to check nameserver availability');
             }
 
+            // Get the check results from the response
             $results = $response->results();
             $unavailableHosts = [];
             
-            foreach ($results as $result) {
-                $hostName = $result->identifier();
-                if (!$result->available()) {
-                    // Host exists, which is good for nameservers
-                    continue;
+            // The first result contains the check data
+            if (!empty($results)) {
+                $result = $results[0];
+                $resultData = $result->data();
+                
+                // Check each host's availability
+                foreach ($request->nameservers as $host) {
+                    if (isset($resultData[$host]) && $resultData[$host]->available) {
+                        $unavailableHosts[] = $host;
+                    }
                 }
-                // If host doesn't exist, we need to create it
-                $unavailableHosts[] = $hostName;
             }
 
             // Create any nameservers that don't exist
