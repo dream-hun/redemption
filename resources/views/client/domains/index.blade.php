@@ -61,6 +61,14 @@
                                                     </button>
                                                     <x-dropdown align="right" width="56">
                                                         <x-slot name="trigger">
+                                                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
+                                                                fill="currentColor" class="size-6">
+                                                                <path fill-rule="evenodd"
+                                                                    d="M10.5 6a1.5 1.5 0 1 1 3 0 1.5 1.5 0 0 1-3 0Zm0 6a1.5 1.5 0 1 1 3 0 1.5 1.5 0 0 1-3 0Zm0 6a1.5 1.5 0 1 1 3 0 1.5 1.5 0 0 1-3 0Z"
+                                                                    clip-rule="evenodd" />
+                                                            </svg>
+                                                        </x-slot>
+                                                        <x-slot name="content">
                                                             <div class="py-1">
                                                                 <a href="{{ route('client.domains.edit-nameservers', $domain) }}"
                                                                     class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Edit
