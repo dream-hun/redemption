@@ -52,12 +52,16 @@
                                             <td class="px-6 py-4 whitespace-nowrap text-sm">
                                                 <x-dropdown align="right" width="56">
                                                     <x-slot name="trigger">
-                                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
-                                                            fill="currentColor" class="size-6">
-                                                            <path fill-rule="evenodd"
-                                                                d="M10.5 6a1.5 1.5 0 1 1 3 0 1.5 1.5 0 0 1-3 0Zm0 6a1.5 1.5 0 1 1 3 0 1.5 1.5 0 0 1-3 0Zm0 6a1.5 1.5 0 1 1 3 0 1.5 1.5 0 0 1-3 0Z"
-                                                                clip-rule="evenodd" />
-                                                        </svg>
+                                                        <button
+                                                            class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-gray-500 bg-white hover:text-gray-700 focus:outline-none transition ease-in-out duration-150">
+
+                                                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
+                                                                fill="currentColor" class="size-6">
+                                                                <path fill-rule="evenodd"
+                                                                    d="M10.5 6a1.5 1.5 0 1 1 3 0 1.5 1.5 0 0 1-3 0Zm0 6a1.5 1.5 0 1 1 3 0 1.5 1.5 0 0 1-3 0Zm0 6a1.5 1.5 0 1 1 3 0 1.5 1.5 0 0 1-3 0Z"
+                                                                    clip-rule="evenodd" />
+                                                            </svg>
+                                                        </button>
                                                     </x-slot>
                                                     <x-slot name="content">
                                                         <div class="py-1">
@@ -71,25 +75,22 @@
                                                     </x-slot>
                                                 </x-dropdown>
                                             </td>
-
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
                         </div>
-                        </td>
-                        </tr>
-                    @endforeach
-                    </tbody>
-                    </table>
+                    @else
+                        <div class="text-center py-8">
+                            <p class="text-gray-500">You don't have any registered domains yet.</p>
+                            <a href="{{ route('domains.index') }}"
+                                class="mt-4 inline-flex items-center px-4 py-2 bg-indigo-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-indigo-700 focus:bg-indigo-700 active:bg-indigo-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition ease-in-out duration-150">
+                                Browse Domains
+                            </a>
+                        </div>
+                    @endif
                 </div>
-            @else
-                <div class="text-center py-8">
-                    <p class="text-gray-500">You don't have any registered domains yet.</p>
-                    <a href="{{ route('domains.index') }}"
-                        class="mt-4 inline-flex items-center px-4 py-2 bg-indigo-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-indigo-700 focus:bg-indigo-700 active:bg-indigo-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition ease-in-out duration-150">
-                        Browse Domains
-                    </a>
-                </div>
-                @endif
             </div>
         </div>
-    </div>
     </div>
 </x-app-layout>
