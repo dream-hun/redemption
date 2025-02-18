@@ -456,53 +456,22 @@ class DomainRegistrationController extends Controller
                     ->with('error', 'You do not have permission to update this domain.');
             }
 
-            // First check if the nameservers exist as host objects
-            $hostCheck = $this->eppService->checkHosts($request->nameservers);
-            $response = $this->eppService->getClient()->request($hostCheck);
-
-            if (!$response || !$response->success()) {
-                throw new Exception('Failed to check nameserver availability');
-            }
-
-            // Get the check results from the response
-            $results = $response->results();
-            $unavailableHosts = [];
-            
-            // The first result contains the check data
-            if (!empty($results)) {
-                $result = $results[0];
-                $resultData = $result->data();
-                
-                // Check each host's availability
-                foreach ($request->nameservers as $host) {
-                    if (isset($resultData[$host]) && $resultData[$host]->available) {
-                        $unavailableHosts[] = $host;
-                    }
-                }
-            }
-
-            // Create any nameservers that don't exist
-            foreach ($unavailableHosts as $host) {
-                $createHost = $this->eppService->createHost($host, []);
-                $response = $this->eppService->getClient()->request($createHost);
-                
-                if (!$response || !$response->success()) {
-                    Log::warning("Failed to create host object for nameserver: $host", [
-                        'response' => $response ? $response->results() : null
-                    ]);
-                    // Continue anyway as some registries don't require host objects
-                }
-            }
+            // Log the nameserver update attempt
+            Log::info('Attempting to update nameservers', [
+                'domain' => $domain->name,
+                'current_nameservers' => $domain->nameservers,
+                'new_nameservers' => $request->nameservers
+            ]);
 
             // Update nameservers in EPP
             $updateFrame = $this->eppService->updateDomain(
                 $domain->name,
                 [], // No admin contacts to update
                 [], // No tech contacts to update
-                array_values($request->nameservers), // New nameservers as host objects
-                [], // No host attributes to update
+                [], // No host objects to add yet
+                array_values($request->nameservers), // Use nameservers as host attributes
                 [], // No statuses to update
-                array_values($domain->nameservers ?? []) // Remove old nameservers
+                [] // Don't remove old nameservers yet
             );
 
             $response = $this->eppService->getClient()->request($updateFrame['frame']);
@@ -519,12 +488,17 @@ class DomainRegistrationController extends Controller
                 throw new Exception($error);
             }
 
-            // Update nameservers in database
+            // If successful, update nameservers in database
             $domain->update([
                 'nameservers' => array_values($request->nameservers),
             ]);
 
             DB::commit();
+
+            Log::info('Nameservers updated successfully', [
+                'domain' => $domain->name,
+                'nameservers' => $request->nameservers
+            ]);
 
             return redirect()->route('client.domains', $domain)
                 ->with('success', 'Domain nameservers updated successfully!');
