@@ -416,7 +416,7 @@ class DomainRegistrationController extends Controller
 
             DB::commit();
 
-            return redirect()->route('domains.show', $domain)
+            return redirect()->route('client.domains', $domain)
                 ->with('success', 'Domain contacts updated successfully!');
 
         } catch (Exception $e) {
@@ -434,7 +434,7 @@ class DomainRegistrationController extends Controller
         }
     }
 
-    public function edit(Domain $domain)
+    public function editNameservers(Domain $domain)
     {
         $domain=Domain::where(Auth::id(),'owner_id')->firstOrFail();
             return view('client.domains.edit-nameservers',['domain'=>$domain]);
