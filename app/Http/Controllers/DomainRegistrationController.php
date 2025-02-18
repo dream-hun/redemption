@@ -463,55 +463,72 @@ class DomainRegistrationController extends Controller
                 'new_nameservers' => $request->nameservers
             ]);
 
-            // Ensure nameservers end with a dot to make them fully qualified
-            $newNameservers = array_map(function($ns) {
-                return rtrim($ns, '.') . '.';
-            }, array_values($request->nameservers));
+            // Clean and prepare nameserver arrays
+            $newNameservers = array_values($request->nameservers);
+            $oldNameservers = array_values($domain->nameservers ?? []);
 
-            $oldNameservers = array_map(function($ns) {
-                return rtrim($ns, '.') . '.';
-            }, array_values($domain->nameservers ?? []));
+            // First remove old nameservers
+            if (!empty($oldNameservers)) {
+                $removeFrame = $this->eppService->updateDomain(
+                    $domain->name,
+                    [], // No admin contacts to update
+                    [], // No tech contacts to update
+                    [], // No new host objects
+                    [], // No host attributes to add
+                    [], // No statuses to update
+                    $oldNameservers // Remove old nameservers
+                );
 
-            // Update nameservers in EPP
-            $updateFrame = $this->eppService->updateDomain(
-                $domain->name,
-                [], // No admin contacts to update
-                [], // No tech contacts to update
-                $newNameservers, // New nameservers as host objects
-                [], // No host attributes
-                [], // No statuses to update
-                $oldNameservers // Remove old nameservers
-            );
+                $response = $this->eppService->getClient()->request($removeFrame['frame']);
 
-            $response = $this->eppService->getClient()->request($updateFrame['frame']);
-
-            if (!$response || !$response->success()) {
-                $error = 'Failed to update domain nameservers in registry';
-                if ($response) {
-                    $results = $response->results();
-                    if (!empty($results)) {
-                        $result = $results[0];
-                        $error .= sprintf(' (Error %d: %s)', $result->code(), $result->message());
-                    }
+                if (!$response || !$response->success()) {
+                    Log::warning('Failed to remove old nameservers, continuing anyway', [
+                        'domain' => $domain->name,
+                        'nameservers' => $oldNameservers,
+                        'response' => $response ? $response->results() : null
+                    ]);
                 }
-                throw new Exception($error);
             }
 
-            // Store nameservers without trailing dots in the database
-            $dbNameservers = array_map(function($ns) {
-                return rtrim($ns, '.');
-            }, $newNameservers);
+            // Then add new nameservers one by one
+            foreach ($newNameservers as $ns) {
+                $addFrame = $this->eppService->updateDomain(
+                    $domain->name,
+                    [], // No admin contacts to update
+                    [], // No tech contacts to update
+                    [$ns], // Add one nameserver at a time
+                    [], // No host attributes
+                    [], // No statuses to update
+                    [] // No nameservers to remove
+                );
+
+                $response = $this->eppService->getClient()->request($addFrame['frame']);
+
+                if (!$response || !$response->success()) {
+                    $error = "Failed to add nameserver: $ns";
+                    if ($response) {
+                        $results = $response->results();
+                        if (!empty($results)) {
+                            $result = $results[0];
+                            $error .= sprintf(' (Error %d: %s)', $result->code(), $result->message());
+                        }
+                    }
+                    throw new Exception($error);
+                }
+
+                Log::info("Successfully added nameserver: $ns");
+            }
 
             // If successful, update nameservers in database
             $domain->update([
-                'nameservers' => $dbNameservers,
+                'nameservers' => $newNameservers,
             ]);
 
             DB::commit();
 
             Log::info('Nameservers updated successfully', [
                 'domain' => $domain->name,
-                'nameservers' => $dbNameservers
+                'nameservers' => $newNameservers
             ]);
 
             return redirect()->route('client.domains', $domain)
