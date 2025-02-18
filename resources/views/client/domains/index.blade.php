@@ -60,7 +60,8 @@
                                                         </svg>
                                                     </button>
                                                     <div x-show="open" @click.away="open = false"
-                                                        class="absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5">
+                                                        class="absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5"
+                                                        style="top: -{{ $loop->index * 45 }}px">
                                                         <div class="py-1">
                                                             <a href="{{ route('client.domains.edit-nameservers', $domain) }}"
                                                                 class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Edit
