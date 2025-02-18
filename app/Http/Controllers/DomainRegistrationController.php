@@ -434,6 +434,12 @@ class DomainRegistrationController extends Controller
         }
     }
 
+    public function edit(Domain $domain)
+    {
+        $domain=Domain::where(Auth::id(),'owner_id')->firstOrFail();
+            return view('client.domains.edit-nameservers',['domain'=>$domain]);
+    }
+
     public function updateNameservers(Domain $domain, Request $request)
     {
         $request->validate([
@@ -474,7 +480,7 @@ class DomainRegistrationController extends Controller
 
             DB::commit();
 
-            return redirect()->route('domains.show', $domain)
+            return redirect()->route('client.domains', $domain)
                 ->with('success', 'Domain nameservers updated successfully!');
 
         } catch (Exception $e) {
