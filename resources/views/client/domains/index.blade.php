@@ -60,14 +60,16 @@
                                                         </svg>
                                                     </button>
                                                     <x-dropdown align="right" width="56">
-                                                        <div class="py-1">
-                                                            <a href="{{ route('client.domains.edit-nameservers', $domain) }}"
-                                                                class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Edit
-                                                                Nameservers</a>
-                                                            <a href="{{ route('client.domains.renew', $domain) }}"
-                                                                class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Renew
-                                                                Domain</a>
-                                                        </div>
+                                                        <x-slot name="trigger">
+                                                            <div class="py-1">
+                                                                <a href="{{ route('client.domains.edit-nameservers', $domain) }}"
+                                                                    class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Edit
+                                                                    Nameservers</a>
+                                                                <a href="{{ route('client.domains.renew', $domain) }}"
+                                                                    class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Renew
+                                                                    Domain</a>
+                                                            </div>
+                                                        </x-slot>
                                                     </x-dropdown>
                                                 </div>
                                             </td>
