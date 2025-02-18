@@ -50,10 +50,27 @@
                                             <td class="px-6 py-4 whitespace-nowrap">{{ $domain->registered_at }}</td>
                                             <td class="px-6 py-4 whitespace-nowrap">{{ $domain->expires_at }}</td>
                                             <td class="px-6 py-4 whitespace-nowrap text-sm">
-                                                <a href="#"
-                                                    class="text-indigo-600 hover:text-indigo-900 mr-3">View</a>
-                                                <a href="#"
-                                                    class="text-indigo-600 hover:text-indigo-900">Manage</a>
+                                                <div class="relative" x-data="{ open: false }">
+                                                    <button @click="open = !open"
+                                                        class="text-gray-600 hover:text-gray-900">
+                                                        <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
+                                                            <path
+                                                                d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z">
+                                                            </path>
+                                                        </svg>
+                                                    </button>
+                                                    <div x-show="open" @click.away="open = false"
+                                                        class="absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5">
+                                                        <div class="py-1">
+                                                            <a href="{{ route('client.domains.edit-nameservers', $domain) }}"
+                                                                class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Edit
+                                                                Nameservers</a>
+                                                            <a href="{{ route('client.domains.renew', $domain) }}"
+                                                                class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Renew
+                                                                Domain</a>
+                                                        </div>
+                                                    </div>
+                                                </div>
                                             </td>
                                         </tr>
                                     @endforeach
