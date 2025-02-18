@@ -456,26 +456,68 @@ class DomainRegistrationController extends Controller
                     ->with('error', 'You do not have permission to update this domain.');
             }
 
+            // First check if the nameservers exist as host objects
+            $hostCheck = $this->eppService->checkHosts($request->nameservers);
+            $response = $this->eppService->getClient()->request($hostCheck);
+
+            if (!$response || !$response->success()) {
+                throw new Exception('Failed to check nameserver availability');
+            }
+
+            $results = $response->results();
+            $unavailableHosts = [];
+            
+            foreach ($results as $result) {
+                $hostName = $result->identifier();
+                if (!$result->available()) {
+                    // Host exists, which is good for nameservers
+                    continue;
+                }
+                // If host doesn't exist, we need to create it
+                $unavailableHosts[] = $hostName;
+            }
+
+            // Create any nameservers that don't exist
+            foreach ($unavailableHosts as $host) {
+                $createHost = $this->eppService->createHost($host, []);
+                $response = $this->eppService->getClient()->request($createHost);
+                
+                if (!$response || !$response->success()) {
+                    Log::warning("Failed to create host object for nameserver: $host", [
+                        'response' => $response ? $response->results() : null
+                    ]);
+                    // Continue anyway as some registries don't require host objects
+                }
+            }
+
             // Update nameservers in EPP
-            $frame = $this->eppService->updateDomain(
+            $updateFrame = $this->eppService->updateDomain(
                 $domain->name,
                 [], // No admin contacts to update
                 [], // No tech contacts to update
-                $request->nameservers, // New nameservers as host objects
+                array_values($request->nameservers), // New nameservers as host objects
                 [], // No host attributes to update
                 [], // No statuses to update
-                $domain->nameservers ?? [] // Remove old nameservers
+                array_values($domain->nameservers ?? []) // Remove old nameservers
             );
 
-            $response = $this->eppService->getClient()->request($frame['frame']);
+            $response = $this->eppService->getClient()->request($updateFrame['frame']);
 
-            if (! $response || ! $response->success()) {
-                throw new Exception('Failed to update domain nameservers in registry');
+            if (!$response || !$response->success()) {
+                $error = 'Failed to update domain nameservers in registry';
+                if ($response) {
+                    $results = $response->results();
+                    if (!empty($results)) {
+                        $result = $results[0];
+                        $error .= sprintf(' (Error %d: %s)', $result->code(), $result->message());
+                    }
+                }
+                throw new Exception($error);
             }
 
             // Update nameservers in database
             $domain->update([
-                'nameservers' => $request->nameservers,
+                'nameservers' => array_values($request->nameservers),
             ]);
 
             DB::commit();
@@ -490,10 +532,11 @@ class DomainRegistrationController extends Controller
                 'nameservers' => $request->nameservers,
                 'user_id' => Auth::id(),
                 'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
             ]);
 
             return redirect()->back()
-                ->with('error', 'Failed to update domain nameservers. Please try again or contact support.');
+                ->with('error', 'Failed to update domain nameservers: '.$e->getMessage());
         } finally {
             $this->eppService->disconnect();
         }
