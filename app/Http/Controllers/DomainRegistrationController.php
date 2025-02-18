@@ -463,15 +463,19 @@ class DomainRegistrationController extends Controller
                 'new_nameservers' => $request->nameservers
             ]);
 
+            // Convert nameservers array to host objects array
+            $newNameservers = array_values($request->nameservers);
+            $oldNameservers = array_values($domain->nameservers ?? []);
+
             // Update nameservers in EPP
             $updateFrame = $this->eppService->updateDomain(
                 $domain->name,
                 [], // No admin contacts to update
                 [], // No tech contacts to update
-                [], // No host objects to add yet
-                array_values($request->nameservers), // Use nameservers as host attributes
+                $newNameservers, // Add new nameservers as host objects
+                [], // No host attributes to update
                 [], // No statuses to update
-                [] // Don't remove old nameservers yet
+                $oldNameservers // Remove old nameservers
             );
 
             $response = $this->eppService->getClient()->request($updateFrame['frame']);
@@ -490,14 +494,14 @@ class DomainRegistrationController extends Controller
 
             // If successful, update nameservers in database
             $domain->update([
-                'nameservers' => array_values($request->nameservers),
+                'nameservers' => $newNameservers,
             ]);
 
             DB::commit();
 
             Log::info('Nameservers updated successfully', [
                 'domain' => $domain->name,
-                'nameservers' => $request->nameservers
+                'nameservers' => $newNameservers
             ]);
 
             return redirect()->route('client.domains', $domain)
