@@ -436,7 +436,7 @@ class DomainRegistrationController extends Controller
 
     public function editNameservers(Domain $domain)
     {
-        $domain=Domain::where(Auth::id(),'owner_id')->firstOrFail();
+        $domain=Domain::where('owner_id',Auth::id())->firstOrFail();
             return view('client.domains.edit-nameservers',['domain'=>$domain]);
     }
 
