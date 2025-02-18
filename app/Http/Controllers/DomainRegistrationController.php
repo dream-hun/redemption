@@ -463,17 +463,22 @@ class DomainRegistrationController extends Controller
                 'new_nameservers' => $request->nameservers
             ]);
 
-            // Convert nameservers array to host objects array
-            $newNameservers = array_values($request->nameservers);
-            $oldNameservers = array_values($domain->nameservers ?? []);
+            // Ensure nameservers end with a dot to make them fully qualified
+            $newNameservers = array_map(function($ns) {
+                return rtrim($ns, '.') . '.';
+            }, array_values($request->nameservers));
+
+            $oldNameservers = array_map(function($ns) {
+                return rtrim($ns, '.') . '.';
+            }, array_values($domain->nameservers ?? []));
 
             // Update nameservers in EPP
             $updateFrame = $this->eppService->updateDomain(
                 $domain->name,
                 [], // No admin contacts to update
                 [], // No tech contacts to update
-                $newNameservers, // Add new nameservers as host objects
-                [], // No host attributes to update
+                $newNameservers, // New nameservers as host objects
+                [], // No host attributes
                 [], // No statuses to update
                 $oldNameservers // Remove old nameservers
             );
@@ -492,16 +497,21 @@ class DomainRegistrationController extends Controller
                 throw new Exception($error);
             }
 
+            // Store nameservers without trailing dots in the database
+            $dbNameservers = array_map(function($ns) {
+                return rtrim($ns, '.');
+            }, $newNameservers);
+
             // If successful, update nameservers in database
             $domain->update([
-                'nameservers' => $newNameservers,
+                'nameservers' => $dbNameservers,
             ]);
 
             DB::commit();
 
             Log::info('Nameservers updated successfully', [
                 'domain' => $domain->name,
-                'nameservers' => $newNameservers
+                'nameservers' => $dbNameservers
             ]);
 
             return redirect()->route('client.domains', $domain)
