@@ -120,7 +120,7 @@ class CartController extends Controller
 
     public function cart(Request $request)
     {
-        
+
         $items = Cart::where(function ($query) {
             if (Auth::check()) {
                 $query->where('user_id', Auth::id());

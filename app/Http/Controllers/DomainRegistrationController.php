@@ -436,8 +436,9 @@ class DomainRegistrationController extends Controller
 
     public function editNameservers(Domain $domain)
     {
-        $domain=Domain::where('owner_id',Auth::id())->firstOrFail();
-            return view('client.domains.edit-nameservers',['domain'=>$domain]);
+        $domain = Domain::where('owner_id', Auth::id())->firstOrFail();
+
+        return view('client.domains.edit-nameservers', ['domain' => $domain]);
     }
 
     public function updateNameservers(Domain $domain, Request $request)
@@ -460,7 +461,7 @@ class DomainRegistrationController extends Controller
             Log::info('Attempting to update nameservers', [
                 'domain' => $domain->name,
                 'current_nameservers' => $domain->nameservers,
-                'new_nameservers' => $request->nameservers
+                'new_nameservers' => $request->nameservers,
             ]);
 
             // Clean and prepare nameserver arrays
@@ -468,7 +469,7 @@ class DomainRegistrationController extends Controller
             $oldNameservers = array_values($domain->nameservers ?? []);
 
             // First remove old nameservers
-            if (!empty($oldNameservers)) {
+            if (! empty($oldNameservers)) {
                 $removeFrame = $this->eppService->updateDomain(
                     $domain->name,
                     [], // No admin contacts to update
@@ -481,11 +482,11 @@ class DomainRegistrationController extends Controller
 
                 $response = $this->eppService->getClient()->request($removeFrame['frame']);
 
-                if (!$response || !$response->success()) {
+                if (! $response || ! $response->success()) {
                     Log::warning('Failed to remove old nameservers, continuing anyway', [
                         'domain' => $domain->name,
                         'nameservers' => $oldNameservers,
-                        'response' => $response ? $response->results() : null
+                        'response' => $response ? $response->results() : null,
                     ]);
                 }
             }
@@ -504,11 +505,11 @@ class DomainRegistrationController extends Controller
 
                 $response = $this->eppService->getClient()->request($addFrame['frame']);
 
-                if (!$response || !$response->success()) {
+                if (! $response || ! $response->success()) {
                     $error = "Failed to add nameserver: $ns";
                     if ($response) {
                         $results = $response->results();
-                        if (!empty($results)) {
+                        if (! empty($results)) {
                             $result = $results[0];
                             $error .= sprintf(' (Error %d: %s)', $result->code(), $result->message());
                         }
@@ -528,7 +529,7 @@ class DomainRegistrationController extends Controller
 
             Log::info('Nameservers updated successfully', [
                 'domain' => $domain->name,
-                'nameservers' => $newNameservers
+                'nameservers' => $newNameservers,
             ]);
 
             return redirect()->route('client.domains', $domain)
@@ -541,7 +542,7 @@ class DomainRegistrationController extends Controller
                 'nameservers' => $request->nameservers,
                 'user_id' => Auth::id(),
                 'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
+                'trace' => $e->getTraceAsString(),
             ]);
 
             return redirect()->back()
