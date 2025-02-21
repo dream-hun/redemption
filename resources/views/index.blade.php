@@ -62,8 +62,16 @@
                                         alt="" class="icon">Live Chat</a>
                             </div>
                             <div class="login-btn-has-dropdown">
-                                <a href="{{ route('login') }}" class="login__link"><img
-                                        src="assets/images/icon/person.svg" alt="" class="icon">Login</a>
+                                @if (Route::has('login'))
+                                    @auth
+                                        <a href="{{ url('/dashboard') }}" class="login__link"><img
+                                                src="assets/images/icon/person.svg" alt=""
+                                                class="icon">Dashboard</a>
+                                    @else
+                                        <a href="{{ route('login') }}" class="login__link"><img
+                                                src="assets/images/icon/person.svg" alt="" class="icon">Login</a>
+                                    @endauth
+                                @endif
 
                             </div>
                         </div>
