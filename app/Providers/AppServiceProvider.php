@@ -2,7 +2,9 @@
 
 namespace App\Providers;
 
+use App\Models\Cart;
 use App\Models\Setting;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
 
@@ -19,6 +21,7 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         View::share('settings', Setting::first());
+        View::share('cartCount', Cart::where('user_id', Auth::id())->count());
 
     }
 }

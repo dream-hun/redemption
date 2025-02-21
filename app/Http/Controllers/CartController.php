@@ -120,7 +120,7 @@ class CartController extends Controller
 
     public function cart(Request $request)
     {
-        $cartCount=Cart::where('user_id',Auth::id())->count();
+        
         $items = Cart::where(function ($query) {
             if (Auth::check()) {
                 $query->where('user_id', Auth::id());
@@ -134,6 +134,6 @@ class CartController extends Controller
             return redirect()->route('domains.index')->with('info', 'Your cart is empty. Browse available domains.');
         }
 
-        return view('domains.cart', compact('items','cartCount'));
+        return view('domains.cart', compact('items'));
     }
 }
