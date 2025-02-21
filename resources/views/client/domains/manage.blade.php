@@ -1,7 +1,7 @@
 <x-app-layout>
     <x-slot name="header">
         <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            Update Nameservers for {{ $domain->name }}
+            Manage {{ $domain->name }}
         </h2>
     </x-slot>
 

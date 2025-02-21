@@ -29,7 +29,7 @@ Route::get('/dashboard', function () {
 Route::middleware('auth')->group(function () {
     // Client Domains
     Route::get('/my-domains', [ClientDomainsController::class, 'index'])->name('client.domains');
-    Route::get('/my-domains/manage/{domain}', [ClientDomainsController::class, 'manage'])->name('client.domains.manage');
+    Route::get('/my-domains/manage/{domain:name}', [ClientDomainsController::class, 'manage'])->name('client.domains.manage');
     Route::get('/my-domains/{domain}', [ClientDomainsController::class, 'show'])->name('client.domains.show');
 
     // Domain Management
