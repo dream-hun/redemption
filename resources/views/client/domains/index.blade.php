@@ -50,37 +50,12 @@
                                             <td class="px-6 py-4 whitespace-nowrap">{{ $domain->registered_at }}</td>
                                             <td class="px-6 py-4 whitespace-nowrap">{{ $domain->expires_at }}</td>
                                             <td class="px-6 py-4 whitespace-nowrap text-sm relative">
-                                                <div class="relative" x-data="{ open: false }"
-                                                    @click.away="open = false">
-                                                    <button @click="open = !open"
-                                                        class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-gray-500 bg-white hover:text-gray-700 focus:outline-none transition ease-in-out duration-150">
-                                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
-                                                            fill="currentColor" class="size-6">
-                                                            <path fill-rule="evenodd"
-                                                                d="M10.5 6a1.5 1.5 0 1 1 3 0 1.5 1.5 0 0 1-3 0Zm0 6a1.5 1.5 0 1 1 3 0 1.5 1.5 0 0 1-3 0Zm0 6a1.5 1.5 0 1 1 3 0 1.5 1.5 0 0 1-3 0Z"
-                                                                clip-rule="evenodd" />
-                                                        </svg>
-                                                    </button>
-                                                    <div x-show="open"
-                                                        x-transition:enter="transition ease-out duration-100"
-                                                        x-transition:enter-start="transform opacity-0 scale-95"
-                                                        x-transition:enter-end="transform opacity-100 scale-100"
-                                                        x-transition:leave="transition ease-in duration-75"
-                                                        x-transition:leave-start="transform opacity-100 scale-100"
-                                                        x-transition:leave-end="transform opacity-0 scale-95"
-                                                        class="absolute right-0 mt-2 w-56 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-50">
-                                                        <div class="py-1">
-                                                            <a href="{{ route('client.domains.edit-nameservers', $domain) }}"
-                                                                class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
-                                                                Edit Nameservers
-                                                            </a>
-                                                            <a href="{{ route('client.domains.renew', $domain) }}"
-                                                                class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
-                                                                Renew Domain
-                                                            </a>
-                                                        </div>
-                                                    </div>
-                                                </div>
+                                                <a href="{{ route('client.domains.manage', $domain) }}"
+                                                    class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                                    Manage Domain
+                                                </a>
+
+
                                             </td>
                                         </tr>
                                     @endforeach

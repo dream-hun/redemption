@@ -13,4 +13,9 @@ class ClientDomainsController extends Controller
 
         return view('client.domains.index', compact('domains'));
     }
+
+    public function manage(Domain $domain)
+    {
+        return view('client.domains.manage', compact('domain'));
+    }
 }
