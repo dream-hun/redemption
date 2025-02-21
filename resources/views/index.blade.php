@@ -93,8 +93,8 @@
                     <!-- FOR LOGO -->
                     <div class="rts-header__logo">
                         <a href="index.html" class="site-logo">
-                            <img class="logo-white" src="assets/images/logo/logo-1.svg" alt="Hostie">
-                            <img class="logo-dark" src="assets/images/logo/logo-4.svg" alt="Hostie">
+                            <img class="logo-white" src="{{ asset('logo.webp') }}" alt="{{ config('app.name') }}">
+                            <img class="logo-dark" src="{{ asset('logo.webp') }}" alt="{{ config('app.name') }}">
                         </a>
                     </div>
                     <!-- FOR NAVIGATION MENU -->
@@ -194,7 +194,14 @@
                     </nav>
                     <!-- FOR HEADER RIGHT -->
                     <div class="rts-header__right">
-                        <a href="#" class="login__btn" target="_blank">Client Area</a>
+                        @if (Route::has('login'))
+                            @auth
+                                <a href="{{ url('/dashboard') }}" class="login__btn">Dashboard</a>
+                            @else
+                                <a href="{{ route('login') }}" class="login__btn">Login</a>
+                            @endauth
+                        @endif
+
                     </div>
                 </div>
             </div>
