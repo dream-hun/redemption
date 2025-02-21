@@ -19,7 +19,7 @@ Route::post('/check-domains', [DomainController::class, 'search'])->name('domain
 Route::post('/cart/update-period', [CartController::class, 'updatePeriod'])->name('cart.update-period');
 Route::post('/cart/remove-item', [CartController::class, 'removeItem'])->name('cart.remove-item');
 Route::post('/add-to-cart', [CartController::class, 'addToCart'])->name('cart.add')->middleware('web');
-Route::get('/cart/user/details', [CartController::class, 'cart'])->name('cart.index')->middleware('auth');
+Route::get('/shopping-cart', [CartController::class, 'cart'])->name('cart.index')->middleware('auth');
 
 Route::get('/dashboard', function () {
 
