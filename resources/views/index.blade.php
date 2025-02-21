@@ -62,24 +62,9 @@
                                         alt="" class="icon">Live Chat</a>
                             </div>
                             <div class="login-btn-has-dropdown">
-                                <a href="#" class="login__link"><img src="assets/images/icon/person.svg"
-                                        alt="" class="icon">Login</a>
-                                <div class="login-submenu">
-                                    <form action="#">
-                                        <div class="form-inner">
-                                            <div class="single-wrapper">
-                                                <input type="email" placeholder="Your email" required>
-                                            </div>
-                                            <div class="single-wrapper">
-                                                <input type="password" placeholder="Password" required>
-                                            </div>
-                                            <div class="form-btn">
-                                                <button type="submit" class="primary__btn">Log In</button>
-                                            </div>
-                                            <a href="#" class="forgot-password">Forgot your password?</a>
-                                        </div>
-                                    </form>
-                                </div>
+                                <a href="{{ route('login') }}" class="login__link"><img
+                                        src="assets/images/icon/person.svg" alt="" class="icon">Login</a>
+
                             </div>
                         </div>
                     </div>
