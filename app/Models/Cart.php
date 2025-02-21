@@ -50,7 +50,7 @@ class Cart extends Model
 
     public function subTotal(): Money
     {
-        $subtotal = Cart::all()->sum(function ($item) {
+        $subtotal = Cart::Where('user_id', Auth::id())->get()->sum(function ($item) {
             return $item->price * $item->period;
         });
 
