@@ -21,7 +21,7 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         View::share('settings', Setting::first());
-        View::share('cartCount', Cart::where('user_id', Auth::id())->count());
+        View::share('cartCount', Auth::check() ? Cart::where('user_id', Auth::id())->get()->count() : 0);
 
     }
 }
