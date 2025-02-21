@@ -4,11 +4,13 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Contact extends Model
 {
     protected $fillable = [
         'contact_id',
+        'contact_type',
         'name',
         'organization',
         'street1',
@@ -18,11 +20,11 @@ class Contact extends Model
         'postal_code',
         'country_code',
         'voice',
-        'fax',
-        'fax_extension',
+        'fax_number',
+        'fax_ext',
         'email',
         'auth_info',
-        'disclose',
+        'epp_status',
         'user_id',
     ];
 
@@ -33,5 +35,12 @@ class Contact extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function domains(): HasMany
+    {
+        return $this->hasMany(Domain::class, 'registrant_contact_id')
+            ->orWhere('admin_contact_id', $this->id)
+            ->orWhere('tech_contact_id', $this->id);
     }
 }

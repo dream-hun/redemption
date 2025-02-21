@@ -17,7 +17,8 @@ return new class extends Migration
             $table->string('contact_type');
             $table->string('name');
             $table->string('organization')->nullable();
-            $table->json('streets');
+            $table->string('street1');
+            $table->string('street2')->nullable();
             $table->string('city');
             $table->string('province');
             $table->string('postal_code');

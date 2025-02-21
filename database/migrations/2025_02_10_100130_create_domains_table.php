@@ -16,6 +16,9 @@ return new class extends Migration
             $table->string('name')->unique();
             $table->string('auth_code')->nullable();
             $table->string('registrar');
+            $table->foreignId('registrant_contact_id')->nullable()->constrained('contacts')->nullOnDelete();
+            $table->foreignId('admin_contact_id')->nullable()->constrained('contacts')->nullOnDelete();
+            $table->foreignId('tech_contact_id')->nullable()->constrained('contacts')->nullOnDelete();
             $table->enum('status', ['active', 'pending', 'expired', 'suspended']);
             $table->timestamp('registered_at');
             $table->timestamp('expires_at');
