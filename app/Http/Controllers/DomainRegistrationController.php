@@ -91,6 +91,7 @@ class DomainRegistrationController extends Controller
                 // Save contact to database
                 $savedContacts[$type] = Contact::create([
                     'contact_id' => $id,
+                    'contact_type' => $type,
                     'name' => $contactInfo['name'],
                     'organization' => $contactInfo['organization'],
                     'street1' => $contactInfo['streets'][0] ?? '',
@@ -374,6 +375,7 @@ class DomainRegistrationController extends Controller
                 // Save contact to database
                 $savedContacts[$type] = Contact::create([
                     'contact_id' => $contactId,
+                    'contact_type' => $type,
                     'name' => $contactInfo['name'],
                     'organization' => $contactInfo['organization'],
                     'street1' => $contactInfo['streets'][0] ?? '',
