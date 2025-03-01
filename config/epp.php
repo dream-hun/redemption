@@ -6,6 +6,6 @@ return [
     'password' => env('EPP_PASSWORD'),
     'port' => env('EPP_PORT'),
     'ssl' => env('EPP_SSL'),
-    'certificate' => storage_path('app/certificate/test.pem'),
+    'certificate' => storage_path('app/certificate/certificate.pem'),
 
 ];

@@ -3,10 +3,16 @@
 namespace App\Models;
 
 use Cknow\Money\Money;
+use DateTimeInterface;
 use Illuminate\Database\Eloquent\Model;
 
 class DomainPricing extends Model
 {
+
+    public const STATUS_SELECT = [
+        'active'   => 'Active',
+        'inactive' => 'Inactive',
+    ];
     protected $casts = [
         'register_price' => 'integer',
         'transfer_price' => 'integer',
@@ -44,4 +50,9 @@ class DomainPricing extends Model
     {
         return Money::RWF($this->redemption_price);
     }
+    protected function serializeDate(DateTimeInterface $date)
+    {
+        return $date->format('Y-m-d H:i:s');
+    }
+
 }
