@@ -323,19 +323,23 @@ class DomainRegistrationController extends Controller
         }
     }
 
-    public function updateContacts(Domain $domain, Request $request)
+    public function updateContacts(Domain $domain, $type, Request $request)
     {
+        // Validate contact type
+        if (!in_array($type, ['registrant', 'admin', 'tech'])) {
+            return redirect()->back()->with('error', 'Invalid contact type.');
+        }
+
         $request->validate([
-            'contact_info' => 'required|array',
-            'contact_info.name' => 'required|string',
-            'contact_info.organization' => 'required|string',
-            'contact_info.streets' => 'required|array',
-            'contact_info.city' => 'required|string',
-            'contact_info.province' => 'required|string',
-            'contact_info.postal_code' => 'required|string',
-            'contact_info.country_code' => 'required|string|size:2',
-            'contact_info.voice' => 'required|string',
-            'contact_info.email' => 'required|email',
+            'contact.name' => 'required|string',
+            'contact.organization' => 'required|string',
+            'contact.streets' => 'required|array',
+            'contact.city' => 'required|string',
+            'contact.province' => 'required|string',
+            'contact.postal_code' => 'required|string',
+            'contact.country_code' => 'required|string|size:2',
+            'contact.voice' => 'required|string',
+            'contact.email' => 'required|email',
         ]);
 
         try {
@@ -347,90 +351,88 @@ class DomainRegistrationController extends Controller
                     ->with('error', 'You do not have permission to update this domain.');
             }
 
-            // Create new contacts
-            $contactInfo = $request->contact_info;
-            $contacts = [];
-            $savedContacts = [];
+            // Create new contact
+            $contactInfo = $request->contact;
+            $contactId = $type.'-'.Str::random(8);
+            $contactData = array_merge($contactInfo, [
+                'id' => $contactId,
+                'fax' => ['number' => '', 'ext' => ''],
+                'disclose' => [],
+            ]);
 
-            foreach (['registrant', 'admin', 'tech'] as $type) {
-                $contactId = $type.'-'.Str::random(8);
-                $contactData = array_merge($contactInfo, [
-                    'id' => $contactId,
-                    'fax' => ['number' => '', 'ext' => ''],
-                    'disclose' => [],
-                ]);
+            $result = $this->eppService->createContacts($contactData);
+            $response = $this->eppService->getClient()->request($result['frame']);
 
-                $result = $this->eppService->createContacts($contactData);
-                $response = $this->eppService->getClient()->request($result['frame']);
-
-                if (! $response || ! $response->success()) {
-                    throw new Exception("Failed to create {$type} contact");
-                }
-
-                $contacts[$type] = [
-                    'id' => $contactId,
-                    'auth_info' => $result['auth'],
-                ];
-
-                // Save contact to database
-                $savedContacts[$type] = Contact::create([
-                    'contact_id' => $contactId,
-                    'contact_type' => $type,
-                    'name' => $contactInfo['name'],
-                    'organization' => $contactInfo['organization'],
-                    'street1' => $contactInfo['streets'][0] ?? '',
-                    'street2' => $contactInfo['streets'][1] ?? '',
-                    'city' => $contactInfo['city'],
-                    'province' => $contactInfo['province'],
-                    'postal_code' => $contactInfo['postal_code'],
-                    'country_code' => $contactInfo['country_code'],
-                    'voice' => $contactInfo['voice'],
-                    'email' => $contactInfo['email'],
-                    'auth_info' => $result['auth'],
-                    'disclose' => [],
-                    'user_id' => Auth::id(),
-                ]);
+            if (!$response || !$response->success()) {
+                throw new Exception("Failed to create {$type} contact");
             }
 
-            // Update domain contacts in EPP
+            // Save contact to database
+            $contact = Contact::create([
+                'contact_id' => $contactId,
+                'contact_type' => $type,
+                'name' => $contactInfo['name'],
+                'organization' => $contactInfo['organization'],
+                'street1' => $contactInfo['streets'][0] ?? '',
+                'street2' => $contactInfo['streets'][1] ?? '',
+                'city' => $contactInfo['city'],
+                'province' => $contactInfo['province'],
+                'postal_code' => $contactInfo['postal_code'],
+                'country_code' => $contactInfo['country_code'],
+                'voice' => $contactInfo['voice'],
+                'email' => $contactInfo['email'],
+                'auth_info' => $result['auth'],
+                'disclose' => [],
+                'user_id' => Auth::id(),
+            ]);
+
+            // Update domain contact in EPP
+            $adminContacts = [];
+            $techContacts = [];
+
+            if ($type === 'admin') {
+                $adminContacts = [$contactId];
+            } elseif ($type === 'tech') {
+                $techContacts = [$contactId];
+            }
+
             $frame = $this->eppService->updateDomain(
                 $domain->name,
-                [$contacts['admin']['id']],
-                [$contacts['tech']['id']],
-                [], // Empty hostAttr array since we're using hostObj
-                [], // No host attributes to update
-                [], // No statuses to update
+                $adminContacts,
+                $techContacts,
+                [], // No host objects
+                [], // No host attributes
+                [], // No statuses
                 []  // No host attributes to remove
             );
 
             $response = $this->eppService->getClient()->request($frame['frame']);
 
-            if (! $response || ! $response->success()) {
-                throw new Exception('Failed to update domain contacts in registry');
+            if (!$response || !$response->success()) {
+                throw new Exception('Failed to update domain contact in registry');
             }
 
-            // Update domain contacts in database
-            $domain->update([
-                'registrant_contact_id' => $savedContacts['registrant']->id,
-                'admin_contact_id' => $savedContacts['admin']->id,
-                'tech_contact_id' => $savedContacts['tech']->id,
-            ]);
+            // Update domain contact in database
+            $contactField = "{$type}_contact_id";
+            $domain->$contactField = $contact->id;
+            $domain->save();
 
             DB::commit();
 
-            return redirect()->route('client.domains', $domain)
-                ->with('success', 'Domain contacts updated successfully!');
+            return redirect()->back()
+                ->with('success', ucfirst($type).' contact updated successfully!');
 
         } catch (Exception $e) {
             DB::rollBack();
             Log::error('Domain contact update failed: '.$e->getMessage(), [
                 'domain' => $domain->name,
+                'type' => $type,
                 'user_id' => Auth::id(),
                 'error' => $e->getMessage(),
             ]);
 
             return redirect()->back()
-                ->with('error', 'Failed to update domain contacts. Please try again or contact support.');
+                ->with('error', 'Failed to update domain contact. Please try again or contact support.');
         } finally {
             $this->eppService->disconnect();
         }
