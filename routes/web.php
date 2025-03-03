@@ -25,7 +25,7 @@ Route::get('/shopping-cart', [CartController::class, 'cart'])->name('cart.index'
 
 Route::group(['middleware' => 'auth', 'prefix' => 'admin', 'as' => 'admin.'], function () {
     Route::resource('domain-pricings', DomainPricingController::class)->except('show');
-    Route::resource('domains', DomainController::class)->except(['show','edit']);
+    Route::resource('domains', DomainController::class)->except(['show','update']);
     Route::put('domains/{domain}/nameservers', [DomainRegistrationController::class, 'updateNameservers'])->name('nameservers.update');
 });
 
