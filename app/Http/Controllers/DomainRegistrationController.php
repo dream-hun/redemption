@@ -334,7 +334,7 @@ class DomainRegistrationController extends Controller
             // Create EPP frame for domain renewal
             $frame = $this->eppService->renewDomain(
                 $domain->name,
-                $domain->expires_at->format('Y-m-d'),
+                $domain->expires_at,
                 $request->period.'y'
             );
 

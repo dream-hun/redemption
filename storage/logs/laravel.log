@@ -1,45 +1,4 @@
-[2025-03-03 14:05:31] local.DEBUG: EPP Configuration: {"host":"registry.ricta.org.rw","username":"bluhub_rwf","port":"700","ssl":true,"debug":"not set"} 
-[2025-03-03 14:05:31] local.DEBUG: EPP Client Config: {"host":"registry.ricta.org.rw","port":700,"username":"bluhub_rwf","password":"CVQTsh8R64CCdt6G","ssl":true,"local_cert":"/home/hunter/Codes/redemption/storage/app/certificate/certificate.pem","verify_peer":false,"verify_peer_name":false,"verify_host":false,"debug":false} 
-[2025-03-03 14:05:31] local.DEBUG: Domain search request: {"domain":"mbabazi"} 
-[2025-03-03 14:05:31] local.DEBUG: Found TLDs: {"count":5,"tlds":[".rw",".co.rw",".org.rw",".ac.rw",".coop.rw"]} 
-[2025-03-03 14:05:31] local.DEBUG: Checking domain: {"domain":"mbabazi.rw"} 
-[2025-03-03 14:05:31] local.DEBUG: Starting domain check for domains: ["mbabazi.rw"] 
-[2025-03-03 14:05:34] local.DEBUG: Successfully connected to EPP server  
-[2025-03-03 14:05:34] local.DEBUG: Created check domain frame  
-[2025-03-03 14:05:34] local.DEBUG: Received response from EPP server {"success":true} 
-[2025-03-03 14:05:34] local.DEBUG: Processed domain result {"domain":"mbabazi.rw","available":true,"reason":null} 
-[2025-03-03 14:05:34] local.DEBUG: Successfully disconnected from EPP server  
-[2025-03-03 14:05:35] local.DEBUG: EPP results: {"results":{"mbabazi.rw":{"stdClass":{"name":"mbabazi.rw","available":true,"reason":null}}}} 
-[2025-03-03 14:05:35] local.DEBUG: Checking domain: {"domain":"mbabazi.co.rw"} 
-[2025-03-03 14:05:35] local.DEBUG: Starting domain check for domains: ["mbabazi.co.rw"] 
-[2025-03-03 14:05:38] local.DEBUG: Successfully connected to EPP server  
-[2025-03-03 14:05:38] local.DEBUG: Created check domain frame  
-[2025-03-03 14:05:38] local.DEBUG: Received response from EPP server {"success":true} 
-[2025-03-03 14:05:38] local.DEBUG: Processed domain result {"domain":"mbabazi.co.rw","available":true,"reason":null} 
-[2025-03-03 14:05:38] local.DEBUG: Successfully disconnected from EPP server  
-[2025-03-03 14:05:38] local.DEBUG: EPP results: {"results":{"mbabazi.co.rw":{"stdClass":{"name":"mbabazi.co.rw","available":true,"reason":null}}}} 
-[2025-03-03 14:05:38] local.DEBUG: Checking domain: {"domain":"mbabazi.org.rw"} 
-[2025-03-03 14:05:38] local.DEBUG: Starting domain check for domains: ["mbabazi.org.rw"] 
-[2025-03-03 14:05:42] local.DEBUG: Successfully connected to EPP server  
-[2025-03-03 14:05:42] local.DEBUG: Created check domain frame  
-[2025-03-03 14:05:42] local.DEBUG: Received response from EPP server {"success":true} 
-[2025-03-03 14:05:42] local.DEBUG: Processed domain result {"domain":"mbabazi.org.rw","available":true,"reason":null} 
-[2025-03-03 14:05:42] local.DEBUG: Successfully disconnected from EPP server  
-[2025-03-03 14:05:42] local.DEBUG: EPP results: {"results":{"mbabazi.org.rw":{"stdClass":{"name":"mbabazi.org.rw","available":true,"reason":null}}}} 
-[2025-03-03 14:05:42] local.DEBUG: Checking domain: {"domain":"mbabazi.ac.rw"} 
-[2025-03-03 14:05:42] local.DEBUG: Starting domain check for domains: ["mbabazi.ac.rw"] 
-[2025-03-03 14:05:46] local.DEBUG: Successfully connected to EPP server  
-[2025-03-03 14:05:46] local.DEBUG: Created check domain frame  
-[2025-03-03 14:05:46] local.DEBUG: Received response from EPP server {"success":true} 
-[2025-03-03 14:05:46] local.DEBUG: Processed domain result {"domain":"mbabazi.ac.rw","available":true,"reason":null} 
-[2025-03-03 14:05:46] local.DEBUG: Successfully disconnected from EPP server  
-[2025-03-03 14:05:46] local.DEBUG: EPP results: {"results":{"mbabazi.ac.rw":{"stdClass":{"name":"mbabazi.ac.rw","available":true,"reason":null}}}} 
-[2025-03-03 14:05:46] local.DEBUG: Checking domain: {"domain":"mbabazi.coop.rw"} 
-[2025-03-03 14:05:46] local.DEBUG: Starting domain check for domains: ["mbabazi.coop.rw"] 
-[2025-03-03 14:05:53] local.DEBUG: Successfully connected to EPP server  
-[2025-03-03 14:05:53] local.DEBUG: Created check domain frame  
-[2025-03-03 14:05:53] local.DEBUG: Received response from EPP server {"success":true} 
-[2025-03-03 14:05:53] local.DEBUG: Processed domain result {"domain":"mbabazi.coop.rw","available":true,"reason":null} 
-[2025-03-03 14:05:53] local.DEBUG: Successfully disconnected from EPP server  
-[2025-03-03 14:05:53] local.DEBUG: EPP results: {"results":{"mbabazi.coop.rw":{"stdClass":{"name":"mbabazi.coop.rw","available":true,"reason":null}}}} 
-[2025-03-03 14:05:53] local.DEBUG: Final results: {"count":5,"results":{"mbabazi.rw":{"stdClass":{"name":"mbabazi.rw","available":true,"reason":null,"tld":".rw","register_price":16000,"transfer_price":0,"renew_price":17000,"grace":30,"redemption_price":4000}},"mbabazi.co.rw":{"stdClass":{"name":"mbabazi.co.rw","available":true,"reason":null,"tld":".co.rw","register_price":12000,"transfer_price":0,"renew_price":13000,"grace":30,"redemption_price":4000}},"mbabazi.org.rw":{"stdClass":{"name":"mbabazi.org.rw","available":true,"reason":null,"tld":".org.rw","register_price":12000,"transfer_price":0,"renew_price":1300,"grace":30,"redemption_price":4000}},"mbabazi.ac.rw":{"stdClass":{"name":"mbabazi.ac.rw","available":true,"reason":null,"tld":".ac.rw","register_price":13000,"transfer_price":0,"renew_price":15000,"grace":30,"redemption_price":4000}},"mbabazi.coop.rw":{"stdClass":{"name":"mbabazi.coop.rw","available":true,"reason":null,"tld":".coop.rw","register_price":12000,"transfer_price":0,"renew_price":13000,"grace":30,"redemption_price":4000}}}} 
+[2025-03-03 16:09:04] local.DEBUG: EPP Configuration: {"host":"registry.ricta.org.rw","username":"bluhub_rwf","port":"700","ssl":true,"debug":"not set"} 
+[2025-03-03 16:09:04] local.DEBUG: EPP Client Config: {"host":"registry.ricta.org.rw","port":700,"username":"bluhub_rwf","password":"CVQTsh8R64CCdt6G","ssl":true,"local_cert":"/home/hunter/Codes/redemption/storage/app/certificate/certificate.pem","verify_peer":false,"verify_peer_name":false,"verify_host":false,"debug":false} 
+[2025-03-03 16:09:23] local.ERROR: EPP Connection failed: problem initializing socket:  code: [0]  
+[2025-03-03 16:09:23] local.ERROR: Domain renewal failed: problem initializing socket:  code: [0] {"domain":"blutest.co.rw","period":"2","user_id":1,"error":"problem initializing socket:  code: [0]"} 
