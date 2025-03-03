@@ -12,7 +12,7 @@
         "php": "^8.2",
         "ext-dom": "*",
         "africc/php-epp2": "^2.0",
-        "cknow/laravel-money": "^8.3",
+        "cknow/laravel-money": "^8.3.1",
         "laravel/framework": "^11.44.0",
         "laravel/tinker": "^2.10.1",
         "opcodesio/log-viewer": "^3.15"

@@ -70,25 +70,88 @@ class DomainRegistrationController extends Controller
             $savedContacts = [];
 
             foreach ($contactIds as $type => $id) {
-                $contactData = array_merge($contactInfo, [
-                    'id' => $id,
-                    'fax' => ['number' => '', 'ext' => ''],
-                    'disclose' => [],
-                ]);
+                // Check if a similar contact already exists for this user
+                $existingContact = Contact::where('user_id', Auth::id())
+                    ->where('contact_type', $type)
+                    ->where(function($query) use ($contactInfo) {
+                        $query->where('name', $contactInfo['name'])
+                            ->where('organization', $contactInfo['organization'])
+                            ->where('email', $contactInfo['email']);
+                    })->first();
 
-                Log::info('Creating new contact in EPP', [
-                    'domain' => '',
-                    'type' => $type,
-                    'contact_id' => $id,
-                    'contact_data' => array_merge($contactData, ['auth_info' => '[REDACTED]']),
-                ]);
+                if ($existingContact) {
+                    // Update existing contact in database
+                    $existingContact->update([
+                        'street1' => $contactInfo['streets'][0] ?? '',
+                        'street2' => $contactInfo['streets'][1] ?? '',
+                        'city' => $contactInfo['city'],
+                        'province' => $contactInfo['province'],
+                        'postal_code' => $contactInfo['postal_code'],
+                        'country_code' => $contactInfo['country_code'],
+                        'voice' => $contactInfo['voice'],
+                    ]);
 
-                $result = $this->eppService->createContacts($contactData);
-                
+                    $contactId = $existingContact->contact_id;
+                    $contact = $existingContact;
+
+                    // Update contact in EPP
+                    $contactData = array_merge($contactInfo, [
+                        'id' => $contactId,
+                        'fax' => ['number' => '', 'ext' => ''],
+                        'disclose' => [],
+                    ]);
+
+                    Log::info('Updating existing contact in EPP', [
+                        'domain' => '',
+                        'type' => $type,
+                        'contact_id' => $contactId,
+                        'contact_data' => array_merge($contactData, ['auth_info' => '[REDACTED]']),
+                    ]);
+
+                    $result = $this->eppService->updateContact($contactId, $contactData);
+                } else {
+                    // Create new contact if no matching contact exists
+                    $contactId = $type.'-'.Str::random(8);
+                    $contactData = array_merge($contactInfo, [
+                        'id' => $contactId,
+                        'fax' => ['number' => '', 'ext' => ''],
+                        'disclose' => [],
+                    ]);
+
+                    Log::info('Creating new contact in EPP', [
+                        'domain' => '',
+                        'type' => $type,
+                        'contact_id' => $contactId,
+                        'contact_data' => array_merge($contactData, ['auth_info' => '[REDACTED]']),
+                    ]);
+
+                    $result = $this->eppService->createContacts($contactData);
+
+                    // Save new contact to database
+                    $contact = Contact::create([
+                        'contact_id' => $contactId,
+                        'contact_type' => $type,
+                        'name' => $contactInfo['name'],
+                        'organization' => $contactInfo['organization'],
+                        'street1' => $contactInfo['streets'][0] ?? '',
+                        'street2' => $contactInfo['streets'][1] ?? '',
+                        'city' => $contactInfo['city'],
+                        'province' => $contactInfo['province'],
+                        'postal_code' => $contactInfo['postal_code'],
+                        'country_code' => $contactInfo['country_code'],
+                        'voice' => $contactInfo['voice'],
+                        'email' => $contactInfo['email'],
+                        'auth_info' => $result['auth'],
+                        'disclose' => [],
+                        'user_id' => Auth::id(),
+                    ]);
+                }
+
                 // Log the EPP frame before sending
-                Log::info('EPP Contact Creation Frame', [
+                Log::info('EPP Contact Operation Frame', [
                     'domain' => '',
                     'type' => $type,
+                    'operation' => $existingContact ? 'update' : 'create',
                     'frame' => (string) $result['frame'],
                 ]);
 
@@ -96,9 +159,10 @@ class DomainRegistrationController extends Controller
 
                 // Log the EPP response
                 if ($response) {
-                    Log::info('EPP Contact Creation Response', [
+                    Log::info('EPP Contact Operation Response', [
                         'domain' => '',
                         'type' => $type,
+                        'operation' => $existingContact ? 'update' : 'create',
                         'success' => $response->success(),
                         'results' => array_map(function($result) {
                             return [
@@ -111,32 +175,21 @@ class DomainRegistrationController extends Controller
                 }
 
                 if (!$response || !$response->success()) {
-                    throw new Exception("Failed to create {$type} contact");
+                    throw new Exception("Failed to " . ($existingContact ? "update" : "create") . " {$type} contact");
                 }
 
+                Log::info('Successfully ' . ($existingContact ? 'updated' : 'created') . ' contact in EPP', [
+                    'domain' => '',
+                    'type' => $type,
+                    'contact_id' => $contactId,
+                ]);
+
                 $contacts[$type] = [
-                    'id' => $id,
+                    'id' => $contactId,
                     'auth_info' => $result['auth'],
                 ];
 
-                // Save contact to database
-                $savedContacts[$type] = Contact::create([
-                    'contact_id' => $id,
-                    'contact_type' => $type,
-                    'name' => $contactInfo['name'],
-                    'organization' => $contactInfo['organization'],
-                    'street1' => $contactInfo['streets'][0] ?? '',
-                    'street2' => $contactInfo['streets'][1] ?? '',
-                    'city' => $contactInfo['city'],
-                    'province' => $contactInfo['province'],
-                    'postal_code' => $contactInfo['postal_code'],
-                    'country_code' => $contactInfo['country_code'],
-                    'voice' => $contactInfo['voice'],
-                    'email' => $contactInfo['email'],
-                    'auth_info' => $result['auth'],
-                    'disclose' => [],
-                    'user_id' => Auth::id(),
-                ]);
+                $savedContacts[$type] = $contact;
             }
 
             // Register each domain
@@ -400,28 +453,88 @@ class DomainRegistrationController extends Controller
                     ->with('error', 'You do not have permission to update this domain.');
             }
 
-            // Create new contact
-            $contactInfo = $request->contact;
-            $contactId = $type.'-'.Str::random(8);
-            $contactData = array_merge($contactInfo, [
-                'id' => $contactId,
-                'fax' => ['number' => '', 'ext' => ''],
-                'disclose' => [],
-            ]);
+            // Check if a similar contact already exists for this user
+            $existingContact = Contact::where('user_id', Auth::id())
+                ->where('contact_type', $type)
+                ->where(function($query) use ($request) {
+                    $query->where('name', $request->contact['name'])
+                        ->where('organization', $request->contact['organization'])
+                        ->where('email', $request->contact['email']);
+                })->first();
 
-            Log::info('Creating new contact in EPP', [
-                'domain' => $domain->name,
-                'type' => $type,
-                'contact_id' => $contactId,
-                'contact_data' => array_merge($contactData, ['auth_info' => '[REDACTED]']),
-            ]);
+            if ($existingContact) {
+                // Update existing contact in database
+                $existingContact->update([
+                    'street1' => $request->contact['streets'][0] ?? '',
+                    'street2' => $request->contact['streets'][1] ?? '',
+                    'city' => $request->contact['city'],
+                    'province' => $request->contact['province'],
+                    'postal_code' => $request->contact['postal_code'],
+                    'country_code' => $request->contact['country_code'],
+                    'voice' => $request->contact['voice'],
+                ]);
 
-            $result = $this->eppService->createContacts($contactData);
-            
+                $contactId = $existingContact->contact_id;
+                $contact = $existingContact;
+
+                // Update contact in EPP
+                $contactData = array_merge($request->contact, [
+                    'id' => $contactId,
+                    'fax' => ['number' => '', 'ext' => ''],
+                    'disclose' => [],
+                ]);
+
+                Log::info('Updating existing contact in EPP', [
+                    'domain' => $domain->name,
+                    'type' => $type,
+                    'contact_id' => $contactId,
+                    'contact_data' => array_merge($contactData, ['auth_info' => '[REDACTED]']),
+                ]);
+
+                $result = $this->eppService->updateContact($contactId, $contactData);
+            } else {
+                // Create new contact if no matching contact exists
+                $contactId = $type.'-'.Str::random(8);
+                $contactData = array_merge($request->contact, [
+                    'id' => $contactId,
+                    'fax' => ['number' => '', 'ext' => ''],
+                    'disclose' => [],
+                ]);
+
+                Log::info('Creating new contact in EPP', [
+                    'domain' => $domain->name,
+                    'type' => $type,
+                    'contact_id' => $contactId,
+                    'contact_data' => array_merge($contactData, ['auth_info' => '[REDACTED]']),
+                ]);
+
+                $result = $this->eppService->createContacts($contactData);
+
+                // Save new contact to database
+                $contact = Contact::create([
+                    'contact_id' => $contactId,
+                    'contact_type' => $type,
+                    'name' => $request->contact['name'],
+                    'organization' => $request->contact['organization'],
+                    'street1' => $request->contact['streets'][0] ?? '',
+                    'street2' => $request->contact['streets'][1] ?? '',
+                    'city' => $request->contact['city'],
+                    'province' => $request->contact['province'],
+                    'postal_code' => $request->contact['postal_code'],
+                    'country_code' => $request->contact['country_code'],
+                    'voice' => $request->contact['voice'],
+                    'email' => $request->contact['email'],
+                    'auth_info' => $result['auth'],
+                    'disclose' => [],
+                    'user_id' => Auth::id(),
+                ]);
+            }
+
             // Log the EPP frame before sending
-            Log::info('EPP Contact Creation Frame', [
+            Log::info('EPP Contact Operation Frame', [
                 'domain' => $domain->name,
                 'type' => $type,
+                'operation' => $existingContact ? 'update' : 'create',
                 'frame' => (string) $result['frame'],
             ]);
 
@@ -429,9 +542,10 @@ class DomainRegistrationController extends Controller
 
             // Log the EPP response
             if ($response) {
-                Log::info('EPP Contact Creation Response', [
+                Log::info('EPP Contact Operation Response', [
                     'domain' => $domain->name,
                     'type' => $type,
+                    'operation' => $existingContact ? 'update' : 'create',
                     'success' => $response->success(),
                     'results' => array_map(function($result) {
                         return [
@@ -444,39 +558,13 @@ class DomainRegistrationController extends Controller
             }
 
             if (!$response || !$response->success()) {
-                throw new Exception("Failed to create {$type} contact");
+                throw new Exception("Failed to " . ($existingContact ? "update" : "create") . " {$type} contact");
             }
 
-            Log::info('Successfully created contact in EPP', [
+            Log::info('Successfully ' . ($existingContact ? 'updated' : 'created') . ' contact in EPP', [
                 'domain' => $domain->name,
                 'type' => $type,
                 'contact_id' => $contactId,
-            ]);
-
-            // Save contact to database
-            $contact = Contact::create([
-                'contact_id' => $contactId,
-                'contact_type' => $type,
-                'name' => $contactInfo['name'],
-                'organization' => $contactInfo['organization'],
-                'street1' => $contactInfo['streets'][0] ?? '',
-                'street2' => $contactInfo['streets'][1] ?? '',
-                'city' => $contactInfo['city'],
-                'province' => $contactInfo['province'],
-                'postal_code' => $contactInfo['postal_code'],
-                'country_code' => $contactInfo['country_code'],
-                'voice' => $contactInfo['voice'],
-                'email' => $contactInfo['email'],
-                'auth_info' => $result['auth'],
-                'disclose' => [],
-                'user_id' => Auth::id(),
-            ]);
-
-            Log::info('Successfully created contact in database', [
-                'domain' => $domain->name,
-                'type' => $type,
-                'contact_id' => $contactId,
-                'database_id' => $contact->id,
             ]);
 
             // Update domain contact in EPP
