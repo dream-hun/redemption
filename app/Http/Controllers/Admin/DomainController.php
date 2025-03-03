@@ -34,6 +34,15 @@ class DomainController extends Controller
         return view('admin.domains.edit', compact('domain', 'countries', 'contacts'));
     }
 
+    public function show(Domain $domain)
+    {
+        abort_if(Gate::denies('domain_show'), Response::HTTP_FORBIDDEN, '403 Forbidden');
+
+        $domain->load('registrantContact', 'adminContact', 'techContact', 'owner');
+
+        return view('admin.domains.show', compact('domain'));
+    }
+
     public function updateContact(Request $request, Domain $domain, $type, $contactId)
     {
         abort_if(Gate::denies('domain_edit'), Response::HTTP_FORBIDDEN, '403 Forbidden');
