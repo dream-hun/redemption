@@ -76,10 +76,41 @@ class DomainRegistrationController extends Controller
                     'disclose' => [],
                 ]);
 
+                Log::info('Creating new contact in EPP', [
+                    'domain' => '',
+                    'type' => $type,
+                    'contact_id' => $id,
+                    'contact_data' => array_merge($contactData, ['auth_info' => '[REDACTED]']),
+                ]);
+
                 $result = $this->eppService->createContacts($contactData);
+                
+                // Log the EPP frame before sending
+                Log::info('EPP Contact Creation Frame', [
+                    'domain' => '',
+                    'type' => $type,
+                    'frame' => (string) $result['frame'],
+                ]);
+
                 $response = $this->eppService->getClient()->request($result['frame']);
 
-                if (! $response || ! $response->success()) {
+                // Log the EPP response
+                if ($response) {
+                    Log::info('EPP Contact Creation Response', [
+                        'domain' => '',
+                        'type' => $type,
+                        'success' => $response->success(),
+                        'results' => array_map(function($result) {
+                            return [
+                                'code' => $result->code(),
+                                'message' => $result->message(),
+                            ];
+                        }, $response->results()),
+                        'data' => $response->data(),
+                    ]);
+                }
+
+                if (!$response || !$response->success()) {
                     throw new Exception("Failed to create {$type} contact");
                 }
 
@@ -325,8 +356,20 @@ class DomainRegistrationController extends Controller
 
     public function updateContacts(Domain $domain, $type, Request $request)
     {
+        // Log the start of contact update
+        Log::info('Starting contact update', [
+            'domain' => $domain->name,
+            'type' => $type,
+            'user_id' => Auth::id(),
+        ]);
+
         // Validate contact type
         if (!in_array($type, ['registrant', 'admin', 'tech'])) {
+            Log::warning('Invalid contact type attempted', [
+                'domain' => $domain->name,
+                'type' => $type,
+                'user_id' => Auth::id(),
+            ]);
             return redirect()->back()->with('error', 'Invalid contact type.');
         }
 
@@ -347,6 +390,12 @@ class DomainRegistrationController extends Controller
 
             // Check if the domain belongs to the current user
             if ($domain->owner_id !== Auth::id()) {
+                Log::warning('Unauthorized contact update attempt', [
+                    'domain' => $domain->name,
+                    'type' => $type,
+                    'user_id' => Auth::id(),
+                    'owner_id' => $domain->owner_id,
+                ]);
                 return redirect()->back()
                     ->with('error', 'You do not have permission to update this domain.');
             }
@@ -360,12 +409,49 @@ class DomainRegistrationController extends Controller
                 'disclose' => [],
             ]);
 
+            Log::info('Creating new contact in EPP', [
+                'domain' => $domain->name,
+                'type' => $type,
+                'contact_id' => $contactId,
+                'contact_data' => array_merge($contactData, ['auth_info' => '[REDACTED]']),
+            ]);
+
             $result = $this->eppService->createContacts($contactData);
+            
+            // Log the EPP frame before sending
+            Log::info('EPP Contact Creation Frame', [
+                'domain' => $domain->name,
+                'type' => $type,
+                'frame' => (string) $result['frame'],
+            ]);
+
             $response = $this->eppService->getClient()->request($result['frame']);
+
+            // Log the EPP response
+            if ($response) {
+                Log::info('EPP Contact Creation Response', [
+                    'domain' => $domain->name,
+                    'type' => $type,
+                    'success' => $response->success(),
+                    'results' => array_map(function($result) {
+                        return [
+                            'code' => $result->code(),
+                            'message' => $result->message(),
+                        ];
+                    }, $response->results()),
+                    'data' => $response->data(),
+                ]);
+            }
 
             if (!$response || !$response->success()) {
                 throw new Exception("Failed to create {$type} contact");
             }
+
+            Log::info('Successfully created contact in EPP', [
+                'domain' => $domain->name,
+                'type' => $type,
+                'contact_id' => $contactId,
+            ]);
 
             // Save contact to database
             $contact = Contact::create([
@@ -386,6 +472,13 @@ class DomainRegistrationController extends Controller
                 'user_id' => Auth::id(),
             ]);
 
+            Log::info('Successfully created contact in database', [
+                'domain' => $domain->name,
+                'type' => $type,
+                'contact_id' => $contactId,
+                'database_id' => $contact->id,
+            ]);
+
             // Update domain contact in EPP
             $adminContacts = [];
             $techContacts = [];
@@ -395,6 +488,13 @@ class DomainRegistrationController extends Controller
             } elseif ($type === 'tech') {
                 $techContacts = [$contactId];
             }
+
+            Log::info('Updating domain contacts in EPP', [
+                'domain' => $domain->name,
+                'type' => $type,
+                'admin_contacts' => $adminContacts,
+                'tech_contacts' => $techContacts,
+            ]);
 
             $frame = $this->eppService->updateDomain(
                 $domain->name,
@@ -406,18 +506,61 @@ class DomainRegistrationController extends Controller
                 []  // No host attributes to remove
             );
 
+            // Log the EPP frame before sending
+            Log::info('EPP Domain Update Frame', [
+                'domain' => $domain->name,
+                'type' => $type,
+                'frame' => (string) $frame['frame'],
+            ]);
+
             $response = $this->eppService->getClient()->request($frame['frame']);
+
+            // Log the EPP response
+            if ($response) {
+                Log::info('EPP Domain Update Response', [
+                    'domain' => $domain->name,
+                    'type' => $type,
+                    'success' => $response->success(),
+                    'results' => array_map(function($result) {
+                        return [
+                            'code' => $result->code(),
+                            'message' => $result->message(),
+                        ];
+                    }, $response->results()),
+                    'data' => $response->data(),
+                ]);
+            }
 
             if (!$response || !$response->success()) {
                 throw new Exception('Failed to update domain contact in registry');
             }
+
+            Log::info('Successfully updated domain contacts in EPP', [
+                'domain' => $domain->name,
+                'type' => $type,
+            ]);
 
             // Update domain contact in database
             $contactField = "{$type}_contact_id";
             $domain->$contactField = $contact->id;
             $domain->save();
 
+            Log::info('Successfully updated domain contact in database', [
+                'domain' => $domain->name,
+                'type' => $type,
+                'contact_field' => $contactField,
+                'contact_id' => $contact->id,
+            ]);
+
             DB::commit();
+
+            Log::info('Contact update completed successfully', [
+                'domain' => $domain->name,
+                'type' => $type,
+                'contact_id' => $contactId,
+                'database_id' => $contact->id,
+                'user_id' => Auth::id(),
+            ]);
 
             return redirect()->back()
                 ->with('success', ucfirst($type).' contact updated successfully!');
@@ -429,6 +572,7 @@ class DomainRegistrationController extends Controller
                 'type' => $type,
                 'user_id' => Auth::id(),
                 'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
             ]);
 
             return redirect()->back()
