@@ -76,86 +76,118 @@ class PermissionsTableSeeder extends Seeder
             ],
             [
                 'id' => 17,
-                'title' => 'service_create',
+                'title' => 'domain_pricing_create',
             ],
             [
                 'id' => 18,
-                'title' => 'service_edit',
+                'title' => 'domain_pricing_edit',
             ],
             [
                 'id' => 19,
-                'title' => 'service_show',
+                'title' => 'domain_pricing_delete',
             ],
             [
                 'id' => 20,
-                'title' => 'service_delete',
+                'title' => 'domain_pricing_access',
             ],
             [
                 'id' => 21,
-                'title' => 'service_access',
+                'title' => 'contact_create',
             ],
             [
                 'id' => 22,
-                'title' => 'gallery_create',
+                'title' => 'contact_edit',
             ],
             [
                 'id' => 23,
-                'title' => 'gallery_edit',
+                'title' => 'contact_show',
             ],
             [
                 'id' => 24,
-                'title' => 'gallery_show',
+                'title' => 'contact_delete',
             ],
             [
                 'id' => 25,
-                'title' => 'gallery_delete',
+                'title' => 'contact_access',
             ],
             [
                 'id' => 26,
-                'title' => 'gallery_access',
+                'title' => 'domain_edit',
             ],
             [
                 'id' => 27,
-                'title' => 'booking_create',
+                'title' => 'domain_show',
             ],
             [
                 'id' => 28,
-                'title' => 'booking_edit',
+                'title' => 'domain_delete',
             ],
             [
                 'id' => 29,
-                'title' => 'booking_show',
+                'title' => 'domain_access',
             ],
             [
                 'id' => 30,
-                'title' => 'booking_delete',
+                'title' => 'dns_record_create',
             ],
             [
                 'id' => 31,
-                'title' => 'booking_access',
+                'title' => 'dns_record_edit',
             ],
             [
                 'id' => 32,
-                'title' => 'setting_create',
+                'title' => 'dns_record_show',
             ],
             [
                 'id' => 33,
-                'title' => 'setting_edit',
+                'title' => 'dns_record_delete',
             ],
             [
                 'id' => 34,
-                'title' => 'setting_show',
+                'title' => 'dns_record_access',
             ],
             [
                 'id' => 35,
-                'title' => 'setting_delete',
+                'title' => 'setting_create',
             ],
             [
                 'id' => 36,
-                'title' => 'setting_access',
+                'title' => 'setting_edit',
             ],
             [
                 'id' => 37,
+                'title' => 'setting_show',
+            ],
+            [
+                'id' => 38,
+                'title' => 'setting_delete',
+            ],
+            [
+                'id' => 39,
+                'title' => 'setting_access',
+            ],
+            [
+                'id' => 40,
+                'title' => 'nameserver_create',
+            ],
+            [
+                'id' => 41,
+                'title' => 'nameserver_edit',
+            ],
+            [
+                'id' => 42,
+                'title' => 'nameserver_show',
+            ],
+            [
+                'id' => 43,
+                'title' => 'nameserver_delete',
+            ],
+            [
+                'id' => 44,
+                'title' => 'nameserver_access',
+            ],
+            [
+                'id' => 45,
                 'title' => 'profile_password_edit',
             ],
         ];

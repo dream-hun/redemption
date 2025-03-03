@@ -64,22 +64,27 @@
                                 {{ $domainPricing->tld ?? '' }}
                             </td>
                             <td>
-                                {{ $domainPricing->register_price ?? '' }}
+                                {{ $domainPricing->formatedRegisterPrice() ?? '' }}
                             </td>
                             <td>
-                                {{ $domainPricing->transfer_price ?? '' }}
+                                {{ $domainPricing->formatedTransferPrice() ?? '' }}
                             </td>
                             <td>
-                                {{ $domainPricing->renew_price ?? '' }}
+                                {{ $domainPricing->formatedRenewPrice() ?? '' }}
                             </td>
                             <td>
                                 {{ $domainPricing->grace ?? '' }}
                             </td>
                             <td>
-                                {{ $domainPricing->redemption_price ?? '' }}
+                                {{ $domainPricing->formatedRedemptionPrice() ?? '' }}
                             </td>
                             <td>
-                                {{ App\Models\DomainPricing::STATUS_SELECT[$domainPricing->status] ?? '' }}
+                                @php
+                                    $statusClass = $domainPricing->status == 'active' ? 'badge-success' : 'badge-danger';
+                                @endphp
+                                <span class="badge {{ $statusClass }}">
+                                    {{ App\Models\DomainPricing::STATUS_SELECT[$domainPricing->status] ?? '' }}
+                                </span>
                             </td>
                             <td>
 

@@ -9,6 +9,13 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Domain extends Model
 {
+    public const STATUS_SELECT = [
+        'active' => 'Active',
+        'pending' => 'Pending',
+        'expired' => 'Expired',
+        'suspended' => 'Suspended',
+    ];
+
     protected $fillable = [
         'name',
         'auth_code',

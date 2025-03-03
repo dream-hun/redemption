@@ -10,7 +10,7 @@ use Illuminate\Http\Request;
 use Illuminate\View\View;
 use Log;
 
-class DomainController extends Controller
+class SearchDomainController extends Controller
 {
     private EppService $eppService;
 

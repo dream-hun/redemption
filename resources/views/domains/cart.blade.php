@@ -1,11 +1,5 @@
-<x-app-layout>
-    <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            {{ __('Cart') }}
-        </h2>
-    </x-slot>
-    <div class="py-24">
-
+@extends('layouts.front')
+@section('content')
         <div class="max-w-7xl mx-auto">
             <div class="mx-auto max-w-2xl px-4 pb-24 pt-16 sm:px-6 lg:max-w-7xl lg:px-8">
                 <h1 class="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">Shopping Cart</h1>
@@ -139,6 +133,7 @@
             </div>
         </div>
     </div>
+@endsection
 
 
     <script>

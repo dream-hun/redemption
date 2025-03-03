@@ -1,4 +1,4 @@
-<aside class="main-sidebar sidebar-dark-primary elevation-4">
+<aside class="main-sidebar sidebar-dark-primary elevation-4" style="height:auto !important;">
     <!-- Brand Logo -->
     <a href="{{ route('dashboard')}}" class="brand-link">
         <img src="{{ asset('logo.webp') }}" alt="AdminLTE Logo" class="brand-image img-circle elevation-3"
@@ -11,7 +11,7 @@
         <!-- Sidebar user panel (optional) -->
         <div class="user-panel mt-3 pb-3 mb-3 d-flex">
             <div class="image">
-                <img src="dist/img/user2-160x160.jpg" class="img-circle elevation-2" alt="User Image">
+                <img src="{{ Auth::user()->getGravatarAttribute()}}" class="img-circle elevation-2" alt="User Image">
             </div>
             <div class="info">
                 <a href="#" class="d-block">{{ Auth::user()->name}}</a>
@@ -36,31 +36,36 @@
             <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu"
                 data-accordion="false">
 
-                <li class="nav-item menu-open">
-                    <a href="{{ route('dashboard')}}" class="nav-link active">
+                <li class="nav-item">
+                    <a href="{{ route('dashboard')}}" class="nav-link {{request()->is('dashboard') ? 'active' : ''}}">
                         <i class="bi bi-speedometer"></i>
                         <p>
                             Dashboard
                         </p>
                     </a>
                 </li>
+                @can('domain_pricing_access')
                 <li class="nav-item">
-                    <a href="{{ route('domainsPricing.index')}}" class="nav-link">
+                    <a href="{{ route('admin.domain-pricings.index')}}" class="nav-link {{request()->is('admin/domain-pricings*') ? 'active' : ''}}">
                         <i class="bi bi-cash-coin"></i>
                         <p>
                             Domain Pricing
                         </p>
                     </a>
                 </li>
+                @endcan
 
+                @can('domain_access')
                 <li class="nav-item">
-                    <a href="#" class="nav-link">
+                    <a href="{{ route('admin.domains.index')}}" class="nav-link {{request()->is('admin/domains*') ? 'active' : ''}}">
                         <i class="bi bi-globe2"></i>
                         <p>
-                            Domain
+                           Domains
                         </p>
                     </a>
                 </li>
+                @endcan
+
             </ul>
         </nav>
         <!-- /.sidebar-menu -->

@@ -8,11 +8,11 @@ use Illuminate\Database\Eloquent\Model;
 
 class DomainPricing extends Model
 {
-
     public const STATUS_SELECT = [
-        'active'   => 'Active',
+        'active' => 'Active',
         'inactive' => 'Inactive',
     ];
+
     protected $casts = [
         'register_price' => 'integer',
         'transfer_price' => 'integer',
@@ -31,28 +31,28 @@ class DomainPricing extends Model
         'status',
     ];
 
-    public function formatedRegisterPrice(): string
+    public function formatedRegisterPrice(): Money
     {
         return Money::RWF($this->register_price);
     }
 
-    public function formatedTransferPrice(): string
+    public function formatedTransferPrice(): Money
     {
         return Money::RWF($this->transfer_price);
     }
 
-    public function formatedRenewPrice(): string
+    public function formatedRenewPrice()
     {
         return Money::RWF($this->renew_price);
     }
 
-    public function formatedRedemptionPrice(): string
+    public function formatedRedemptionPrice()
     {
         return Money::RWF($this->redemption_price);
     }
+
     protected function serializeDate(DateTimeInterface $date)
     {
         return $date->format('Y-m-d H:i:s');
     }
-
 }

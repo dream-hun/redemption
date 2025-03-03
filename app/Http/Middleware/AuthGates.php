@@ -16,7 +16,7 @@ class AuthGates
             return $next($request);
         }
 
-        $roles            = Role::with('permissions')->get();
+        $roles = Role::with('permissions')->get();
         $permissionsArray = [];
 
         foreach ($roles as $role) {

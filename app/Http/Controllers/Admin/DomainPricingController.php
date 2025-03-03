@@ -7,7 +7,6 @@ use App\Http\Requests\Admin\StoreDomainPricingRequest;
 use App\Http\Requests\Admin\UpdateDomainPricingRequest;
 use App\Models\DomainPricing;
 use Gate;
-use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
 class DomainPricingController extends Controller
@@ -46,7 +45,7 @@ class DomainPricingController extends Controller
     {
         $domainPricing->update($request->all());
 
-        return redirect()->route('admin.domain-pricings.index');
+        return redirect()->route('admin.domain-pricings.index')->withSuccess('Domain Pricing updated successfully');
     }
 
     public function destroy(DomainPricing $domainPricing)

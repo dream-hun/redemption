@@ -1,25 +1,32 @@
 <?php
 
+use App\Http\Controllers\Admin\DomainController;
+use App\Http\Controllers\Admin\DomainPricingController;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\ClientDomainsController;
-use App\Http\Controllers\DomainController;
 use App\Http\Controllers\DomainRegistrationController;
 use App\Http\Controllers\HostingController;
 use App\Http\Controllers\LandingController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\SearchDomainController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', LandingController::class)->name('home');
 
 Route::get('/hosting', [HostingController::class, 'index'])->name('hosting.index');
 
-Route::get('/domain-checker', [DomainController::class, 'index'])->name('domains.index');
-Route::post('/check-domains', [DomainController::class, 'search'])->name('domain.check');
+Route::get('/domain-checker', [SearchDomainController::class, 'index'])->name('domains.index');
+Route::post('/check-domains', [SearchDomainController::class, 'search'])->name('domain.check');
 
 Route::post('/cart/update-period', [CartController::class, 'updatePeriod'])->name('cart.update-period');
 Route::post('/cart/remove-item', [CartController::class, 'removeItem'])->name('cart.remove-item');
 Route::post('/add-to-cart', [CartController::class, 'addToCart'])->name('cart.add')->middleware('web');
 Route::get('/shopping-cart', [CartController::class, 'cart'])->name('cart.index')->middleware('auth');
+
+Route::group(['middleware' => 'auth', 'prefix' => 'admin', 'as' => 'admin.'], function () {
+    Route::resource('domain-pricings', DomainPricingController::class)->except('show');
+    Route::resource('domains', DomainController::class)->except('show');
+});
 
 Route::get('/dashboard', function () {
 

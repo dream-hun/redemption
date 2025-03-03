@@ -1,6 +1,14 @@
 @extends('layouts.admin')
 @section('content')
 
+    <div style="margin-bottom: 10px;" class="row">
+        <div class="col-lg-12">
+            <a class="btn btn-success" href="{{ route('domains.index') }}">
+               Register Domain
+            </a>
+        </div>
+    </div>
+
 <div class="card">
     <div class="card-header">
         {{ trans('cruds.domain.title_singular') }} {{ trans('global.list') }}
@@ -11,12 +19,7 @@
             <table class=" table table-bordered table-striped table-hover datatable datatable-Domain">
                 <thead>
                     <tr>
-                        <th width="10">
 
-                        </th>
-                        <th>
-                            {{ trans('cruds.domain.fields.id') }}
-                        </th>
                         <th>
                             {{ trans('cruds.domain.fields.name') }}
                         </th>
@@ -44,12 +47,6 @@
                     @foreach($domains as $key => $domain)
                         <tr data-entry-id="{{ $domain->id }}">
                             <td>
-
-                            </td>
-                            <td>
-                                {{ $domain->id ?? '' }}
-                            </td>
-                            <td>
                                 {{ $domain->name ?? '' }}
                             </td>
                             <td>
@@ -69,17 +66,14 @@
                                 {{ $domain->owner->name ?? '' }}
                             </td>
                             <td>
-                                @can('domain_show')
-                                    <a class="btn btn-xs btn-primary" href="{{ route('admin.domains.show', $domain->id) }}">
-                                        {{ trans('global.view') }}
-                                    </a>
-                                @endcan
+
 
                                 @can('domain_edit')
                                     <a class="btn btn-xs btn-info" href="{{ route('admin.domains.edit', $domain->id) }}">
-                                        {{ trans('global.edit') }}
+                                    Manage Domain
                                     </a>
                                 @endcan
+
 
                                 @can('domain_delete')
                                     <form action="{{ route('admin.domains.destroy', $domain->id) }}" method="POST" onsubmit="return confirm('{{ trans('global.areYouSure') }}');" style="display: inline-block;">
