@@ -25,7 +25,8 @@ Route::get('/shopping-cart', [CartController::class, 'cart'])->name('cart.index'
 
 Route::group(['middleware' => 'auth', 'prefix' => 'admin', 'as' => 'admin.'], function () {
     Route::resource('domain-pricings', DomainPricingController::class)->except('show');
-    Route::resource('domains', DomainController::class);
+    Route::resource('domains', DomainController::class)->except(['show','edit']);
+    Route::put('domains/{domain}/nameservers', [DomainRegistrationController::class, 'updateNameservers'])->name('nameservers.update');
 });
 
 Route::get('/dashboard', function () {
@@ -47,8 +48,7 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/my-domains/{domain}/edit-nameservers', [DomainRegistrationController::class, 'editNameservers'])
         ->name('client.domains.edit-nameservers');
-    Route::put('/my-domains/{domain}/nameservers', [DomainRegistrationController::class, 'updateNameservers'])
-        ->name('client.domains.update-nameservers');
+
 
     Route::get('/my-domains/{domain}/renew', [DomainRegistrationController::class, 'renewForm'])
         ->name('client.domains.renew');

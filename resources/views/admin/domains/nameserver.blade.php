@@ -5,7 +5,7 @@
         </div>
         <div class="card-body">
             <p class="text-muted">Enter at least 2 nameservers. You can add up to 13 nameservers.</p>
-            <form action="{{ route('client.domains.update-nameservers', $domain) }}" method="POST">
+            <form action="{{ route('admin.nameservers.update', $domain) }}" method="POST">
                 @csrf
                 @method('PUT')
 

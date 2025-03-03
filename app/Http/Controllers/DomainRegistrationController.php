@@ -534,7 +534,7 @@ class DomainRegistrationController extends Controller
                 'nameservers' => $newNameservers,
             ]);
 
-            return redirect()->route('client.domains', $domain)
+            return redirect()->route('admin.domains.index')
                 ->with('success', 'Domain nameservers updated successfully!');
 
         } catch (Exception $e) {
