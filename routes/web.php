@@ -27,6 +27,8 @@ Route::group(['middleware' => 'auth', 'prefix' => 'admin', 'as' => 'admin.'], fu
     Route::resource('domain-pricings', DomainPricingController::class)->except('show');
     Route::resource('domains', DomainController::class)->except(['show','update']);
     Route::put('domains/{domain}/nameservers', [DomainRegistrationController::class, 'updateNameservers'])->name('nameservers.update');
+    Route::put('domains/{domain}/contacts', [DomainRegistrationController::class, 'updateContacts'])
+    ->name('contacts.update');
 });
 
 Route::get('/dashboard', function () {
@@ -43,11 +45,9 @@ Route::middleware('auth')->group(function () {
     // Domain Management
     Route::get('/my-domains/{domain}/edit-contacts', [DomainRegistrationController::class, 'editContacts'])
         ->name('client.domains.edit-contacts');
-    Route::put('/my-domains/{domain}/contacts', [DomainRegistrationController::class, 'updateContacts'])
-        ->name('client.domains.update-contacts');
 
-    Route::get('/my-domains/{domain}/edit-nameservers', [DomainRegistrationController::class, 'editNameservers'])
-        ->name('client.domains.edit-nameservers');
+
+
 
 
     Route::get('/my-domains/{domain}/renew', [DomainRegistrationController::class, 'renewForm'])
