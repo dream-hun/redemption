@@ -22,10 +22,15 @@ class CartComponent extends Component
 
     public function refreshCart()
     {
-        $this->items = Cart::where(function($query) {
-            $query->where('user_id', Auth::id())
-                  ->orWhere('session_id', session()->getId());
-        })->get();
+        if (Auth::check()) {
+            // For authenticated users, show their cart items
+            $this->items = Cart::where('user_id', Auth::id())->get();
+        } else {
+            // For guests, show items matching their current session
+            $this->items = Cart::where('session_id', session()->getId())
+                              ->whereNull('user_id')
+                              ->get();
+        }
         
         $this->calculateTotals();
     }
@@ -33,10 +38,13 @@ class CartComponent extends Component
     private function calculateTotals()
     {
         if ($this->items->isNotEmpty()) {
-            $firstItem = $this->items->first();
-            $this->subtotalAmount = $firstItem->subTotal()->getAmount();
-            $this->taxAmount = $firstItem->getTax()->getAmount();
-            $this->totalAmount = $firstItem->getTotal()->getAmount();
+            $subtotal = $this->items->sum(function($item) {
+                return $item->price * $item->period;
+            });
+            
+            $this->subtotalAmount = $subtotal;
+            $this->taxAmount = $subtotal * 0.18; // 18% VAT
+            $this->totalAmount = $subtotal + $this->taxAmount;
         } else {
             $this->subtotalAmount = 0;
             $this->taxAmount = 0;
@@ -61,7 +69,14 @@ class CartComponent extends Component
 
     public function updatePeriod($uuid, $period)
     {
-        $item = Cart::where('uuid', $uuid)->first();
+        $item = Cart::where('uuid', $uuid)
+            ->when(Auth::check(), function($query) {
+                return $query->where('user_id', Auth::id());
+            }, function($query) {
+                return $query->where('session_id', session()->getId())
+                           ->whereNull('user_id');
+            })
+            ->first();
         
         if ($item) {
             $item->update([
@@ -75,7 +90,14 @@ class CartComponent extends Component
 
     public function removeItem($uuid)
     {
-        $item = Cart::where('uuid', $uuid)->first();
+        $item = Cart::where('uuid', $uuid)
+            ->when(Auth::check(), function($query) {
+                return $query->where('user_id', Auth::id());
+            }, function($query) {
+                return $query->where('session_id', session()->getId())
+                           ->whereNull('user_id');
+            })
+            ->first();
         
         if ($item) {
             $item->delete();

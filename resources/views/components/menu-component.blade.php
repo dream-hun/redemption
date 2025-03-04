@@ -148,10 +148,11 @@
                             <a href="{{ route('login') }}" class="login__btn">Login</a>
                         @endauth
                     @endif
-                    <a href="{{ route('cart.index') }}" class="login__btn">
+                    <a href="{{ route('cart.index') }}" style="color: #fff; display: inline-block;" class="m-5 cart-btn">
                         <i class="fas fa-shopping-cart"></i>
                         <span class="cart__count">{{ $cartCount }}</span>
                     </a>
+
 
                 </div>
             </div>

@@ -692,3 +692,24 @@
 #70 /home/hunter/Codes/redemption/public/index.php(17): Illuminate\\Foundation\\Application->handleRequest()
 #71 {main}
 "} 
+[2025-03-04 12:30:47] local.DEBUG: Checking domain: {"domain":"youtube.rw"} 
+[2025-03-04 12:30:50] local.DEBUG: EPP Response Data: {"data":{"chkData":{"cd":{"name":"youtube.rw","@name":{"avail":"0"},"reason":"(00) The domain exists"}}}} 
+[2025-03-04 12:30:50] local.DEBUG: Processing domain result: {"domainName":"youtube.rw","available":false,"item":{"name":"youtube.rw","@name":{"avail":"0"},"reason":"(00) The domain exists"}} 
+[2025-03-04 12:30:50] local.DEBUG: EPP results for domain: {"domain":"youtube.rw","results":{"youtube.rw":{"stdClass":{"available":false,"reason":"(00) The domain exists"}}},"tld_info":{"register_price":16000,"transfer_price":null,"renew_price":null}} 
+[2025-03-04 12:30:50] local.DEBUG: Checking domain: {"domain":"youtube.co.rw"} 
+[2025-03-04 12:30:50] local.DEBUG: EPP Response Data: {"data":{"chkData":{"cd":{"name":"youtube.co.rw","@name":{"avail":"0"},"reason":"(00) The domain exists"}}}} 
+[2025-03-04 12:30:50] local.DEBUG: Processing domain result: {"domainName":"youtube.co.rw","available":false,"item":{"name":"youtube.co.rw","@name":{"avail":"0"},"reason":"(00) The domain exists"}} 
+[2025-03-04 12:30:50] local.DEBUG: EPP results for domain: {"domain":"youtube.co.rw","results":{"youtube.co.rw":{"stdClass":{"available":false,"reason":"(00) The domain exists"}}},"tld_info":{"register_price":12000,"transfer_price":null,"renew_price":null}} 
+[2025-03-04 12:30:50] local.DEBUG: Checking domain: {"domain":"youtube.org.rw"} 
+[2025-03-04 12:30:51] local.DEBUG: EPP Response Data: {"data":{"chkData":{"cd":{"name":"youtube.org.rw","@name":{"avail":"1"}}}}} 
+[2025-03-04 12:30:51] local.DEBUG: Processing domain result: {"domainName":"youtube.org.rw","available":true,"item":{"name":"youtube.org.rw","@name":{"avail":"1"}}} 
+[2025-03-04 12:30:51] local.DEBUG: EPP results for domain: {"domain":"youtube.org.rw","results":{"youtube.org.rw":{"stdClass":{"available":true,"reason":null}}},"tld_info":{"register_price":12000,"transfer_price":null,"renew_price":null}} 
+[2025-03-04 12:30:51] local.DEBUG: Checking domain: {"domain":"youtube.ac.rw"} 
+[2025-03-04 12:30:51] local.DEBUG: EPP Response Data: {"data":{"chkData":{"cd":{"name":"youtube.ac.rw","@name":{"avail":"1"}}}}} 
+[2025-03-04 12:30:51] local.DEBUG: Processing domain result: {"domainName":"youtube.ac.rw","available":true,"item":{"name":"youtube.ac.rw","@name":{"avail":"1"}}} 
+[2025-03-04 12:30:51] local.DEBUG: EPP results for domain: {"domain":"youtube.ac.rw","results":{"youtube.ac.rw":{"stdClass":{"available":true,"reason":null}}},"tld_info":{"register_price":13000,"transfer_price":null,"renew_price":null}} 
+[2025-03-04 12:30:51] local.DEBUG: Checking domain: {"domain":"youtube.coop.rw"} 
+[2025-03-04 12:30:51] local.DEBUG: EPP Response Data: {"data":{"chkData":{"cd":{"name":"youtube.coop.rw","@name":{"avail":"1"}}}}} 
+[2025-03-04 12:30:51] local.DEBUG: Processing domain result: {"domainName":"youtube.coop.rw","available":true,"item":{"name":"youtube.coop.rw","@name":{"avail":"1"}}} 
+[2025-03-04 12:30:51] local.DEBUG: EPP results for domain: {"domain":"youtube.coop.rw","results":{"youtube.coop.rw":{"stdClass":{"available":true,"reason":null}}},"tld_info":{"register_price":12000,"transfer_price":null,"renew_price":null}} 
+[2025-03-04 12:30:51] local.DEBUG: Final search results: {"results":{"youtube.rw":{"stdClass":{"available":false,"reason":"(00) The domain exists","register_price":16000,"transfer_price":null,"renew_price":null}},"youtube.co.rw":{"stdClass":{"available":false,"reason":"(00) The domain exists","register_price":12000,"transfer_price":null,"renew_price":null}},"youtube.org.rw":{"stdClass":{"available":true,"reason":null,"register_price":12000,"transfer_price":null,"renew_price":null}},"youtube.ac.rw":{"stdClass":{"available":true,"reason":null,"register_price":13000,"transfer_price":null,"renew_price":null}},"youtube.coop.rw":{"stdClass":{"available":true,"reason":null,"register_price":12000,"transfer_price":null,"renew_price":null}}}} 
