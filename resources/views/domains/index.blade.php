@@ -50,161 +50,7 @@
 
 <body class="page-template template-resell">
     <!-- HEADER AREA -->
-    <header class="rts-header style-one header__default">
-        <!-- HEADER TOP AREA -->
-        <div class="rts-ht rts-ht__bg">
-            <div class="container">
-                <div class="row">
-                    <div class="rts-ht__wrapper">
-                        <div class="rts-ht__email">
-                            <a href="mailto:{{ $settings->email }}"><img src="assets/images/icon/email.svg"
-                                    alt="" class="icon">{{ $settings->email }}</a>
-                        </div>
-
-                        <div class="rts-ht__links">
-                            <div class="live-chat-has-dropdown">
-                                <a href="#" class="live__chat"><img src="assets/images/icon/forum.svg"
-                                        alt="" class="icon">Live Chat</a>
-                            </div>
-                            <div class="login-btn-has-dropdown">
-                                <a href="#" class="login__link"><img src="assets/images/icon/person.svg"
-                                        alt="" class="icon">Login</a>
-                                <div class="login-submenu">
-                                    <form action="#">
-                                        <div class="form-inner">
-                                            <div class="single-wrapper">
-                                                <input type="email" placeholder="Your email" required>
-                                            </div>
-                                            <div class="single-wrapper">
-                                                <input type="password" placeholder="Password" required>
-                                            </div>
-                                            <div class="form-btn">
-                                                <button type="submit" class="primary__btn">Log In</button>
-                                            </div>
-                                            <a href="#" class="forgot-password">Forgot your password?</a>
-                                        </div>
-                                    </form>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <!-- HEADER TOP AREA END -->
-        <div class="container">
-            <div class="row">
-                <div class="rts-header__wrapper">
-                    <!-- FOR LOGO -->
-                    <div class="rts-header__logo">
-                        <a href="index.html" class="site-logo">
-                            <img class="logo-white" src="assets/images/logo/logo-1.svg" alt="Hostie">
-                            <img class="logo-dark" src="assets/images/logo/logo-4.svg" alt="Hostie">
-                        </a>
-                    </div>
-                    <!-- FOR NAVIGATION MENU -->
-
-                    <nav class="rts-header__menu" id="mobile-menu">
-                        <div class="hostie-menu">
-                            <ul class="list-unstyled hostie-desktop-menu">
-                                <li class="menu-item hostie">
-                                    <a href="{{ route('home') }}" class="hostie-dropdown-main-element">Home</a>
-                                </li>
-
-                                <li class="menu-item hostie-has-dropdown mega-menu">
-                                    <a href="#" class="hostie-dropdown-main-element">Hosting</a>
-                                    <div class="rts-mega-menu">
-                                        <div class="wrapper">
-                                            <div class="row g-0">
-                                                <div class="col-lg-12">
-                                                    <ul class="mega-menu-item">
-                                                        <li>
-                                                            <a href="#">
-                                                                <img src="{{ asset('assets/images/mega-menu/22.svg') }}"
-                                                                    alt="icon">
-                                                                <div class="info">
-                                                                    <p>Shared Hosting</p>
-                                                                    <span>Manage Shared Hosting</span>
-                                                                </div>
-                                                            </a>
-                                                        </li>
-                                                        <li>
-                                                            <a href="#">
-                                                                <img src="{{ asset('assets/images/mega-menu/27.svg') }}"
-                                                                    alt="icon">
-                                                                <div class="info">
-                                                                    <p>VPS - High Storage</p>
-                                                                    <span>Get your highest storage VPS</span>
-                                                                </div>
-                                                            </a>
-                                                        </li>
-                                                        <li>
-                                                            <a href="#">
-                                                                <img src="{{ asset('assets/images/mega-menu/24.svg') }}"
-                                                                    alt="icon">
-                                                                <div class="info">
-                                                                    <p>VPS High Performance</p>
-                                                                    <span>Dedicated resources</span>
-                                                                </div>
-                                                            </a>
-                                                        </li>
-                                                    </ul>
-                                                </div>
-
-                                            </div>
-                                        </div>
-                                    </div>
-                                </li>
-                                <li class="menu-item hostie-has-dropdown">
-                                    <a href="#" class="hostie-dropdown-main-element">Domain</a>
-                                    <ul class="hostie-submenu list-unstyled menu-pages">
-                                        <li class="nav-item"><a class="nav-link"
-                                                href="{{ route('domains.index') }}">Domain
-                                                Checker</a></li>
-                                        <li class="nav-item"><a class="nav-link" href="#">Domain
-                                                Transfer</a></li>
-                                        <li class="nav-item"><a class="nav-link"
-                                                href="{{ route('domains.index') }}">Domain
-                                                Registration</a></li>
-                                        <li class="nav-item"><a class="nav-link" href="#">Whois</a></li>
-                                    </ul>
-                                </li>
-                                <li class="menu-item hostie-has-dropdown">
-                                    <a href="#" class="hostie-dropdown-main-element">Services</a>
-                                    <ul class="hostie-submenu list-unstyled menu-pages">
-                                        <li class="nav-item"><a class="nav-link" href="#">Web Application</a>
-                                        </li>
-                                        <li class="nav-item"><a class="nav-link" href="#">Mobile
-                                                Development</a></li>
-                                        <li class="nav-item"><a class="nav-link" href="#">Mobile data
-                                                Collection</a>
-                                        </li>
-                                        <li class="nav-item"><a class="nav-link" href="#">IT Consultancy</a>
-                                        </li>
-                                    </ul>
-                                </li>
-                                <li class="menu-item hostie-has-dropdown">
-                                    <a href="#" class="hostie-dropdown-main-element">Help Center</a>
-                                    <ul class="hostie-submenu list-unstyled menu-pages">
-                                        <li class="nav-item"><a class="nav-link" href="#">FAQ</a></li>
-                                        <li class="nav-item"><a class="nav-link" href="#">Support</a></li>
-                                        <li class="nav-item"><a class="nav-link" href="#">Contact</a></li>
-                                        <li class="nav-item"><a class="nav-link"
-                                                href="knowledgebase.html">Knowledgebase</a></li>
-
-                                    </ul>
-                                </li>
-                            </ul>
-                        </div>
-                    </nav>
-                    <!-- FOR HEADER RIGHT -->
-                    <div class="rts-header__right">
-                        <a href="#" class="login__btn" target="_blank">Client Area</a>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </header>
+    <x-menu-component/>
     <!-- HEADER AREA END -->
     <section class="rts-hero-three rts-hero__one rts-hosting-banner domain-checker-padding banner-default-height">
         <div class="container">
@@ -265,6 +111,7 @@
             <div class="section-inner" id="results">
                 <div class="row g-5">
                     <div id="errorMessage" class="alert alert-danger hidden"></div>
+                    <div id="statusMessage" class="alert alert-info hidden"></div>
                     <div id="resultsContainer" class="col-lg-12">
                         <!-- Results will be appended here -->
                     </div>
@@ -284,8 +131,8 @@
                 }
             });
 
-            // Initially hide the error message
-            $('#errorMessage').hide();
+            // Initially hide the messages
+            $('#errorMessage, #statusMessage').hide();
 
             // Handle domain check form submission
             $('#domainForm').on('submit', function(e) {
@@ -295,19 +142,31 @@
                 const $results = $('#results');
                 const $resultsContainer = $('#resultsContainer');
                 const $errorMessage = $('#errorMessage');
+                const $statusMessage = $('#statusMessage');
 
-                // Clear previous results
+                // Clear previous results and messages
                 $results.hide();
                 $errorMessage.hide();
+                $statusMessage.hide();
                 $resultsContainer.empty();
 
                 // Get and validate domain input
-                const domain = $('#domainText').val().trim();
+                const domain = $('#domainText').val().trim().toLowerCase();
                 if (!domain) {
                     $errorMessage.text('Please enter a domain name.').show();
                     return;
                 }
 
+                // Basic domain name validation
+                const domainRegex = /^[a-z0-9][a-z0-9-]{0,61}[a-z0-9]$/;
+                if (!domainRegex.test(domain)) {
+                    $errorMessage.text('Please enter a valid domain name (letters, numbers, and hyphens only, cannot start or end with hyphen).').show();
+                    return;
+                }
+
+                // Show searching status
+                $statusMessage.text('Searching for domains...').show();
+                
                 // Disable button and show loading state
                 $button.prop('disabled', true).text('Checking...');
 
@@ -320,45 +179,75 @@
                     },
                     success: function(response) {
                         $results.show();
+                        $statusMessage.hide();
 
                         if (response.error) {
-                            $errorMessage.text(response.error).show();
+                            $errorMessage.html(`<strong>Error:</strong> ${response.error}`).show();
+                            if (response.message) {
+                                $errorMessage.append(`<br><small>${response.message}</small>`);
+                            }
                         } else if (response.results) {
-                            $resultsContainer.empty(); // Clear previous results
+                            const resultCount = Object.keys(response.results).length;
+                            if (resultCount === 0) {
+                                $statusMessage.text('No domain results found.').show();
+                            } else {
+                                $resultsContainer.empty(); // Clear previous results
 
-                            Object.entries(response.results).forEach(([domain, result]) => {
-                                const availabilityClass = result.available ?
-                                    'available' :
-                                    'unavailable';
-                                const resultHtml = `
-                                <div class="col-lg-4 col-xl-3 col-md-3 col-sm-6 sal-animate" data-sal="slide-down" data-sal-delay="200" data-sal-duration="800">
-                                    <div class="pricing-wrapper ${availabilityClass}">
-                                        <div class="logo"><img src="assets/images/pricing/domain-01.svg" alt=""></div>
-                                        <div class="content">
-                                            <p class="desc">${domain} is ${result.available ? 'available!' : 'unavailable.'}</p>
-                                            <div class="price-area">
-                                                ${result.available ? `<span class="now">RWF ${result.register_price}</span>` : ''}
-                                            </div>
-                                            <div class="button-area">
-                                                ${result.available ? `
-                                                                                                                                            <button type="button" class="pricing-btn rts-btn addToCartButton"
-                                                                                                                                                data-domain="${domain}" data-price="${result.register_price}">
-                                                                                                                                                Add to Cart
-                                                                                                                                            </button>
-                                                                                                                                        ` : `<p>${result.reason || 'Not available'}</p>`}
+                                Object.entries(response.results).forEach(([domain, result]) => {
+                                    console.log('Processing domain result:', { domain, result }); // Debug log
+                                    
+                                    const availabilityClass = result.available ? 'available' : 'unavailable';
+                                    const availabilityText = result.available ? 'Available!' : 'Not Available';
+                                    const reasonText = result.reason ? `<br><small>${result.reason}</small>` : '';
+                                    
+                                    const resultHtml = `
+                                        <div class="col-lg-4 col-xl-3 col-md-3 col-sm-6 sal-animate" data-sal="slide-down" data-sal-delay="200" data-sal-duration="800">
+                                            <div class="pricing-wrapper ${availabilityClass}">
+                                                <div class="logo"><img src="assets/images/pricing/domain-01.svg" alt=""></div>
+                                                <div class="content">
+                                                    <p class="desc">
+                                                        <strong>${domain}</strong><br>
+                                                        <span class="status ${availabilityClass}">${availabilityText}</span>
+                                                        ${reasonText}
+                                                    </p>
+                                                    <div class="price-area">
+                                                        ${result.available ? `<span class="now">RWF ${result.register_price}</span>` : ''}
+                                                    </div>
+                                                    <div class="button-area">
+                                                        ${result.available ? `
+                                                            <button type="button" class="pricing-btn rts-btn addToCartButton"
+                                                                data-domain="${domain}" 
+                                                                data-price="${result.register_price}">
+                                                                Add to Cart
+                                                            </button>
+                                                        ` : `<p class="unavailable-reason">${result.reason || 'This domain is not available for registration'}</p>`}
+                                                    </div>
+                                                </div>
                                             </div>
                                         </div>
-                                    </div>
-                                </div>
-                            `;
-                                $resultsContainer.append(resultHtml);
-                            });
-                            $resultsContainer.addClass('row g-5');
+                                    `;
+                                    $resultsContainer.append(resultHtml);
+                                });
+                                
+                                // Add some styles for better visibility
+                                $('<style>')
+                                    .text(`
+                                        .pricing-wrapper.available { border: 2px solid #28a745; }
+                                        .pricing-wrapper.unavailable { border: 2px solid #dc3545; }
+                                        .status.available { color: #28a745; font-weight: bold; }
+                                        .status.unavailable { color: #dc3545; font-weight: bold; }
+                                        .unavailable-reason { color: #6c757d; font-style: italic; }
+                                    `)
+                                    .appendTo('head');
+                                
+                                $resultsContainer.addClass('row g-5');
+                            }
                         }
                     },
                     error: function(xhr) {
-                        $errorMessage.text(xhr.responseJSON?.error ||
-                            'An error occurred while checking domains.').show();
+                        const errorMsg = xhr.responseJSON?.error || 'An error occurred while checking domains.';
+                        const detailMsg = xhr.responseJSON?.message || '';
+                        $errorMessage.html(`<strong>Error:</strong> ${errorMsg}${detailMsg ? `<br><small>${detailMsg}</small>` : ''}`).show();
                     },
                     complete: function() {
                         $button.prop('disabled', false).text('Check Availability');
@@ -387,7 +276,7 @@
                     },
                     success: function(response) {
 
-                        window.location.href = `/register`;
+                        window.location.href = `/domains`;
                     },
                     error: function(xhr) {
                         console.log(xhr.responseJSON);

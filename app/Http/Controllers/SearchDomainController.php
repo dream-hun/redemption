@@ -7,6 +7,7 @@ use App\Services\Epp\EppService;
 use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\View\View;
 use Log;
 
@@ -32,7 +33,6 @@ class SearchDomainController extends Controller
     {
         try {
             $domain = $request->input('domains');
-            Log::debug('Domain search request:', ['domain' => $domain]);
 
             if (empty($domain)) {
                 return response()->json([
@@ -40,9 +40,10 @@ class SearchDomainController extends Controller
                 ], 400);
             }
 
-            // Get all active TLDs with their pricing
-            $tlds = DomainPricing::where('status', 'active')->get();
-            Log::debug('Found TLDs:', ['count' => $tlds->count(), 'tlds' => $tlds->pluck('tld')->toArray()]);
+            // Get cached TLDs
+            $tlds = Cache::remember('active_tlds', 3600, function () {
+                return DomainPricing::where('status', 'active')->get();
+            });
 
             if ($tlds->isEmpty()) {
                 return response()->json([
@@ -52,37 +53,34 @@ class SearchDomainController extends Controller
 
             $results = [];
             foreach ($tlds as $tld) {
-                $domainWithTld = $domain.'.'.ltrim($tld->tld, '.');
+                $domainWithTld = $domain . '.' . ltrim($tld->tld, '.');
                 Log::debug('Checking domain:', ['domain' => $domainWithTld]);
 
                 // Check domain availability with EPP
                 $eppResults = $this->eppService->checkDomain([$domainWithTld]);
-                Log::debug('EPP results:', ['results' => $eppResults]);
+                Log::debug('EPP results for domain:', [
+                    'domain' => $domainWithTld,
+                    'results' => $eppResults,
+                    'tld_info' => [
+                        'register_price' => $tld->register_price,
+                        'transfer_price' => $tld->transfer_price,
+                        'renew_price' => $tld->renew_price
+                    ]
+                ]);
 
-                if (! empty($eppResults) && isset($eppResults[$domainWithTld])) {
+                if (!empty($eppResults) && isset($eppResults[$domainWithTld])) {
                     $result = $eppResults[$domainWithTld];
                     $results[$domainWithTld] = (object) [
-                        'name' => $domainWithTld,
                         'available' => $result->available,
                         'reason' => $result->reason,
-                        'tld' => $tld->tld,
                         'register_price' => $tld->register_price,
                         'transfer_price' => $tld->transfer_price,
                         'renew_price' => $tld->renew_price,
-                        'grace' => $tld->grace,
-                        'redemption_price' => $tld->redemption_price,
                     ];
                 }
             }
 
-            Log::debug('Final results:', ['count' => count($results), 'results' => $results]);
-
-            // Return empty object if no results
-            if (empty($results)) {
-                return response()->json([
-                    'results' => (object) [],
-                ]);
-            }
+            Log::debug('Final search results:', ['results' => $results]);
 
             return response()->json([
                 'results' => (object) $results,

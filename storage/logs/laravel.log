@@ -1,4 +1,34 @@
-[2025-03-03 16:09:04] local.DEBUG: EPP Configuration: {"host":"registry.ricta.org.rw","username":"bluhub_rwf","port":"700","ssl":true,"debug":"not set"} 
-[2025-03-03 16:09:04] local.DEBUG: EPP Client Config: {"host":"registry.ricta.org.rw","port":700,"username":"bluhub_rwf","password":"CVQTsh8R64CCdt6G","ssl":true,"local_cert":"/home/hunter/Codes/redemption/storage/app/certificate/certificate.pem","verify_peer":false,"verify_peer_name":false,"verify_host":false,"debug":false} 
-[2025-03-03 16:09:23] local.ERROR: EPP Connection failed: problem initializing socket:  code: [0]  
-[2025-03-03 16:09:23] local.ERROR: Domain renewal failed: problem initializing socket:  code: [0] {"domain":"blutest.co.rw","period":"2","user_id":1,"error":"problem initializing socket:  code: [0]"} 
+[2025-03-04 04:41:25] local.DEBUG: EPP Response Data: {"data":{"chkData":{"cd":[{"name":"mbabazi.rw","@name":{"avail":"1"}},{"name":"mbabazi.co.rw","@name":{"avail":"1"}},{"name":"mbabazi.org.rw","@name":{"avail":"1"}},{"name":"mbabazi.ac.rw","@name":{"avail":"1"}},{"name":"mbabazi.coop.rw","@name":{"avail":"1"}}]}}} 
+[2025-03-04 04:41:25] local.DEBUG: Processing items: {"items":[{"name":"mbabazi.rw","@name":{"avail":"1"}},{"name":"mbabazi.co.rw","@name":{"avail":"1"}},{"name":"mbabazi.org.rw","@name":{"avail":"1"}},{"name":"mbabazi.ac.rw","@name":{"avail":"1"}},{"name":"mbabazi.coop.rw","@name":{"avail":"1"}}]} 
+[2025-03-04 04:41:25] local.DEBUG: Processing item: {"item":{"name":"mbabazi.rw","@name":{"avail":"1"}}} 
+[2025-03-04 04:41:25] local.DEBUG: Extracted data: {"domainName":"mbabazi.rw","available":false,"reason":null} 
+[2025-03-04 04:41:25] local.DEBUG: Processing item: {"item":{"name":"mbabazi.co.rw","@name":{"avail":"1"}}} 
+[2025-03-04 04:41:25] local.DEBUG: Extracted data: {"domainName":"mbabazi.co.rw","available":false,"reason":null} 
+[2025-03-04 04:41:25] local.DEBUG: Processing item: {"item":{"name":"mbabazi.org.rw","@name":{"avail":"1"}}} 
+[2025-03-04 04:41:25] local.DEBUG: Extracted data: {"domainName":"mbabazi.org.rw","available":false,"reason":null} 
+[2025-03-04 04:41:25] local.DEBUG: Processing item: {"item":{"name":"mbabazi.ac.rw","@name":{"avail":"1"}}} 
+[2025-03-04 04:41:25] local.DEBUG: Extracted data: {"domainName":"mbabazi.ac.rw","available":false,"reason":null} 
+[2025-03-04 04:41:25] local.DEBUG: Processing item: {"item":{"name":"mbabazi.coop.rw","@name":{"avail":"1"}}} 
+[2025-03-04 04:41:25] local.DEBUG: Extracted data: {"domainName":"mbabazi.coop.rw","available":false,"reason":null} 
+[2025-03-04 04:57:50] local.DEBUG: Checking domain: {"domain":"mabazi.rw"} 
+[2025-03-04 04:57:54] local.DEBUG: EPP Response Data: {"data":{"chkData":{"cd":{"name":"mabazi.rw","@name":{"avail":"1"}}}}} 
+[2025-03-04 04:57:54] local.DEBUG: Processing domain result: {"domainName":"mabazi.rw","available":true,"item":{"name":"mabazi.rw","@name":{"avail":"1"}}} 
+[2025-03-04 04:57:54] local.DEBUG: EPP results for domain: {"domain":"mabazi.rw","results":{"mabazi.rw":{"stdClass":{"available":true,"reason":null}}},"tld_info":{"register_price":16000,"transfer_price":null,"renew_price":null}} 
+[2025-03-04 04:57:54] local.DEBUG: Checking domain: {"domain":"mabazi.co.rw"} 
+[2025-03-04 04:57:54] local.DEBUG: EPP Response Data: {"data":{"chkData":{"cd":{"name":"mabazi.co.rw","@name":{"avail":"1"}}}}} 
+[2025-03-04 04:57:54] local.DEBUG: Processing domain result: {"domainName":"mabazi.co.rw","available":true,"item":{"name":"mabazi.co.rw","@name":{"avail":"1"}}} 
+[2025-03-04 04:57:54] local.DEBUG: EPP results for domain: {"domain":"mabazi.co.rw","results":{"mabazi.co.rw":{"stdClass":{"available":true,"reason":null}}},"tld_info":{"register_price":12000,"transfer_price":null,"renew_price":null}} 
+[2025-03-04 04:57:54] local.DEBUG: Checking domain: {"domain":"mabazi.org.rw"} 
+[2025-03-04 04:57:54] local.DEBUG: EPP Response Data: {"data":{"chkData":{"cd":{"name":"mabazi.org.rw","@name":{"avail":"1"}}}}} 
+[2025-03-04 04:57:54] local.DEBUG: Processing domain result: {"domainName":"mabazi.org.rw","available":true,"item":{"name":"mabazi.org.rw","@name":{"avail":"1"}}} 
+[2025-03-04 04:57:54] local.DEBUG: EPP results for domain: {"domain":"mabazi.org.rw","results":{"mabazi.org.rw":{"stdClass":{"available":true,"reason":null}}},"tld_info":{"register_price":12000,"transfer_price":null,"renew_price":null}} 
+[2025-03-04 04:57:54] local.DEBUG: Checking domain: {"domain":"mabazi.ac.rw"} 
+[2025-03-04 04:57:55] local.DEBUG: EPP Response Data: {"data":{"chkData":{"cd":{"name":"mabazi.ac.rw","@name":{"avail":"1"}}}}} 
+[2025-03-04 04:57:55] local.DEBUG: Processing domain result: {"domainName":"mabazi.ac.rw","available":true,"item":{"name":"mabazi.ac.rw","@name":{"avail":"1"}}} 
+[2025-03-04 04:57:55] local.DEBUG: EPP results for domain: {"domain":"mabazi.ac.rw","results":{"mabazi.ac.rw":{"stdClass":{"available":true,"reason":null}}},"tld_info":{"register_price":13000,"transfer_price":null,"renew_price":null}} 
+[2025-03-04 04:57:55] local.DEBUG: Checking domain: {"domain":"mabazi.coop.rw"} 
+[2025-03-04 04:57:55] local.DEBUG: EPP Response Data: {"data":{"chkData":{"cd":{"name":"mabazi.coop.rw","@name":{"avail":"1"}}}}} 
+[2025-03-04 04:57:55] local.DEBUG: Processing domain result: {"domainName":"mabazi.coop.rw","available":true,"item":{"name":"mabazi.coop.rw","@name":{"avail":"1"}}} 
+[2025-03-04 04:57:55] local.DEBUG: EPP results for domain: {"domain":"mabazi.coop.rw","results":{"mabazi.coop.rw":{"stdClass":{"available":true,"reason":null}}},"tld_info":{"register_price":12000,"transfer_price":null,"renew_price":null}} 
+[2025-03-04 04:57:55] local.DEBUG: Final search results: {"results":{"mabazi.rw":{"stdClass":{"available":true,"reason":null,"register_price":16000,"transfer_price":null,"renew_price":null}},"mabazi.co.rw":{"stdClass":{"available":true,"reason":null,"register_price":12000,"transfer_price":null,"renew_price":null}},"mabazi.org.rw":{"stdClass":{"available":true,"reason":null,"register_price":12000,"transfer_price":null,"renew_price":null}},"mabazi.ac.rw":{"stdClass":{"available":true,"reason":null,"register_price":13000,"transfer_price":null,"renew_price":null}},"mabazi.coop.rw":{"stdClass":{"available":true,"reason":null,"register_price":12000,"transfer_price":null,"renew_price":null}}}} 
+[2025-03-04 04:58:11] local.INFO: Domain added to cart: {"domain":"mabazi.co.rw"} 

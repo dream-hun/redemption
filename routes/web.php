@@ -15,7 +15,7 @@ Route::get('/', LandingController::class)->name('home');
 
 Route::get('/hosting', [HostingController::class, 'index'])->name('hosting.index');
 
-Route::get('/domain-checker', [SearchDomainController::class, 'index'])->name('domains.index');
+Route::get('/domains', [SearchDomainController::class, 'index'])->name('domains.index');
 Route::post('/check-domains', [SearchDomainController::class, 'search'])->name('domain.check');
 
 Route::post('/cart/update-period', [CartController::class, 'updatePeriod'])->name('cart.update-period');

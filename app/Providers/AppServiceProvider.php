@@ -3,8 +3,10 @@
 namespace App\Providers;
 
 use App\Models\Cart;
+use App\Models\DomainPricing;
 use App\Models\Setting;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
 
@@ -20,8 +22,21 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        // Cache TLDs for 1 hour
+        View::share('tlds', Cache::remember('active_tlds', 3600, function () {
+            return DomainPricing::where('status', 'active')
+                ->select('tld', 'register_price')
+                ->get();
+        }));
+
         View::share('settings', Setting::first());
-        View::share('cartCount', Auth::check() ? Cart::where('user_id', Auth::id())->count() : 0);
+        view()->composer('*', function ($view) {
+            if (session()->isStarted()) {
+                $view->with('cartCount', \App\Models\Cart::where('session_id', session()->getId())->count());
+            } else {
+                $view->with('cartCount', 0);
+            }
+        });
 
     }
 }
