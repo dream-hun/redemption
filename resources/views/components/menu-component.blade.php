@@ -149,8 +149,9 @@
                         @endauth
                     @endif
                     <a href="{{ route('cart.index') }}" style="color: #fff; display: inline-block;" class="m-5 cart-btn">
-                        <i class="fas fa-shopping-cart"></i>
-                        <span class="cart__count">{{ $cartCount }}</span>
+                        <i class="bi bi-cart"></i>
+                        <span class="rounded-circle bg-warning text-white">{{ $cartCount }}</span>
+
                     </a>
 
 
