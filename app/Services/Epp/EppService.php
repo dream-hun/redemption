@@ -135,18 +135,30 @@ class EppService
         try {
             if (!$this->connected) {
                 $greeting = $this->connect();
-                Log::info('EPP connection established', ['greeting' => $greeting]);
+                Log::info('EPP connection established', [
+                    'greeting' => $greeting,
+                    'host' => $this->config['host']
+                ]);
             }
 
-            // Verify connection is still alive
-            $hello = $this->client->hello();
-            if (!$hello) {
+            // We'll use a simple poll request to test the connection
+            try {
+                $frame = new Poll;
+                $frame->req();
+                $response = $this->client->request($frame);
+                
+                if (!$response) {
+                    $this->connected = false;
+                    throw new Exception('EPP connection test failed - no response');
+                }
+            } catch (Exception $e) {
                 $this->connected = false;
-                throw new Exception('EPP connection test failed');
+                throw new Exception('EPP connection test failed: ' . $e->getMessage());
             }
         } catch (Exception $e) {
             $this->connected = false;
             Log::error('EPP connection error: ' . $e->getMessage(), [
+                'host' => $this->config['host'],
                 'trace' => $e->getTraceAsString()
             ]);
             throw new Exception('Failed to establish EPP connection: ' . $e->getMessage());
@@ -399,11 +411,12 @@ class EppService
             $frame->setCurrentExpirationDate($currentExpirationDate);
             $frame->setPeriod($period);
 
-            // Log the renewal attempt
+            // Log the renewal attempt with configuration context
             Log::info('Attempting domain renewal', [
                 'domain' => $domain,
                 'expiration_date' => $currentExpirationDate,
-                'period' => $period
+                'period' => $period,
+                'epp_host' => $this->config['host']
             ]);
 
             return $frame;
@@ -412,6 +425,7 @@ class EppService
                 'domain' => $domain,
                 'expiration_date' => $currentExpirationDate,
                 'period' => $period,
+                'epp_host' => $this->config['host'],
                 'trace' => $e->getTraceAsString()
             ]);
             // Try to reconnect on next request

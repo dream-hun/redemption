@@ -362,6 +362,7 @@ class DomainRegistrationController extends Controller
                     throw new Exception('EPP client not available');
                 }
 
+                // Add timeout for the request
                 $response = $client->request($frame);
                 if (!$response) {
                     throw new Exception('No response received from registry');
@@ -370,7 +371,8 @@ class DomainRegistrationController extends Controller
                 // Log raw response for debugging
                 Log::debug('EPP response received', [
                     'domain' => $domain->name,
-                    'raw_response' => $response->data()
+                    'raw_response' => $response->data(),
+                    'success' => $response->success()
                 ]);
 
                 if (!$response->success()) {
@@ -426,7 +428,7 @@ class DomainRegistrationController extends Controller
             ]);
 
             return redirect()->back()
-                ->with('error', 'Failed to renew domain. Please try again or contact support.');
+                ->with('error', 'Failed to renew domain. Please try again or contact support. Error: ' . $e->getMessage());
         } finally {
             $this->eppService->disconnect();
         }
