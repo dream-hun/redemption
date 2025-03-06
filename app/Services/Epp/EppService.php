@@ -124,11 +124,32 @@ class EppService
 
     /**
      * Check if client is connected and try to reconnect if not
+     * @throws Exception
      */
     private function ensureConnection(): void
     {
-        if (!$this->connected) {
-            $this->connect();
+        if (!isset($this->client)) {
+            throw new Exception('EPP client not initialized');
+        }
+
+        try {
+            if (!$this->connected) {
+                $greeting = $this->connect();
+                Log::info('EPP connection established', ['greeting' => $greeting]);
+            }
+
+            // Verify connection is still alive
+            $hello = $this->client->hello();
+            if (!$hello) {
+                $this->connected = false;
+                throw new Exception('EPP connection test failed');
+            }
+        } catch (Exception $e) {
+            $this->connected = false;
+            Log::error('EPP connection error: ' . $e->getMessage(), [
+                'trace' => $e->getTraceAsString()
+            ]);
+            throw new Exception('Failed to establish EPP connection: ' . $e->getMessage());
         }
     }
 

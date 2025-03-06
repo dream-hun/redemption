@@ -356,27 +356,45 @@ class DomainRegistrationController extends Controller
                 'current_expiry' => $expiryDate->format('Y-m-d')
             ]);
 
-            $response = $this->eppService->getClient()->request($frame);
-
-            if (! $response || ! $response->success()) {
-                $responseData = $response ? $response->data() : null;
-                $error = 'No response from registry';
-                
-                // Extract error message from response data if available
-                if ($responseData && isset($responseData['result'])) {
-                    $result = $responseData['result'];
-                    $code = $result['@result']['code'] ?? 'unknown';
-                    $msg = $result['msg']['_text'] ?? 'Unknown error';
-                    $error = "Registry error (code: $code): $msg";
+            try {
+                $client = $this->eppService->getClient();
+                if (!$client) {
+                    throw new Exception('EPP client not available');
                 }
 
+                $response = $client->request($frame);
+                if (!$response) {
+                    throw new Exception('No response received from registry');
+                }
+
+                // Log raw response for debugging
+                Log::debug('EPP response received', [
+                    'domain' => $domain->name,
+                    'raw_response' => $response->data()
+                ]);
+
+                if (!$response->success()) {
+                    $responseData = $response->data();
+                    $error = 'Registry request failed';
+                    
+                    // Extract error message from response data if available
+                    if ($responseData && isset($responseData['result'])) {
+                        $result = $responseData['result'];
+                        $code = $result['@result']['code'] ?? 'unknown';
+                        $msg = $result['msg']['_text'] ?? 'Unknown error';
+                        $error = "Registry error (code: $code): $msg";
+                    }
+
+                    throw new Exception($error);
+                }
+            } catch (Exception $e) {
                 Log::error('Domain renewal failed in registry', [
                     'domain' => $domain->name,
-                    'error' => $error,
-                    'response_data' => $responseData
+                    'error' => $e->getMessage(),
+                    'trace' => $e->getTraceAsString()
                 ]);
                 
-                throw new Exception('Failed to renew domain in registry: ' . $error);
+                throw new Exception('Failed to renew domain in registry: ' . $e->getMessage());
             }
 
             // Log successful response
