@@ -382,7 +382,8 @@ class EppService
             Log::info('Attempting domain renewal', [
                 'domain' => $domain,
                 'expiration_date' => $currentExpirationDate,
-                'period' => $period
+                'period' => $period,
+                'frame_xml' => $frame->getXml() // Log the actual XML being sent
             ]);
 
             return $frame;

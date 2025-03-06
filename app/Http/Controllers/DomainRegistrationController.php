@@ -352,12 +352,23 @@ class DomainRegistrationController extends Controller
             $response = $this->eppService->getClient()->request($frame);
 
             if (! $response || ! $response->success()) {
-                $error = $response ? $response->getMessage() : 'No response from registry';
+                $responseData = $response ? $response->data() : null;
+                $error = 'No response from registry';
+                
+                // Extract error message from response data if available
+                if ($responseData && isset($responseData['result'])) {
+                    $result = $responseData['result'];
+                    $code = $result['@result']['code'] ?? 'unknown';
+                    $msg = $result['msg']['_text'] ?? 'Unknown error';
+                    $error = "Registry error (code: $code): $msg";
+                }
+
                 Log::error('Domain renewal failed in registry', [
                     'domain' => $domain->name,
                     'error' => $error,
-                    'response' => $response ? $response->data() : null
+                    'response_data' => $responseData
                 ]);
+                
                 throw new Exception('Failed to renew domain in registry: ' . $error);
             }
 
