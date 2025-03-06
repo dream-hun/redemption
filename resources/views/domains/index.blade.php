@@ -50,7 +50,7 @@
 
 <body class="page-template template-resell">
     <!-- HEADER AREA -->
-    <x-menu-component/>
+    <x-menu-component />
     <!-- HEADER AREA END -->
     <section class="rts-hero-three rts-hero__one rts-hosting-banner domain-checker-padding banner-default-height">
         <div class="container">
@@ -65,8 +65,8 @@
                         <p class="description sal-animate" data-sal="slide-down" data-sal-delay="200"
                             data-sal-duration="800">Web
                             Hosting, Domain Name and Hosting Center Solutions</p>
-                        <form id="domainForm" action="{{ route('domain.check') }}" method="POST"
-                            data-sal-delay="300" data-sal-duration="800">
+                        <form id="domainForm" action="{{ route('domain.check') }}" method="POST" data-sal-delay="300"
+                            data-sal-duration="800">
                             @csrf
                             <div class="rts-hero__form-area">
 
@@ -120,7 +120,7 @@
         </div>
     </section>
 
-    <x-faq-component />
+
 
     <script>
         $(document).ready(function() {
@@ -160,13 +160,15 @@
                 // Basic domain name validation
                 const domainRegex = /^[a-z0-9][a-z0-9-]{0,61}[a-z0-9]$/;
                 if (!domainRegex.test(domain)) {
-                    $errorMessage.text('Please enter a valid domain name (letters, numbers, and hyphens only, cannot start or end with hyphen).').show();
+                    $errorMessage.text(
+                        'Please enter a valid domain name (letters, numbers, and hyphens only, cannot start or end with hyphen).'
+                        ).show();
                     return;
                 }
 
                 // Show searching status
                 $statusMessage.text('Searching for domains...').show();
-                
+
                 // Disable button and show loading state
                 $button.prop('disabled', true).text('Checking...');
 
@@ -182,7 +184,8 @@
                         $statusMessage.hide();
 
                         if (response.error) {
-                            $errorMessage.html(`<strong>Error:</strong> ${response.error}`).show();
+                            $errorMessage.html(`<strong>Error:</strong> ${response.error}`)
+                                .show();
                             if (response.message) {
                                 $errorMessage.append(`<br><small>${response.message}</small>`);
                             }
@@ -194,12 +197,18 @@
                                 $resultsContainer.empty(); // Clear previous results
 
                                 Object.entries(response.results).forEach(([domain, result]) => {
-                                    console.log('Processing domain result:', { domain, result }); // Debug log
-                                    
-                                    const availabilityClass = result.available ? 'available' : 'unavailable';
-                                    const availabilityText = result.available ? 'Available!' : 'Not Available';
-                                    const reasonText = result.reason ? `<br><small>${result.reason}</small>` : '';
-                                    
+                                    console.log('Processing domain result:', {
+                                        domain,
+                                        result
+                                    }); // Debug log
+
+                                    const availabilityClass = result.available ?
+                                        'available' : 'unavailable';
+                                    const availabilityText = result.available ?
+                                        'Available!' : 'Not Available';
+                                    const reasonText = result.reason ?
+                                        `<br><small>${result.reason}</small>` : '';
+
                                     const resultHtml = `
                                         <div class="col-lg-4 col-xl-3 col-md-3 col-sm-6 sal-animate" data-sal="slide-down" data-sal-delay="200" data-sal-duration="800">
                                             <div class="pricing-wrapper ${availabilityClass}">
@@ -215,12 +224,12 @@
                                                     </div>
                                                     <div class="button-area">
                                                         ${result.available ? `
-                                                            <button type="button" class="pricing-btn rts-btn addToCartButton"
-                                                                data-domain="${domain}" 
-                                                                data-price="${result.register_price}">
-                                                                Add to Cart
-                                                            </button>
-                                                        ` : `<p class="unavailable-reason">${result.reason || 'This domain is not available for registration'}</p>`}
+                                                                <button type="button" class="pricing-btn rts-btn addToCartButton"
+                                                                    data-domain="${domain}"
+                                                                    data-price="${result.register_price}">
+                                                                    Add to Cart
+                                                                </button>
+                                                            ` : `<p class="unavailable-reason">${result.reason || 'This domain is not available for registration'}</p>`}
                                                     </div>
                                                 </div>
                                             </div>
@@ -228,7 +237,7 @@
                                     `;
                                     $resultsContainer.append(resultHtml);
                                 });
-                                
+
                                 // Add some styles for better visibility
                                 $('<style>')
                                     .text(`
@@ -239,15 +248,18 @@
                                         .unavailable-reason { color: #6c757d; font-style: italic; }
                                     `)
                                     .appendTo('head');
-                                
+
                                 $resultsContainer.addClass('row g-5');
                             }
                         }
                     },
                     error: function(xhr) {
-                        const errorMsg = xhr.responseJSON?.error || 'An error occurred while checking domains.';
+                        const errorMsg = xhr.responseJSON?.error ||
+                            'An error occurred while checking domains.';
                         const detailMsg = xhr.responseJSON?.message || '';
-                        $errorMessage.html(`<strong>Error:</strong> ${errorMsg}${detailMsg ? `<br><small>${detailMsg}</small>` : ''}`).show();
+                        $errorMessage.html(
+                            `<strong>Error:</strong> ${errorMsg}${detailMsg ? `<br><small>${detailMsg}</small>` : ''}`
+                            ).show();
                     },
                     complete: function() {
                         $button.prop('disabled', false).text('Check Availability');

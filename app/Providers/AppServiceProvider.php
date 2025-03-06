@@ -5,6 +5,7 @@ namespace App\Providers;
 use App\Models\Cart;
 use App\Models\DomainPricing;
 use App\Models\Setting;
+use Cknow\Money\Money;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\View;
@@ -35,6 +36,13 @@ class AppServiceProvider extends ServiceProvider
                 $view->with('cartCount', \App\Models\Cart::where('session_id', session()->getId())->count());
             } else {
                 $view->with('cartCount', 0);
+            }
+        });
+        view()->composer('*', function ($view) {
+            if (session()->isStarted()) {
+                $view->with('total', \App\Models\Cart::where('session_id', session()->getId())->sum('price'));
+            } else {
+                $view->with('total', 0);
             }
         });
 

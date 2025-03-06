@@ -15,7 +15,7 @@
         Version 3.2.0
     </div>
     <!-- Default to the left -->
-    <strong>Copyright &copy; {{date('Y')}} <a href="https://adminlte.io">{{config('app.name')}}.</a>.</strong> All rights reserved.
+    <strong>Copyright &copy; {{date('Y')}} <a href="https://bluhub.rw">{{config('app.name')}}.</a></strong> All rights reserved.
 </footer>
 </div>
 <!-- ./wrapper -->

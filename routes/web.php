@@ -18,8 +18,7 @@ Route::get('/hosting', [HostingController::class, 'index'])->name('hosting.index
 Route::get('/domains', [SearchDomainController::class, 'index'])->name('domains.index');
 Route::post('/check-domains', [SearchDomainController::class, 'search'])->name('domain.check');
 
-Route::post('/cart/update-period', [CartController::class, 'updatePeriod'])->name('cart.update-period');
-Route::post('/cart/remove-item', [CartController::class, 'removeItem'])->name('cart.remove-item');
+
 Route::post('/add-to-cart', [CartController::class, 'addToCart'])->name('cart.add')->middleware('web');
 Route::get('/shopping-cart', [CartController::class, 'cart'])->name('cart.index');
 
