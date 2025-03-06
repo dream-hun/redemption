@@ -331,17 +331,29 @@ class DomainRegistrationController extends Controller
                     ->with('error', 'You do not have permission to renew this domain.');
             }
 
+            // Ensure domain is not expired
+            if ($domain->expires_at->isPast()) {
+                return redirect()->back()
+                    ->with('error', 'Cannot renew an expired domain. Please contact support.');
+            }
+
             // Create EPP frame for domain renewal
             $frame = $this->eppService->renewDomain(
                 $domain->name,
                 $domain->expires_at,
-                $request->period.'y'
+                $request->period . 'y'
             );
 
             $response = $this->eppService->getClient()->request($frame);
 
             if (! $response || ! $response->success()) {
-                throw new Exception('Failed to renew domain in registry');
+                $error = $response ? $response->getMessage() : 'No response from registry';
+                Log::error('Domain renewal failed in registry', [
+                    'domain' => $domain->name,
+                    'error' => $error,
+                    'response' => $response ? $response->data() : null
+                ]);
+                throw new Exception('Failed to renew domain in registry: ' . $error);
             }
 
             // Update domain expiry in our database
@@ -352,16 +364,17 @@ class DomainRegistrationController extends Controller
 
             DB::commit();
 
-            return redirect()->route('domains.show', $domain)
+            return redirect()->route('admin.domains.index', $domain)
                 ->with('success', 'Domain renewed successfully!');
 
         } catch (Exception $e) {
             DB::rollBack();
-            Log::error('Domain renewal failed: '.$e->getMessage(), [
+            Log::error('Domain renewal failed: ' . $e->getMessage(), [
                 'domain' => $domain->name,
                 'period' => $request->period,
                 'user_id' => Auth::id(),
                 'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
             ]);
 
             return redirect()->back()

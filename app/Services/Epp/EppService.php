@@ -367,14 +367,32 @@ class EppService
     {
         try {
             $this->ensureConnection();
+            
+            // Format the expiration date to EPP standard format (YYYY-MM-DD)
+            if ($currentExpirationDate instanceof \DateTime || $currentExpirationDate instanceof \Carbon\Carbon) {
+                $currentExpirationDate = $currentExpirationDate->format('Y-m-d');
+            }
+            
             $frame = new RenewDomain;
             $frame->setDomain($domain);
             $frame->setCurrentExpirationDate($currentExpirationDate);
             $frame->setPeriod($period);
 
+            // Log the renewal attempt
+            Log::info('Attempting domain renewal', [
+                'domain' => $domain,
+                'expiration_date' => $currentExpirationDate,
+                'period' => $period
+            ]);
+
             return $frame;
         } catch (Exception $e) {
-            Log::error('Domain renewal failed: ' . $e->getMessage());
+            Log::error('Domain renewal failed: ' . $e->getMessage(), [
+                'domain' => $domain,
+                'expiration_date' => $currentExpirationDate,
+                'period' => $period,
+                'trace' => $e->getTraceAsString()
+            ]);
             // Try to reconnect on next request
             $this->connected = false;
             throw $e;
