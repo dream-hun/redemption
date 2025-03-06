@@ -331,8 +331,13 @@ class DomainRegistrationController extends Controller
                     ->with('error', 'You do not have permission to renew this domain.');
             }
 
+            // Convert expires_at to Carbon if it's a string
+            $expiryDate = $domain->expires_at instanceof \Carbon\Carbon 
+                ? $domain->expires_at 
+                : \Carbon\Carbon::parse($domain->expires_at);
+
             // Ensure domain is not expired
-            if ($domain->expires_at->isPast()) {
+            if ($expiryDate->isPast()) {
                 return redirect()->back()
                     ->with('error', 'Cannot renew an expired domain. Please contact support.');
             }
@@ -340,7 +345,7 @@ class DomainRegistrationController extends Controller
             // Create EPP frame for domain renewal
             $frame = $this->eppService->renewDomain(
                 $domain->name,
-                $domain->expires_at,
+                $expiryDate,
                 $request->period . 'y'
             );
 
@@ -358,7 +363,7 @@ class DomainRegistrationController extends Controller
 
             // Update domain expiry in our database
             $domain->update([
-                'expires_at' => $domain->expires_at->addYears($request->period),
+                'expires_at' => $expiryDate->addYears($request->period),
                 'last_renewal_at' => now(),
             ]);
 

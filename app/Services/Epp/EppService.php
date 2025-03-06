@@ -363,7 +363,7 @@ class EppService
     /**
      * Renew Domain
      */
-    public function renewDomain(string $domain, string $currentExpirationDate, string $period)
+    public function renewDomain(string $domain, $currentExpirationDate, string $period)
     {
         try {
             $this->ensureConnection();
