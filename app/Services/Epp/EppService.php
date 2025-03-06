@@ -141,16 +141,28 @@ class EppService
                 ]);
             }
 
-            // We'll use a simple poll request to test the connection
+            // Test connection with a simple check domain command
             try {
-                $frame = new Poll;
-                $frame->req();
+                $frame = new CheckDomain;
+                $frame->addDomain($this->config['host']); // Use host as test domain
                 $response = $this->client->request($frame);
                 
-                if (!$response) {
+                if (!$response || !($response instanceof \AfriCC\EPP\Frame\Response)) {
                     $this->connected = false;
-                    throw new Exception('EPP connection test failed - no response');
+                    throw new Exception('EPP connection test failed - invalid response');
                 }
+
+                $result = $response->results()[0];
+                if (!$result) {
+                    $this->connected = false;
+                    throw new Exception('EPP connection test failed - no result');
+                }
+
+                Log::debug('EPP connection test successful', [
+                    'code' => $result->code(),
+                    'message' => $result->message()
+                ]);
+
             } catch (Exception $e) {
                 $this->connected = false;
                 throw new Exception('EPP connection test failed: ' . $e->getMessage());

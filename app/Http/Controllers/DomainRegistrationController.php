@@ -362,32 +362,28 @@ class DomainRegistrationController extends Controller
                     throw new Exception('EPP client not available');
                 }
 
-                // Add timeout for the request
                 $response = $client->request($frame);
-                if (!$response) {
-                    throw new Exception('No response received from registry');
+                if (!$response || !($response instanceof \AfriCC\EPP\Frame\Response)) {
+                    throw new Exception('Invalid response received from registry');
+                }
+
+                // Get the result details
+                $result = $response->results()[0];
+                if (!$result) {
+                    throw new Exception('No result in registry response');
                 }
 
                 // Log raw response for debugging
                 Log::debug('EPP response received', [
                     'domain' => $domain->name,
-                    'raw_response' => $response->data(),
-                    'success' => $response->success()
+                    'code' => $result->code(),
+                    'message' => $result->message(),
+                    'data' => $response->data()
                 ]);
 
-                if (!$response->success()) {
-                    $responseData = $response->data();
-                    $error = 'Registry request failed';
-                    
-                    // Extract error message from response data if available
-                    if ($responseData && isset($responseData['result'])) {
-                        $result = $responseData['result'];
-                        $code = $result['@result']['code'] ?? 'unknown';
-                        $msg = $result['msg']['_text'] ?? 'Unknown error';
-                        $error = "Registry error (code: $code): $msg";
-                    }
-
-                    throw new Exception($error);
+                // Check if the response indicates success (1000-series codes are success)
+                if ($result->code() < 1000 || $result->code() >= 2000) {
+                    throw new Exception("Registry error (code: {$result->code()}): {$result->message()}");
                 }
             } catch (Exception $e) {
                 Log::error('Domain renewal failed in registry', [
