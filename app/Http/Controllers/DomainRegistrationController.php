@@ -349,6 +349,13 @@ class DomainRegistrationController extends Controller
                 $request->period . 'y'
             );
 
+            // Log the request before sending
+            Log::info('Sending domain renewal request', [
+                'domain' => $domain->name,
+                'period' => $request->period . 'y',
+                'current_expiry' => $expiryDate->format('Y-m-d')
+            ]);
+
             $response = $this->eppService->getClient()->request($frame);
 
             if (! $response || ! $response->success()) {
@@ -371,6 +378,13 @@ class DomainRegistrationController extends Controller
                 
                 throw new Exception('Failed to renew domain in registry: ' . $error);
             }
+
+            // Log successful response
+            Log::info('Domain renewal successful', [
+                'domain' => $domain->name,
+                'new_expiry' => $expiryDate->addYears($request->period)->format('Y-m-d'),
+                'response_data' => $response->data()
+            ]);
 
             // Update domain expiry in our database
             $domain->update([
