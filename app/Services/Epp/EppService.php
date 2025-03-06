@@ -496,35 +496,75 @@ class EppService
             $frame = new UpdateDomain;
             $frame->setDomain($domain);
 
-            foreach ($adminContacts as $contact) {
-                $frame->addAdminContact($contact);
+            // Add section
+            $addSection = false;
+
+            if (!empty($adminContacts)) {
+                foreach ($adminContacts as $contact) {
+                    $frame->addAdminContact($contact);
+                }
+                $addSection = true;
             }
 
-            foreach ($techContacts as $contact) {
-                $frame->addTechContact($contact);
+            if (!empty($techContacts)) {
+                foreach ($techContacts as $contact) {
+                    $frame->addTechContact($contact);
+                }
+                $addSection = true;
             }
 
-            foreach ($hostObjs as $host) {
-                $frame->addHostObj($host);
+            if (!empty($hostObjs)) {
+                foreach ($hostObjs as $host) {
+                    $frame->addHostObj($host);
+                    $addSection = true;
+                }
             }
 
-            foreach ($hostAttrs as $host => $ips) {
-                $frame->addHostAttr($host, $ips);
+            if (!empty($hostAttrs)) {
+                foreach ($hostAttrs as $host => $ips) {
+                    $frame->addHostAttr($host, $ips);
+                    $addSection = true;
+                }
             }
 
-            foreach ($statuses as $status => $reason) {
-                $frame->addStatus($status, $reason);
+            if (!empty($statuses)) {
+                foreach ($statuses as $status => $reason) {
+                    $frame->addStatus($status, $reason);
+                    $addSection = true;
+                }
             }
 
-            foreach ($removeHostAttrs as $host) {
-                $frame->removeHostAttr($host);
+            // Remove section
+            $removeSection = false;
+
+            if (!empty($removeHostAttrs)) {
+                foreach ($removeHostAttrs as $host) {
+                    $frame->removeHostObj($host);
+                    $removeSection = true;
+                }
             }
 
-            $pw = $frame->changeAuthInfo();
+            // Only change authInfo if we're making changes
+            $pw = null;
+            if ($addSection || $removeSection) {
+                $pw = $frame->changeAuthInfo();
+            }
+
+            Log::debug('EPP update domain frame created', [
+                'domain' => $domain,
+                'add_section' => $addSection,
+                'remove_section' => $removeSection,
+                'host_objs' => $hostObjs,
+                'remove_hosts' => $removeHostAttrs
+            ]);
 
             return ['frame' => $frame, 'authInfo' => $pw];
         } catch (Exception $e) {
-            Log::error('Domain update failed: ' . $e->getMessage());
+            Log::error('Domain update failed: ' . $e->getMessage(), [
+                'domain' => $domain,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
             // Try to reconnect on next request
             $this->connected = false;
             throw $e;

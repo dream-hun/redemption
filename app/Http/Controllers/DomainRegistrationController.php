@@ -688,59 +688,47 @@ class DomainRegistrationController extends Controller
             ]);
 
             // Clean and prepare nameserver arrays
-            $newNameservers = array_values($request->nameservers);
-            $oldNameservers = array_values($domain->nameservers ?? []);
+            $newNameservers = array_values(array_filter($request->nameservers));
+            $oldNameservers = array_values(array_filter($domain->nameservers ?? []));
 
-            // First remove old nameservers
-            if (! empty($oldNameservers)) {
-                $removeFrame = $this->eppService->updateDomain(
-                    $domain->name,
-                    [], // No admin contacts to update
-                    [], // No tech contacts to update
-                    [], // No new host objects
-                    [], // No host attributes to add
-                    [], // No statuses to update
-                    $oldNameservers // Remove old nameservers
-                );
+            // Update nameservers in a single operation
+            $frame = $this->eppService->updateDomain(
+                $domain->name,
+                [], // No admin contacts to update
+                [], // No tech contacts to update
+                $newNameservers, // Add new nameservers
+                [], // No host attributes
+                [], // No statuses to update
+                $oldNameservers // Remove old nameservers
+            );
 
-                $response = $this->eppService->getClient()->request($removeFrame['frame']);
+            // Send the update request
+            $response = $this->eppService->getClient()->request($frame['frame']);
 
-                if (! $response || ! $response->success()) {
-                    Log::warning('Failed to remove old nameservers, continuing anyway', [
-                        'domain' => $domain->name,
-                        'nameservers' => $oldNameservers,
-                        'response' => $response ? $response->results() : null,
-                    ]);
-                }
+            if (!$response || !($response instanceof \AfriCC\EPP\Frame\Response)) {
+                throw new Exception('Invalid response received from registry');
             }
 
-            // Then add new nameservers one by one
-            foreach ($newNameservers as $ns) {
-                $addFrame = $this->eppService->updateDomain(
-                    $domain->name,
-                    [], // No admin contacts to update
-                    [], // No tech contacts to update
-                    [$ns], // Add one nameserver at a time
-                    [], // No host attributes
-                    [], // No statuses to update
-                    [] // No nameservers to remove
-                );
+            // Get the result details
+            $result = $response->results()[0];
+            if (!$result) {
+                throw new Exception('No result in registry response');
+            }
 
-                $response = $this->eppService->getClient()->request($addFrame['frame']);
+            // Log raw response for debugging
+            Log::debug('EPP nameserver update response', [
+                'domain' => $domain->name,
+                'code' => $result->code(),
+                'message' => $result->message(),
+                'data' => $response->data()
+            ]);
 
-                if (! $response || ! $response->success()) {
-                    $error = "Failed to add nameserver: $ns";
-                    if ($response) {
-                        $results = $response->results();
-                        if (! empty($results)) {
-                            $result = $results[0];
-                            $error .= sprintf(' (Error %d: %s)', $result->code(), $result->message());
-                        }
-                    }
-                    throw new Exception($error);
-                }
-
-                Log::info("Successfully added nameserver: $ns");
+            // Check if the response indicates success (1000-series codes are success)
+            if ($result->code() < 1000 || $result->code() >= 2000) {
+                throw new Exception(sprintf('Registry error (code: %d): %s', 
+                    $result->code(), 
+                    $result->message()
+                ));
             }
 
             // If successful, update nameservers in database
