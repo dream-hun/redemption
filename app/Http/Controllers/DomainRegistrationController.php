@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use AfriCC\EPP\Frame\Response;
 use App\Models\Cart;
 use App\Models\Contact;
 use App\Models\Country;
@@ -13,10 +14,11 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
+use Throwable;
 
 class DomainRegistrationController extends Controller
 {
-    protected $eppService;
+    protected EppService $eppService;
 
     public function __construct(EppService $eppService)
     {
@@ -331,39 +333,41 @@ class DomainRegistrationController extends Controller
                     ->with('error', 'You do not have permission to renew this domain.');
             }
 
-            // Convert expires_at to Carbon if it's a string
-            $expiryDate = $domain->expires_at instanceof \Carbon\Carbon 
-                ? $domain->expires_at 
-                : \Carbon\Carbon::parse($domain->expires_at);
-
-            // Ensure domain is not expired
-            if ($expiryDate->isPast()) {
-                return redirect()->back()
-                    ->with('error', 'Cannot renew an expired domain. Please contact support.');
-            }
-
-            // Create EPP frame for domain renewal
-            $frame = $this->eppService->renewDomain(
-                $domain->name,
-                $expiryDate,
-                $request->period . 'y'
-            );
-
-            // Log the request before sending
-            Log::info('Sending domain renewal request', [
-                'domain' => $domain->name,
-                'period' => $request->period . 'y',
-                'current_expiry' => $expiryDate->format('Y-m-d')
-            ]);
-
             try {
-                $client = $this->eppService->getClient();
-                if (!$client) {
-                    throw new Exception('EPP client not available');
+                // Get current domain info from registry
+                $domainInfo = $this->eppService->getDomainInfo($domain->name);
+                
+                if (!isset($domainInfo['infData']['exDate'])) {
+                    throw new Exception('Could not determine domain expiry date from registry');
                 }
 
+                // Parse the registry expiry date
+                $registryExpiryDate = \Carbon\Carbon::parse($domainInfo['infData']['exDate']);
+                
+                Log::info('Retrieved domain info from registry', [
+                    'domain' => $domain->name,
+                    'registry_expiry' => $registryExpiryDate->format('Y-m-d'),
+                    'local_expiry' => $domain->expires_at
+                ]);
+
+                // Create EPP frame for domain renewal using registry expiry date
+                $frame = $this->eppService->renewDomain(
+                    $domain->name,
+                    $registryExpiryDate,
+                    $request->period . 'y'
+                );
+
+                // Log the request before sending
+                Log::info('Sending domain renewal request', [
+                    'domain' => $domain->name,
+                    'period' => $request->period . 'y',
+                    'registry_expiry' => $registryExpiryDate->format('Y-m-d')
+                ]);
+
+                $client = $this->eppService->getClient();
                 $response = $client->request($frame);
-                if (!$response || !($response instanceof \AfriCC\EPP\Frame\Response)) {
+                
+                if (!($response instanceof Response)) {
                     throw new Exception('Invalid response received from registry');
                 }
 
@@ -385,33 +389,38 @@ class DomainRegistrationController extends Controller
                 if ($result->code() < 1000 || $result->code() >= 2000) {
                     throw new Exception("Registry error (code: {$result->code()}): {$result->message()}");
                 }
+
+                // Calculate new expiry date based on registry's expiry date
+                $newExpiryDate = $registryExpiryDate->copy()->addYears($request->period);
+
+                // Log successful response
+                Log::info('Domain renewal successful', [
+                    'domain' => $domain->name,
+                    'old_expiry' => $registryExpiryDate->format('Y-m-d'),
+                    'new_expiry' => $newExpiryDate->format('Y-m-d'),
+                    'response_data' => $response->data()
+                ]);
+
+                // Update domain expiry in our database
+                $domain->update([
+                    'expires_at' => $newExpiryDate,
+                    'last_renewal_at' => now(),
+                ]);
+
+                DB::commit();
+
+                return redirect()->route('admin.domains.index', $domain)
+                    ->with('success', 'Domain renewed successfully!');
+
             } catch (Exception $e) {
                 Log::error('Domain renewal failed in registry', [
                     'domain' => $domain->name,
                     'error' => $e->getMessage(),
                     'trace' => $e->getTraceAsString()
                 ]);
-                
+
                 throw new Exception('Failed to renew domain in registry: ' . $e->getMessage());
             }
-
-            // Log successful response
-            Log::info('Domain renewal successful', [
-                'domain' => $domain->name,
-                'new_expiry' => $expiryDate->addYears($request->period)->format('Y-m-d'),
-                'response_data' => $response->data()
-            ]);
-
-            // Update domain expiry in our database
-            $domain->update([
-                'expires_at' => $expiryDate->addYears($request->period),
-                'last_renewal_at' => now(),
-            ]);
-
-            DB::commit();
-
-            return redirect()->route('admin.domains.index', $domain)
-                ->with('success', 'Domain renewed successfully!');
 
         } catch (Exception $e) {
             DB::rollBack();
@@ -652,6 +661,8 @@ class DomainRegistrationController extends Controller
 
             return redirect()->back()
                 ->with('error', 'Failed to update domain contact. Please try again or contact support.');
+        } catch (Throwable $e) {
+            $e->getMessage();
         } finally {
             $this->eppService->disconnect();
         }
@@ -705,7 +716,7 @@ class DomainRegistrationController extends Controller
             // Send the update request
             $response = $this->eppService->getClient()->request($frame['frame']);
 
-            if (!$response || !($response instanceof \AfriCC\EPP\Frame\Response)) {
+            if (!($response instanceof Response)) {
                 throw new Exception('Invalid response received from registry');
             }
 
@@ -725,8 +736,8 @@ class DomainRegistrationController extends Controller
 
             // Check if the response indicates success (1000-series codes are success)
             if ($result->code() < 1000 || $result->code() >= 2000) {
-                throw new Exception(sprintf('Registry error (code: %d): %s', 
-                    $result->code(), 
+                throw new Exception(sprintf('Registry error (code: %d): %s',
+                    $result->code(),
                     $result->message()
                 ));
             }
@@ -758,6 +769,8 @@ class DomainRegistrationController extends Controller
 
             return redirect()->back()
                 ->with('error', 'Failed to update domain nameservers: '.$e->getMessage());
+        } catch (Throwable $e) {
+            return $e->getMessage();
         } finally {
             $this->eppService->disconnect();
         }

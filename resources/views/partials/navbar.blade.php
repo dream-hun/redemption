@@ -6,7 +6,7 @@
             <a class="nav-link" data-widget="pushmenu" href="#" role="button"><i class="bi bi-columns-gap"></i></a>
         </li>
         <li class="nav-item d-none d-sm-inline-block">
-            <a href="index3.html" class="nav-link">Home</a>
+            <a href="{{route('dashboard')}}" class="nav-link">Home</a>
         </li>
         <li class="nav-item d-none d-sm-inline-block">
             <a href="#" class="nav-link">Contact</a>
@@ -19,7 +19,7 @@
         <li class="nav-item">
             <a class="nav-link" href="#">
                 <i class="bi bi-cart-dash-fill"></i>
-                <span class="badge badge-primary navbar-badge">3</span>
+                <span class="badge badge-primary navbar-badge">{{ $cartCount }}</span>
             </a>
 
         </li>

@@ -10,10 +10,12 @@ use AfriCC\EPP\Frame\Command\Create\Contact as CreateContact;
 use AfriCC\EPP\Frame\Command\Create\Domain as CreateDomain;
 use AfriCC\EPP\Frame\Command\Create\Host as CreateHost;
 use AfriCC\EPP\Frame\Command\Delete\Domain as DeleteDomain;
+use AfriCC\EPP\Frame\Command\Info\Domain as InfoDomain;
 use AfriCC\EPP\Frame\Command\Poll;
 use AfriCC\EPP\Frame\Command\Renew\Domain as RenewDomain;
 use AfriCC\EPP\Frame\Command\Transfer\Domain as TransferDomain;
 use AfriCC\EPP\Frame\Command\Update\Domain as UpdateDomain;
+use AfriCC\EPP\Frame\Response;
 use Exception;
 use Illuminate\Support\Facades\Log;
 
@@ -567,6 +569,48 @@ class EppService
             ]);
             // Try to reconnect on next request
             $this->connected = false;
+            throw $e;
+        }
+    }
+
+    /**
+     * Get domain info from registry
+     */
+    public function getDomainInfo(string $domain)
+    {
+        try {
+            $this->ensureConnection();
+            
+            $frame = new InfoDomain;
+            $frame->setDomain($domain);
+            
+            $response = $this->getClient()->request($frame);
+            
+            if (!($response instanceof Response)) {
+                throw new Exception('Invalid response received from registry');
+            }
+
+            // Get the result details
+            $result = $response->results()[0];
+            if (!$result) {
+                throw new Exception('No result in registry response');
+            }
+
+            // Check if the response indicates success
+            if ($result->code() < 1000 || $result->code() >= 2000) {
+                throw new Exception(sprintf('Registry error (code: %d): %s',
+                    $result->code(),
+                    $result->message()
+                ));
+            }
+
+            return $response->data();
+        } catch (Exception $e) {
+            Log::error('Failed to get domain info: ' . $e->getMessage(), [
+                'domain' => $domain,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
             throw $e;
         }
     }
