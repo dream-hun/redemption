@@ -15,7 +15,7 @@ class DomainPricingController extends Controller
     {
         abort_if(Gate::denies('domain_pricing_access'), Response::HTTP_FORBIDDEN, '403 Forbidden');
 
-        $domainPricings = DomainPricing::all();
+        $domainPricings = DomainPricing::withoutGlobalScopes()->get();
 
         return view('admin.domainPricings.index', compact('domainPricings'));
     }
@@ -57,14 +57,5 @@ class DomainPricingController extends Controller
         return back();
     }
 
-    public function massDestroy(MassDestroyDomainPricingRequest $request)
-    {
-        $domainPricings = DomainPricing::find(request('ids'));
 
-        foreach ($domainPricings as $domainPricing) {
-            $domainPricing->delete();
-        }
-
-        return response(null, Response::HTTP_NO_CONTENT);
-    }
 }
