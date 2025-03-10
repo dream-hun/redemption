@@ -121,14 +121,12 @@
                     </li>
                 @endcan
                 <li class="nav-item">
-                    <a href="#" class="nav-link"
-                       onclick="event.preventDefault(); document.getElementById('logoutform').submit();">
-                        <p>
-                            <i class="fas fa-fw fa-sign-out-alt nav-icon">
-
-                            </i>
+                    <form id="logoutform" action="{{ route('logout') }}" method="POST" style="display: none;">
+                        @csrf
+                    </form>
+                    <a href="#" class="nav-link" onclick="event.preventDefault(); document.getElementById('logoutform').submit();">
+                        <i class="bi bi-box-arrow-right"></i>
                         <p>{{ trans('global.logout') }}</p>
-
                     </a>
                 </li>
             </ul>
