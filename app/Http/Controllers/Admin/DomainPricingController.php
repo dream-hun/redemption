@@ -29,7 +29,7 @@ class DomainPricingController extends Controller
 
     public function store(StoreDomainPricingRequest $request)
     {
-        $domainPricing = DomainPricing::create($request->all());
+        $domainPricing = DomainPricing::withoutGlobalScopes()->create($request->all());
 
         return redirect()->route('admin.domain-pricings.index');
     }
@@ -37,12 +37,13 @@ class DomainPricingController extends Controller
     public function edit(DomainPricing $domainPricing)
     {
         abort_if(Gate::denies('domain_pricing_edit'), Response::HTTP_FORBIDDEN, '403 Forbidden');
-        $domainPricing=DomainPricing::withoutGlobalScopes()->findOrFail($domainPricing->id);
+        $domainPricing = DomainPricing::withoutGlobalScopes()->findOrFail($domainPricing->id);
         return view('admin.domainPricings.edit', compact('domainPricing'));
     }
 
     public function update(UpdateDomainPricingRequest $request, DomainPricing $domainPricing)
     {
+        $domainPricing = DomainPricing::withoutGlobalScopes()->findOrFail($domainPricing->id);
         $domainPricing->update($request->all());
 
         return redirect()->route('admin.domain-pricings.index')->withSuccess('Domain Pricing updated successfully');
@@ -51,11 +52,10 @@ class DomainPricingController extends Controller
     public function destroy(DomainPricing $domainPricing)
     {
         abort_if(Gate::denies('domain_pricing_delete'), Response::HTTP_FORBIDDEN, '403 Forbidden');
-
+        
+        $domainPricing = DomainPricing::withoutGlobalScopes()->findOrFail($domainPricing->id);
         $domainPricing->delete();
 
-        return back();
+        return back()->withSuccess('Domain Pricing deleted successfully');
     }
-
-
 }
