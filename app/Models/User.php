@@ -2,16 +2,13 @@
 
 namespace App\Models;
 
-use App\Models\Scopes\UserScope;
 use DateTimeInterface;
 use Exception;
-use Illuminate\Database\Eloquent\Attributes\ScopedBy;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Str;
-
 
 class User extends Authenticatable
 {

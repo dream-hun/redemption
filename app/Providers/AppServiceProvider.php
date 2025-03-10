@@ -2,11 +2,8 @@
 
 namespace App\Providers;
 
-use App\Models\Cart;
 use App\Models\DomainPricing;
 use App\Models\Setting;
-use Cknow\Money\Money;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;

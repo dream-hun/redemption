@@ -79,7 +79,7 @@ class DomainRegistrationController extends Controller
                         'contact_type' => $type,
                         'name' => $contactInfo['name'],
                         'organization' => $contactInfo['organization'],
-                        'email' => $contactInfo['email']
+                        'email' => $contactInfo['email'],
                     ],
                     [
                         'contact_id' => isset($existingContact) ? $existingContact->contact_id : ($type.'-'.Str::random(8)),
@@ -130,7 +130,7 @@ class DomainRegistrationController extends Controller
                         'type' => $type,
                         'operation' => $contact->wasRecentlyCreated ? 'create' : 'update',
                         'success' => $response->success(),
-                        'results' => array_map(function($result) {
+                        'results' => array_map(function ($result) {
                             return [
                                 'code' => $result->code(),
                                 'message' => $result->message(),
@@ -140,11 +140,11 @@ class DomainRegistrationController extends Controller
                     ]);
                 }
 
-                if (!$response || !$response->success()) {
-                    throw new Exception("Failed to " . ($contact->wasRecentlyCreated ? "create" : "update") . " {$type} contact");
+                if (! $response || ! $response->success()) {
+                    throw new Exception('Failed to '.($contact->wasRecentlyCreated ? 'create' : 'update')." {$type} contact");
                 }
 
-                Log::info('Successfully ' . ($contact->wasRecentlyCreated ? 'created' : 'updated') . ' contact in EPP', [
+                Log::info('Successfully '.($contact->wasRecentlyCreated ? 'created' : 'updated').' contact in EPP', [
                     'domain' => '',
                     'type' => $type,
                     'contact_id' => $contactId,
@@ -336,44 +336,44 @@ class DomainRegistrationController extends Controller
             try {
                 // Get current domain info from registry
                 $domainInfo = $this->eppService->getDomainInfo($domain->name);
-                
-                if (!isset($domainInfo['infData']['exDate'])) {
+
+                if (! isset($domainInfo['infData']['exDate'])) {
                     throw new Exception('Could not determine domain expiry date from registry');
                 }
 
                 // Parse the registry expiry date
                 $registryExpiryDate = \Carbon\Carbon::parse($domainInfo['infData']['exDate']);
-                
+
                 Log::info('Retrieved domain info from registry', [
                     'domain' => $domain->name,
                     'registry_expiry' => $registryExpiryDate->format('Y-m-d'),
-                    'local_expiry' => $domain->expires_at
+                    'local_expiry' => $domain->expires_at,
                 ]);
 
                 // Create EPP frame for domain renewal using registry expiry date
                 $frame = $this->eppService->renewDomain(
                     $domain->name,
                     $registryExpiryDate,
-                    $request->period . 'y'
+                    $request->period.'y'
                 );
 
                 // Log the request before sending
                 Log::info('Sending domain renewal request', [
                     'domain' => $domain->name,
-                    'period' => $request->period . 'y',
-                    'registry_expiry' => $registryExpiryDate->format('Y-m-d')
+                    'period' => $request->period.'y',
+                    'registry_expiry' => $registryExpiryDate->format('Y-m-d'),
                 ]);
 
                 $client = $this->eppService->getClient();
                 $response = $client->request($frame);
-                
-                if (!($response instanceof Response)) {
+
+                if (! ($response instanceof Response)) {
                     throw new Exception('Invalid response received from registry');
                 }
 
                 // Get the result details
                 $result = $response->results()[0];
-                if (!$result) {
+                if (! $result) {
                     throw new Exception('No result in registry response');
                 }
 
@@ -382,7 +382,7 @@ class DomainRegistrationController extends Controller
                     'domain' => $domain->name,
                     'code' => $result->code(),
                     'message' => $result->message(),
-                    'data' => $response->data()
+                    'data' => $response->data(),
                 ]);
 
                 // Check if the response indicates success (1000-series codes are success)
@@ -398,7 +398,7 @@ class DomainRegistrationController extends Controller
                     'domain' => $domain->name,
                     'old_expiry' => $registryExpiryDate->format('Y-m-d'),
                     'new_expiry' => $newExpiryDate->format('Y-m-d'),
-                    'response_data' => $response->data()
+                    'response_data' => $response->data(),
                 ]);
 
                 // Update domain expiry in our database
@@ -416,24 +416,24 @@ class DomainRegistrationController extends Controller
                 Log::error('Domain renewal failed in registry', [
                     'domain' => $domain->name,
                     'error' => $e->getMessage(),
-                    'trace' => $e->getTraceAsString()
+                    'trace' => $e->getTraceAsString(),
                 ]);
 
-                throw new Exception('Failed to renew domain in registry: ' . $e->getMessage());
+                throw new Exception('Failed to renew domain in registry: '.$e->getMessage());
             }
 
         } catch (Exception $e) {
             DB::rollBack();
-            Log::error('Domain renewal failed: ' . $e->getMessage(), [
+            Log::error('Domain renewal failed: '.$e->getMessage(), [
                 'domain' => $domain->name,
                 'period' => $request->period,
                 'user_id' => Auth::id(),
                 'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
+                'trace' => $e->getTraceAsString(),
             ]);
 
             return redirect()->back()
-                ->with('error', 'Failed to renew domain. Please try again or contact support. Error: ' . $e->getMessage());
+                ->with('error', 'Failed to renew domain. Please try again or contact support. Error: '.$e->getMessage());
         } finally {
             $this->eppService->disconnect();
         }
@@ -449,12 +449,13 @@ class DomainRegistrationController extends Controller
         ]);
 
         // Validate contact type
-        if (!in_array($type, ['registrant', 'admin', 'tech'])) {
+        if (! in_array($type, ['registrant', 'admin', 'tech'])) {
             Log::warning('Invalid contact type attempted', [
                 'domain' => $domain->name,
                 'type' => $type,
                 'user_id' => Auth::id(),
             ]);
+
             return redirect()->back()->with('error', 'Invalid contact type.');
         }
 
@@ -481,6 +482,7 @@ class DomainRegistrationController extends Controller
                     'user_id' => Auth::id(),
                     'owner_id' => $domain->owner_id,
                 ]);
+
                 return redirect()->back()
                     ->with('error', 'You do not have permission to update this domain.');
             }
@@ -492,7 +494,7 @@ class DomainRegistrationController extends Controller
                     'contact_type' => $type,
                     'name' => $request->contact['name'],
                     'organization' => $request->contact['organization'],
-                    'email' => $request->contact['email']
+                    'email' => $request->contact['email'],
                 ],
                 [
                     'contact_id' => isset($existingContact) ? $existingContact->contact_id : ($type.'-'.Str::random(8)),
@@ -543,7 +545,7 @@ class DomainRegistrationController extends Controller
                     'type' => $type,
                     'operation' => $contact->wasRecentlyCreated ? 'create' : 'update',
                     'success' => $response->success(),
-                    'results' => array_map(function($result) {
+                    'results' => array_map(function ($result) {
                         return [
                             'code' => $result->code(),
                             'message' => $result->message(),
@@ -553,11 +555,11 @@ class DomainRegistrationController extends Controller
                 ]);
             }
 
-            if (!$response || !$response->success()) {
-                throw new Exception("Failed to " . ($contact->wasRecentlyCreated ? "create" : "update") . " {$type} contact");
+            if (! $response || ! $response->success()) {
+                throw new Exception('Failed to '.($contact->wasRecentlyCreated ? 'create' : 'update')." {$type} contact");
             }
 
-            Log::info('Successfully ' . ($contact->wasRecentlyCreated ? 'created' : 'updated') . ' contact in EPP', [
+            Log::info('Successfully '.($contact->wasRecentlyCreated ? 'created' : 'updated').' contact in EPP', [
                 'domain' => $domain->name,
                 'type' => $type,
                 'contact_id' => $contactId,
@@ -605,7 +607,7 @@ class DomainRegistrationController extends Controller
                     'domain' => $domain->name,
                     'type' => $type,
                     'success' => $response->success(),
-                    'results' => array_map(function($result) {
+                    'results' => array_map(function ($result) {
                         return [
                             'code' => $result->code(),
                             'message' => $result->message(),
@@ -615,7 +617,7 @@ class DomainRegistrationController extends Controller
                 ]);
             }
 
-            if (!$response || !$response->success()) {
+            if (! $response || ! $response->success()) {
                 throw new Exception('Failed to update domain contact in registry');
             }
 
@@ -716,13 +718,13 @@ class DomainRegistrationController extends Controller
             // Send the update request
             $response = $this->eppService->getClient()->request($frame['frame']);
 
-            if (!($response instanceof Response)) {
+            if (! ($response instanceof Response)) {
                 throw new Exception('Invalid response received from registry');
             }
 
             // Get the result details
             $result = $response->results()[0];
-            if (!$result) {
+            if (! $result) {
                 throw new Exception('No result in registry response');
             }
 
@@ -731,7 +733,7 @@ class DomainRegistrationController extends Controller
                 'domain' => $domain->name,
                 'code' => $result->code(),
                 'message' => $result->message(),
-                'data' => $response->data()
+                'data' => $response->data(),
             ]);
 
             // Check if the response indicates success (1000-series codes are success)

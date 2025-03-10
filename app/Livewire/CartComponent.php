@@ -4,15 +4,17 @@ namespace App\Livewire;
 
 use App\Models\Cart;
 use Cknow\Money\Money;
-use Livewire\Component;
-use Livewire\Attributes\On;
 use Illuminate\Support\Facades\Auth;
+use Livewire\Component;
 
 class CartComponent extends Component
 {
     public $items = [];
+
     public $subtotalAmount = 0;
+
     public $taxAmount = 0;
+
     public $totalAmount = 0;
 
     public function mount()
@@ -28,20 +30,20 @@ class CartComponent extends Component
         } else {
             // For guests, show items matching their current session
             $this->items = Cart::where('session_id', session()->getId())
-                              ->whereNull('user_id')
-                              ->get();
+                ->whereNull('user_id')
+                ->get();
         }
-        
+
         $this->calculateTotals();
     }
 
     private function calculateTotals()
     {
         if ($this->items->isNotEmpty()) {
-            $subtotal = $this->items->sum(function($item) {
+            $subtotal = $this->items->sum(function ($item) {
                 return $item->price * $item->period;
             });
-            
+
             $this->subtotalAmount = $subtotal;
             $this->taxAmount = $subtotal * 0.18; // 18% VAT
             $this->totalAmount = $subtotal + $this->taxAmount;
@@ -70,14 +72,14 @@ class CartComponent extends Component
     public function updatePeriod($uuid, $period)
     {
         $item = Cart::where('uuid', $uuid)
-            ->when(Auth::check(), function($query) {
+            ->when(Auth::check(), function ($query) {
                 return $query->where('user_id', Auth::id());
-            }, function($query) {
+            }, function ($query) {
                 return $query->where('session_id', session()->getId())
-                           ->whereNull('user_id');
+                    ->whereNull('user_id');
             })
             ->first();
-        
+
         if ($item) {
             $item->update([
                 'period' => $period,
@@ -91,14 +93,14 @@ class CartComponent extends Component
     public function removeItem($uuid)
     {
         $item = Cart::where('uuid', $uuid)
-            ->when(Auth::check(), function($query) {
+            ->when(Auth::check(), function ($query) {
                 return $query->where('user_id', Auth::id());
-            }, function($query) {
+            }, function ($query) {
                 return $query->where('session_id', session()->getId())
-                           ->whereNull('user_id');
+                    ->whereNull('user_id');
             })
             ->first();
-        
+
         if ($item) {
             $item->delete();
             $this->refreshCart();

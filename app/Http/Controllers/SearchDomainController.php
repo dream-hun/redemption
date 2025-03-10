@@ -53,7 +53,7 @@ class SearchDomainController extends Controller
 
             $results = [];
             foreach ($tlds as $tld) {
-                $domainWithTld = $domain . '.' . ltrim($tld->tld, '.');
+                $domainWithTld = $domain.'.'.ltrim($tld->tld, '.');
                 Log::debug('Checking domain:', ['domain' => $domainWithTld]);
 
                 // Check domain availability with EPP
@@ -64,11 +64,11 @@ class SearchDomainController extends Controller
                     'tld_info' => [
                         'register_price' => $tld->register_price,
                         'transfer_price' => $tld->transfer_price,
-                        'renew_price' => $tld->renew_price
-                    ]
+                        'renew_price' => $tld->renew_price,
+                    ],
                 ]);
 
-                if (!empty($eppResults) && isset($eppResults[$domainWithTld])) {
+                if (! empty($eppResults) && isset($eppResults[$domainWithTld])) {
                     $result = $eppResults[$domainWithTld];
                     $results[$domainWithTld] = (object) [
                         'available' => $result->available,

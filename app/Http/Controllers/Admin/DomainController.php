@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Country;
 use App\Models\Domain;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -28,7 +27,7 @@ class DomainController extends Controller
         $contacts = [
             'registrant' => $domain->registrantContact,
             'admin' => $domain->adminContact,
-            'tech' => $domain->techContact
+            'tech' => $domain->techContact,
         ];
 
         return view('admin.domains.edit', compact('domain', 'countries', 'contacts'));
@@ -42,6 +41,4 @@ class DomainController extends Controller
 
         return view('admin.domains.show', compact('domain'));
     }
-
-    
 }

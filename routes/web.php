@@ -3,10 +3,10 @@
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\DomainController;
 use App\Http\Controllers\Admin\DomainPricingController;
-use App\Http\Controllers\Admin\UsersController;
+use App\Http\Controllers\Admin\PermissionsController;
 use App\Http\Controllers\Admin\RolesController;
 use App\Http\Controllers\Admin\SettingController;
-use App\Http\Controllers\Admin\PermissionsController;
+use App\Http\Controllers\Admin\UsersController;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\ClientDomainsController;
 use App\Http\Controllers\DomainRegistrationController;
@@ -23,7 +23,6 @@ Route::get('/hosting', [HostingController::class, 'index'])->name('hosting.index
 Route::get('/domains', [SearchDomainController::class, 'index'])->name('domains.index');
 Route::post('/check-domains', [SearchDomainController::class, 'search'])->name('domain.check');
 
-
 Route::post('/add-to-cart', [CartController::class, 'addToCart'])->name('cart.add')->middleware('web');
 Route::get('/shopping-cart', [CartController::class, 'cart'])->name('cart.index');
 
@@ -31,9 +30,9 @@ Route::group(['middleware' => 'auth', 'prefix' => 'admin', 'as' => 'admin.'], fu
     Route::resource('settings', SettingController::class);
     Route::resource('users', UsersController::class);
     Route::resource('roles', RolesController::class);
-    Route::resource('permissions',PermissionsController::class);
+    Route::resource('permissions', PermissionsController::class);
     Route::resource('domain-pricings', DomainPricingController::class)->except('show');
-    Route::resource('domains', DomainController::class)->except(['show','update']);
+    Route::resource('domains', DomainController::class)->except(['show', 'update']);
     Route::put('domains/{domain}/nameservers', [DomainRegistrationController::class, 'updateNameservers'])->name('nameservers.update');
     Route::put('domains/{domain}/contacts/{type}', [DomainRegistrationController::class, 'updateContacts'])
         ->name('contacts.update');

@@ -28,6 +28,6 @@ class DashboardController extends Controller
             return Domain::count();
         });
 
-        return view('dashboard', ['tlds' => $tlds, 'customers' => $customers,'domains' => $domains]);
+        return view('dashboard', ['tlds' => $tlds, 'customers' => $customers, 'domains' => $domains]);
     }
 }

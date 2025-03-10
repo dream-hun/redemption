@@ -3,12 +3,10 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\MassDestroySettingRequest;
 use App\Http\Requests\Admin\StoreSettingRequest;
 use App\Http\Requests\Admin\UpdateSettingRequest;
 use App\Models\Setting;
 use Illuminate\Support\Facades\Gate;
-use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
 class SettingController extends Controller
@@ -65,6 +63,4 @@ class SettingController extends Controller
 
         return back();
     }
-
-
 }

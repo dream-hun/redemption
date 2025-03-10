@@ -2,12 +2,10 @@
 
 namespace App\Models;
 
-use App\Models\Scopes\DomainPricingScope;
 use Cknow\Money\Money;
 use DateTimeInterface;
-use Illuminate\Database\Eloquent\Attributes\ScopedBy;
 use Illuminate\Database\Eloquent\Model;
-#[ScopedBy([DomainPricingScope::class])]
+
 class DomainPricing extends Model
 {
     public const STATUS_SELECT = [
@@ -57,5 +55,4 @@ class DomainPricing extends Model
     {
         return $date->format('Y-m-d H:i:s');
     }
-
 }

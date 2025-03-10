@@ -13,8 +13,8 @@ class UserScope implements Scope
      */
     public function apply(Builder $builder, Model $model): void
     {
-        $builder->whereHas('roles',function (Builder $builder){
-            $builder->where('title','user');
+        $builder->whereHas('roles', function (Builder $builder) {
+            $builder->where('title', 'user');
         });
     }
 }
