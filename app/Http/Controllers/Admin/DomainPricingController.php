@@ -37,7 +37,7 @@ class DomainPricingController extends Controller
     public function edit(DomainPricing $domainPricing)
     {
         abort_if(Gate::denies('domain_pricing_edit'), Response::HTTP_FORBIDDEN, '403 Forbidden');
-
+        $domainPricing=DomainPricing::withoutGlobalScopes()->findOrFail($domainPricing->id);
         return view('admin.domainPricings.edit', compact('domainPricing'));
     }
 
