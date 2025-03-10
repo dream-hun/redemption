@@ -51,7 +51,7 @@
     <div class="container">
 
         <div class="row justify-content-center">
-            <div class="section-title-area w-570">
+            <div class="section-title-area w-full">
                 <h2 class="section-title sal-animate" data-sal="slide-down" data-sal-delay="100"
                     data-sal-duration="800">Choose the domain that suits your busines or organisation</h2>
                 <p class="desc sal-animate" data-sal="slide-down" data-sal-delay="200" data-sal-duration="800">
