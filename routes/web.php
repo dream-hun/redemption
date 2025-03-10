@@ -2,6 +2,10 @@
 
 use App\Http\Controllers\Admin\DomainController;
 use App\Http\Controllers\Admin\DomainPricingController;
+use App\Http\Controllers\Admin\UsersController;
+use App\Http\Controllers\Admin\RolesController;
+use App\Http\Controllers\Admin\SettingController;
+use App\Http\Controllers\Admin\PermissionsController;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\ClientDomainsController;
 use App\Http\Controllers\DomainRegistrationController;
@@ -23,6 +27,10 @@ Route::post('/add-to-cart', [CartController::class, 'addToCart'])->name('cart.ad
 Route::get('/shopping-cart', [CartController::class, 'cart'])->name('cart.index');
 
 Route::group(['middleware' => 'auth', 'prefix' => 'admin', 'as' => 'admin.'], function () {
+    Route::resource('settings', SettingController::class);
+    Route::resource('users', UsersController::class);
+    Route::resource('roles', RolesController::class);
+    Route::resource('permissions',PermissionsController::class);
     Route::resource('domain-pricings', DomainPricingController::class)->except('show');
     Route::resource('domains', DomainController::class)->except(['show','update']);
     Route::put('domains/{domain}/nameservers', [DomainRegistrationController::class, 'updateNameservers'])->name('nameservers.update');
@@ -45,10 +53,6 @@ Route::middleware('auth')->group(function () {
     // Domain Management
     Route::get('/my-domains/{domain}/edit-contacts', [DomainRegistrationController::class, 'editContacts'])
         ->name('client.domains.edit-contacts');
-
-
-
-
 
     Route::get('/my-domains/{domain}/renew', [DomainRegistrationController::class, 'renewForm'])
         ->name('client.domains.renew');

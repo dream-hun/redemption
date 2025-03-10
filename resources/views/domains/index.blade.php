@@ -1,128 +1,83 @@
-<!DOCTYPE html>
-<html lang="en">
+@extends('layouts.user')
+@section('content')
+<section class="rts-hero-three rts-hero__one rts-hosting-banner domain-checker-padding banner-default-height">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-12">
+                <div class="rts-hero__content domain">
+                    <h1 data-sal="slide-down" data-sal-delay="100" data-sal-duration="800" class="sal-animate">
+                        Find
+                        Best Unique Domains
+                        Checker!
+                    </h1>
+                    <p class="description sal-animate" data-sal="slide-down" data-sal-delay="200"
+                        data-sal-duration="800">Web
+                        Hosting, Domain Name and Hosting Center Solutions</p>
+                    <form id="domainForm" action="{{ route('domain.check') }}" method="POST" data-sal-delay="300"
+                        data-sal-duration="800">
+                        @csrf
+                        <div class="rts-hero__form-area">
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="csrf-token" content="{{ csrf_token() }}">
-    <meta name="description" content="Your reliable and Secure web hosting service provider">
-    <meta name="keywords" content="Hosting, Domain, Transfer, Buy Domain">
-    <link rel="canonical" href="https://bluhub.rw">
-    <meta name="robots" content="index, follow">
-    <!-- for open graph social media -->
-    <meta property="og:title" content="{{ config('app.name') }} - Your reliable and Secure hosting service provider">
-    <meta property="og:description" content="Your reliable and Secure hosting service provider">
-    <meta property="og:image" content="{{ asset('assets/images/banner/slider-img-01.webp') }}">
-    <meta property="og:url" content="https:://bluhub.rw">
-    <!-- for twitter sharing -->
-    <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="{{ config('app.name') }} - Your reliable and Secure hosting service provider">
-    <meta name="twitter:description" content="Your reliable and Secure hosting service provider">
-    <meta name="twitter:image" content="{{ asset('assets/images/banner/slider-img-01.webp') }}">
-    <!-- favicon -->
-    <link rel="shortcut icon" type="image/x-icon" href="assets/images/fav.png">
+                            <input type="text" placeholder="Type your domain without extension Ex: jhonsmith"
+                                name="domains" id="domainText" autocomplete="off">
+                            <div class="select-button-area">
+                                <select name="extension" id="domainExtension" class="form-select">
+                                    @foreach ($tlds as $tld)
+                                        <option value="{{ $tld->tld }}">{{ $tld->tld }}</option>
+                                    @endforeach
+                                </select>
+                                <button id="checkButton" type="submit">Search</button>
+                            </div>
+                        </div>
+                    </form>
+                    <div class="banner-content-tag" data-sal-delay="400" data-sal-duration="800">
+                        <p class="desc">Popular Domain:</p>
+                        <ul class="tag-list">
+                            @foreach ($tlds as $tld)
+                                <li><span>{{ $tld->tld }}</span><span>{{ $tld->formatedRegisterPrice() }}</span>
+                                </li>
+                            @endforeach
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="banner-shape-area">
+        <img class="three" src="assets/images/banner/banner-bg-element.svg" alt="">
+    </div>
+</section>
+<section class="rts-domain-pricing-area pt--120 pb--120">
+    <div class="container">
 
-    <title>{{ config('app.name') }} - Your reliable and Secure hosting service provider </title>
-    <!-- Preconnect to Google Fonts and Google Fonts Static -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <div class="row justify-content-center">
+            <div class="section-title-area w-570">
+                <h2 class="section-title sal-animate" data-sal="slide-down" data-sal-delay="100"
+                    data-sal-duration="800">Choose the domain that suits your busines or organisation</h2>
+                <p class="desc sal-animate" data-sal="slide-down" data-sal-delay="200" data-sal-duration="800">
+                    Straightforward
+                    Domain Pricing</p>
+            </div>
+        </div>
+        <div class="section-inner" id="results">
+            <div class="row g-5">
+                <div id="errorMessage" class="alert alert-danger hidden"></div>
+                <div id="statusMessage" class="alert alert-info hidden"></div>
+                <div id="resultsContainer" class="col-lg-12">
+                    <!-- Results will be appended here -->
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
 
-    <!-- Importing Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500;600;700;800&display=swap"
-        rel="stylesheet">
-    <link
-        href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,500;0,600;0,700;1,400;1,800&display=swap"
-        rel="stylesheet">
-    <!-- all styles -->
-    <link rel="preload stylesheet" href="assets/css/plugins.min.css" as="style">
-    <!-- fontawesome css -->
-    <link rel="preload stylesheet" href="assets/css/plugins/fontawesome.min.css" as="style">
-    <!-- Custom css -->
-    <link rel="preload stylesheet" href="assets/css/style.css" as="style">
-    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+@endsection
 
+
+@section('scripts')
     <script>
         var domainCheckRoute = "{{ route('domain.check') }}";
         var csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
-    </script>
-</head>
-
-<body class="page-template template-resell">
-    <!-- HEADER AREA -->
-    <x-menu-component />
-    <!-- HEADER AREA END -->
-    <section class="rts-hero-three rts-hero__one rts-hosting-banner domain-checker-padding banner-default-height">
-        <div class="container">
-            <div class="row align-items-center">
-                <div class="col-lg-12">
-                    <div class="rts-hero__content domain">
-                        <h1 data-sal="slide-down" data-sal-delay="100" data-sal-duration="800" class="sal-animate">
-                            Find
-                            Best Unique Domains
-                            Checker!
-                        </h1>
-                        <p class="description sal-animate" data-sal="slide-down" data-sal-delay="200"
-                            data-sal-duration="800">Web
-                            Hosting, Domain Name and Hosting Center Solutions</p>
-                        <form id="domainForm" action="{{ route('domain.check') }}" method="POST" data-sal-delay="300"
-                            data-sal-duration="800">
-                            @csrf
-                            <div class="rts-hero__form-area">
-
-                                <input type="text" placeholder="Type your domain without extension Ex: jhonsmith"
-                                    name="domains" id="domainText" autocomplete="off">
-                                <div class="select-button-area">
-
-                                    <button id="checkButton" type="submit">Search</button>
-                                </div>
-                            </div>
-                        </form>
-                        <div class="banner-content-tag" data-sal-delay="400" data-sal-duration="800">
-                            <p class="desc">Popular Domain:</p>
-                            <ul class="tag-list">
-                                @foreach ($tlds as $tld)
-                                    <li><span>{{ $tld->tld }}</span><span>{{ $tld->formatedRegisterPrice() }}</span>
-                                    </li>
-                                @endforeach
-                            </ul>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="banner-shape-area">
-            <img class="three" src="assets/images/banner/banner-bg-element.svg" alt="">
-        </div>
-    </section>
-    <section class="rts-domain-pricing-area pt--120 pb--120">
-        <div class="container">
-
-            <div class="row justify-content-center">
-                <div class="section-title-area w-570">
-                    <h2 class="section-title sal-animate" data-sal="slide-down" data-sal-delay="100"
-                        data-sal-duration="800">Bluhub
-                        Straight forward Domain Pricing</h2>
-                    <p class="desc sal-animate" data-sal="slide-down" data-sal-delay="200" data-sal-duration="800">
-                        Straightforward
-                        Domain Pricing</p>
-                </div>
-            </div>
-            <div class="section-inner" id="results">
-                <div class="row g-5">
-                    <div id="errorMessage" class="alert alert-danger hidden"></div>
-                    <div id="statusMessage" class="alert alert-info hidden"></div>
-                    <div id="resultsContainer" class="col-lg-12">
-                        <!-- Results will be appended here -->
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-
-
-    <script>
         $(document).ready(function() {
             // Setup CSRF token for all AJAX requests
             $.ajaxSetup({
@@ -177,7 +132,8 @@
                     url: "{{ route('domain.check') }}",
                     method: 'POST',
                     data: {
-                        domains: domain
+                        domains: domain,
+                        extension: $('#domainExtension').val()
                     },
                     success: function(response) {
                         $results.show();
@@ -300,6 +256,4 @@
             });
         });
     </script>
-</body>
-
-</html>
+@endsection
