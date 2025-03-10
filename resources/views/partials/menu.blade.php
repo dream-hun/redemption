@@ -73,72 +73,52 @@
                         <a href="{{ route('admin.settings.index') }}"
                             class="nav-link {{ request()->is('admin/settings') || request()->is('admin/settings/*') ? 'active' : '' }}">
                             <i class="bi bi-gear-fill"></i>
-
-                            </i>
-                            {{ trans('cruds.setting.title') }}
+                            <p>
+                                {{ trans('cruds.setting.title') }}
+                            </p>
                         </a>
                     </li>
                 @endcan
                 @can('user_management_access')
-                    <li class="nav-item menu-open">
-                        <a href="#" class="nav-link active">
+                    <li class="nav-item {{ (request()->is('admin/permissions*') || request()->is('admin/roles*') || request()->is('admin/users*')) ? 'menu-open' : '' }}">
+                        <a href="#" class="nav-link {{ (request()->is('admin/permissions*') || request()->is('admin/roles*') || request()->is('admin/users*')) ? 'active' : '' }}">
                             <i class="bi bi-people-fill"></i>
                             <p>
                                 {{ trans('cruds.userManagement.title') }}
-
+                                <i class="bi bi-chevron-down right"></i>
                             </p>
                         </a>
-                        <ul class="nav nav-treeview">
-                            <li class="nav-item">
-                                <a href="./index.html" class="nav-link active">
-                                    <i class="far fa-circle nav-icon"></i>
-                                    <p>Dashboard v1</p>
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a href="./index2.html" class="nav-link">
-                                    <i class="far fa-circle nav-icon"></i>
-                                    <p>Dashboard v2</p>
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a href="./index3.html" class="nav-link">
-                                    <i class="far fa-circle nav-icon"></i>
-                                    <p>Dashboard v3</p>
-                                </a>
-                            </li>
+
+                        <ul class="nav nav-treeview" style="{{ (request()->is('admin/permissions*') || request()->is('admin/roles*') || request()->is('admin/users*')) ? 'display: block;' : 'display: none;' }}">
+                            @can('permission_access')
+                                <li class="nav-item">
+                                    <a href="{{ route('admin.permissions.index') }}"
+                                        class="nav-link {{ request()->is('admin/permissions*') ? 'active' : '' }}">
+                                        <i class="bi bi-lock-fill"></i>
+                                        <p>{{ trans('cruds.permission.title') }}</p>
+                                    </a>
+                                </li>
+                            @endcan
+                            @can('role_access')
+                                <li class="nav-item">
+                                    <a href="{{ route('admin.roles.index') }}"
+                                        class="nav-link {{ request()->is('admin/roles*') ? 'active' : '' }}">
+                                        <i class="bi bi-gear-wide-connected"></i>
+                                        <p>{{ trans('cruds.role.title') }}</p>
+                                    </a>
+                                </li>
+                            @endcan
+                            @can('user_access')
+                                <li class="nav-item">
+                                    <a href="{{ route('admin.users.index') }}"
+                                        class="nav-link {{ request()->is('admin/users*') ? 'active' : '' }}">
+                                        <i class="bi bi-people"></i>
+                                        <p>{{ trans('cruds.user.title') }}</p>
+                                    </a>
+                                </li>
+                            @endcan
                         </ul>
                     </li>
-
-                    <li
-                        class="nav-item {{ request()->is('admin/permissions*') ? 'menu-open' : '' }} {{ request()->is('admin/roles*') ? 'c-show' : '' }} {{ request()->is('admin/users*') ? 'c-show' : '' }}">
-                        <a class="nav-link active" href="#">
-                            <i class="bi bi-people-fill"></i>
-                            {{ trans('cruds.userManagement.title') }}
-                        </a>
-
-                        @can('permission_access')
-                        <li class="nav-item menu-open">
-                            <a href="{{ route('admin.permissions.index') }}"
-                                class="c-sidebar-nav-link {{ request()->is('admin/permissions') || request()->is('admin/permissions/*') ? 'c-active' : '' }}">
-                                <i class="fa-fw fas fa-unlock-alt c-sidebar-nav-icon">
-
-                                </i>
-                                {{ trans('cruds.permission.title') }}
-                            </a>
-                        </li>
-                    @endcan
-                    @can('role_access')
-                        <li class="c-sidebar-nav-item">
-                            <a href="{{ route('admin.roles.index') }}"
-                                class="c-sidebar-nav-link {{ request()->is('admin/roles') || request()->is('admin/roles/*') ? 'c-active' : '' }}">
-                                <i class="fa-fw fas fa-briefcase c-sidebar-nav-icon">
-
-                                </i>
-                                {{ trans('cruds.role.title') }}
-                            </a>
-                        </li>
-                    @endcan
                 @endcan
             </ul>
         </nav>

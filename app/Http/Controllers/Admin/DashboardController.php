@@ -1,0 +1,33 @@
+<?php
+
+namespace App\Http\Controllers\Admin;
+
+use App\Http\Controllers\Controller;
+use App\Models\Domain;
+use App\Models\DomainPricing;
+use App\Models\Scopes\DomainPricingScope;
+use App\Models\User;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
+
+class DashboardController extends Controller
+{
+    /**
+     * Handle the incoming request.
+     */
+    public function __invoke(Request $request)
+    {
+        $tlds = Cache::remember('dashboard.tlds', 3600, function () {
+            return DomainPricing::withoutGlobalScope(DomainPricingScope::class)->count();
+        });
+
+        $customers = Cache::remember('dashboard.customers', 3600, function () {
+            return User::count();
+        });
+        $domains = Cache::remember('dashboard.domains', 3600, function () {
+            return Domain::count();
+        });
+
+        return view('dashboard', ['tlds' => $tlds, 'customers' => $customers,'domains' => $domains]);
+    }
+}

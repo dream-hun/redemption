@@ -2,10 +2,12 @@
 
 namespace App\Models;
 
+use App\Models\Scopes\DomainPricingScope;
 use Cknow\Money\Money;
 use DateTimeInterface;
+use Illuminate\Database\Eloquent\Attributes\ScopedBy;
 use Illuminate\Database\Eloquent\Model;
-
+#[ScopedBy([DomainPricingScope::class])]
 class DomainPricing extends Model
 {
     public const STATUS_SELECT = [
@@ -41,18 +43,19 @@ class DomainPricing extends Model
         return Money::RWF($this->transfer_price);
     }
 
-    public function formatedRenewPrice()
+    public function formatedRenewPrice(): Money
     {
         return Money::RWF($this->renew_price);
     }
 
-    public function formatedRedemptionPrice()
+    public function formatedRedemptionPrice(): Money
     {
         return Money::RWF($this->redemption_price);
     }
 
-    protected function serializeDate(DateTimeInterface $date)
+    protected function serializeDate(DateTimeInterface $date): string
     {
         return $date->format('Y-m-d H:i:s');
     }
+
 }

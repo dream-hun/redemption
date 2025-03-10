@@ -2,11 +2,16 @@
 
 namespace App\Models;
 
+use App\Models\Scopes\UserScope;
 use DateTimeInterface;
+use Exception;
+use Illuminate\Database\Eloquent\Attributes\ScopedBy;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Str;
+
 
 class User extends Authenticatable
 {
@@ -34,7 +39,7 @@ class User extends Authenticatable
         ];
     }
 
-    public static function boot()
+    public static function boot(): void
     {
         parent::boot();
 
@@ -44,6 +49,9 @@ class User extends Authenticatable
         });
     }
 
+    /**
+     * @throws Exception
+     */
     public static function generateCustomerNumber(): string
     {
         $lastUser = User::orderBy('id', 'desc')->first();
@@ -52,7 +60,7 @@ class User extends Authenticatable
         }
         preg_match('/\d+/', $lastUser->client_code, $matches);
         if (! isset($matches[0])) {
-            throw new \Exception('Invalid format for reg_number');
+            throw new Exception('Invalid format for reg_number');
         }
 
         $number = intval($matches[0]) + 1;
@@ -65,17 +73,17 @@ class User extends Authenticatable
         return $this->hasMany(Domain::class);
     }
 
-    protected function serializeDate(DateTimeInterface $date)
+    protected function serializeDate(DateTimeInterface $date): string
     {
         return $date->format('Y-m-d H:i:s');
     }
 
-    public function getIsAdminAttribute()
+    public function getIsAdminAttribute(): bool
     {
         return $this->roles()->where('id', 1)->exists();
     }
 
-    public function roles()
+    public function roles(): BelongsToMany
     {
         return $this->belongsToMany(Role::class);
     }
