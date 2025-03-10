@@ -120,6 +120,17 @@
                         </ul>
                     </li>
                 @endcan
+                <li class="nav-item">
+                    <a href="#" class="nav-link"
+                       onclick="event.preventDefault(); document.getElementById('logoutform').submit();">
+                        <p>
+                            <i class="fas fa-fw fa-sign-out-alt nav-icon">
+
+                            </i>
+                        <p>{{ trans('global.logout') }}</p>
+
+                    </a>
+                </li>
             </ul>
         </nav>
     </div>
