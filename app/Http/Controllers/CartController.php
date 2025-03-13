@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Models\Cart;
-use App\Models\User;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -128,11 +127,6 @@ class CartController extends Controller
                 $query->where('session_id', session()->getId());
             }
         })->get();
-
-        // If authenticated user and cart is empty, redirect to domains index
-        if (Auth::check() && $items->isEmpty()) {
-            return redirect()->route('domains.index')->with('info', 'Your cart is empty. Browse available domains.');
-        }
 
         return view('domains.cart', compact('items'));
     }

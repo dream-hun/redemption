@@ -15,11 +15,8 @@
                             <a href="#" class="live__chat"><img src="assets/images/icon/forum.svg"
                                     alt="" class="icon">Live Chat</a>
                         </div>
-                        <div class="live-chat-has-dropdown">
-                            <a href="{{ route('cart.index') }}" class="live__chat">
-                                <i class="bi bi-cart-plus-fill icon"></i> {{ Cknow\Money\Money::RWF($total) }}</a>
-                        </div>
 
+                        <livewire:cart-total/>
                     </div>
                 </div>
             </div>

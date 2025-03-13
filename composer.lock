@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "d004ce8e9aafcf59f4ce1228f8731359",
+    "content-hash": "f7b94a78a9e534e1b90398d4e5769f92",
     "packages": [
         {
             "name": "africc/php-epp2",

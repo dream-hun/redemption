@@ -23,7 +23,7 @@
     <!-- favicon -->
     <link rel="shortcut icon" type="image/x-icon" href="assets/images/fav.png">
 
-    <title>{{ config('app.name') }} - Your reliable and Secure hosting service provider </title>
+    <title>{{ config('app.name', 'Laravel') }}</title>
     <!-- Preconnect to Google Fonts and Google Fonts Static -->
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 
@@ -40,11 +40,13 @@
     <link rel="preload stylesheet" href="assets/css/plugins/fontawesome.min.css" as="style">
     <!-- Custom css -->
     <link rel="preload stylesheet" href="assets/css/style.css" as="style">
+    <link href="{{ asset('css/app.css') }}" rel="stylesheet">
     @yield('styles')
 </head>
 
 <body class="loaded">
     <x-menu-component />
+    <x-notification />
     @yield('content')
     <x-footer-component />
     <div id="anywhere-home" class="">
@@ -182,6 +184,7 @@
     <script defer src="{{ asset('assets/js/plugins.min.js') }}"></script>
     <!-- main js -->
     <script defer src="{{ asset('assets/js/main.js') }}"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     @yield('scripts')
 </body>
 

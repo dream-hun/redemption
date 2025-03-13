@@ -56,6 +56,17 @@
                         </a>
                     </li>
                 @endcan
+                @can('contact_access')
+                    <li class="nav-item">
+                        <a href="{{ route('admin.contacts.index') }}"
+                            class="nav-link {{ request()->is('admin/contacts*') ? 'active' : '' }}">
+                           <i class="bi bi-person-lines-fill"></i>
+                            <p>
+                                {{trans('cruds.contact.title')}}
+                            </p>
+                        </a>
+                    </li>
+                @endcan
 
                 @can('domain_access')
                     <li class="nav-item">
@@ -120,6 +131,7 @@
                         </ul>
                     </li>
                 @endcan
+
                 <li class="nav-item">
                     <form id="logoutform" action="{{ route('logout') }}" method="POST" style="display: none;">
                         @csrf

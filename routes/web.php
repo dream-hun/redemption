@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admin\ContactController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\DomainController;
 use App\Http\Controllers\Admin\DomainPricingController;
@@ -31,6 +32,7 @@ Route::group(['middleware' => 'auth', 'prefix' => 'admin', 'as' => 'admin.'], fu
     Route::resource('users', UsersController::class);
     Route::resource('roles', RolesController::class);
     Route::resource('permissions', PermissionsController::class);
+    Route::resource('contacts', ContactController::class);
     Route::resource('domain-pricings', DomainPricingController::class)->except('show');
     Route::resource('domains', DomainController::class)->except(['show', 'update']);
     Route::put('domains/{domain}/nameservers', [DomainRegistrationController::class, 'updateNameservers'])->name('nameservers.update');

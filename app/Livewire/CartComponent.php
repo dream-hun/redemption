@@ -2,9 +2,11 @@
 
 namespace App\Livewire;
 
-use App\Models\Cart;
 use Cknow\Money\Money;
-use Illuminate\Support\Facades\Auth;
+use Darryldecode\Cart\Facades\CartFacade as Cart;
+use Illuminate\Contracts\View\Factory;
+use Illuminate\Contracts\View\View;
+use Illuminate\Foundation\Application;
 use Livewire\Component;
 
 class CartComponent extends Component
@@ -17,98 +19,110 @@ class CartComponent extends Component
 
     public $totalAmount = 0;
 
-    public function mount()
+    public function mount(): void
     {
         $this->refreshCart();
     }
 
-    public function refreshCart()
+    #[On('update-cart')]
+    public function refreshCart(): void
     {
-        if (Auth::check()) {
-            // For authenticated users, show their cart items
-            $this->items = Cart::where('user_id', Auth::id())->get();
-        } else {
-            // For guests, show items matching their current session
-            $this->items = Cart::where('session_id', session()->getId())
-                ->whereNull('user_id')
-                ->get();
+        try {
+            $cartContent = Cart::getContent();
+            $this->items = $cartContent;
+            $this->calculateTotals();
+        } catch (\Exception $e) {
+            \Log::error('Error refreshing cart: '.$e->getMessage());
+            $this->items = collect();
+            $this->calculateTotals();
         }
-
-        $this->calculateTotals();
     }
 
-    private function calculateTotals()
+    private function calculateTotals(): void
     {
-        if ($this->items->isNotEmpty()) {
-            $subtotal = $this->items->sum(function ($item) {
-                return $item->price * $item->period;
-            });
+        try {
+            if ($this->items->isNotEmpty()) {
+                $subtotal = $this->items->sum(function ($item) {
+                    return floatval($item->price) * $item->quantity;
+                });
 
-            $this->subtotalAmount = $subtotal;
-            $this->taxAmount = $subtotal * 0.18; // 18% VAT
-            $this->totalAmount = $subtotal + $this->taxAmount;
-        } else {
+                $this->subtotalAmount = $subtotal;
+                $this->taxAmount = $subtotal * 0.18; // 18% VAT
+                $this->totalAmount = $subtotal + $this->taxAmount;
+            } else {
+                $this->subtotalAmount = 0;
+                $this->taxAmount = 0;
+                $this->totalAmount = 0;
+            }
+        } catch (\Exception $e) {
+            \Log::error('Error calculating totals: '.$e->getMessage());
             $this->subtotalAmount = 0;
             $this->taxAmount = 0;
             $this->totalAmount = 0;
         }
     }
 
-    public function getFormattedSubtotalProperty()
+    public function getFormattedSubtotalProperty(): string
     {
         return Money::RWF($this->subtotalAmount)->format();
     }
 
-    public function getFormattedTaxProperty()
+    public function getFormattedTaxProperty(): string
     {
         return Money::RWF($this->taxAmount)->format();
     }
 
-    public function getFormattedTotalProperty()
+    public function getFormattedTotalProperty(): string
     {
         return Money::RWF($this->totalAmount)->format();
     }
 
-    public function updatePeriod($uuid, $period)
+    public function updateQuantity($id, $quantity): void
     {
-        $item = Cart::where('uuid', $uuid)
-            ->when(Auth::check(), function ($query) {
-                return $query->where('user_id', Auth::id());
-            }, function ($query) {
-                return $query->where('session_id', session()->getId())
-                    ->whereNull('user_id');
-            })
-            ->first();
+        try {
+            if ($quantity > 0) {
+                Cart::update($id, [
+                    'quantity' => [
+                        'relative' => false,
+                        'value' => $quantity,
+                    ],
+                ]);
 
-        if ($item) {
-            $item->update([
-                'period' => $period,
+                $this->refreshCart();
+                $this->dispatch('notify', [
+                    'type' => 'success',
+                    'message' => 'Quantity updated successfully',
+                ]);
+            }
+        } catch (\Exception $e) {
+            \Log::error('Error updating quantity: '.$e->getMessage());
+            $this->dispatch('notify', [
+                'type' => 'error',
+                'message' => 'Failed to update quantity',
             ]);
-
-            $this->refreshCart();
-            session()->flash('message', 'Period updated successfully');
         }
     }
 
-    public function removeItem($uuid)
+    public function removeItem($id): void
     {
-        $item = Cart::where('uuid', $uuid)
-            ->when(Auth::check(), function ($query) {
-                return $query->where('user_id', Auth::id());
-            }, function ($query) {
-                return $query->where('session_id', session()->getId())
-                    ->whereNull('user_id');
-            })
-            ->first();
-
-        if ($item) {
-            $item->delete();
+        try {
+            Cart::remove($id);
             $this->refreshCart();
-            session()->flash('message', 'Item removed from cart');
+
+            $this->dispatch('notify', [
+                'type' => 'success',
+                'message' => 'Item removed from cart successfully',
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('Error removing item: '.$e->getMessage());
+            $this->dispatch('notify', [
+                'type' => 'error',
+                'message' => 'Failed to remove item from cart',
+            ]);
         }
     }
 
-    public function render()
+    public function render(): Factory|Application|View|\Illuminate\View\View
     {
         return view('livewire.cart-component');
     }

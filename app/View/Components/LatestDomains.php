@@ -12,10 +12,7 @@ class LatestDomains extends Component
     /**
      * Create a new component instance.
      */
-    public function __construct()
-    {
-
-    }
+    public function __construct() {}
 
     /**
      * Get the view / contents that represent the component.
@@ -24,11 +21,11 @@ class LatestDomains extends Component
     {
         $user = Auth::user();
 
-        if ($user->whereHas('roles', function ($query) use ($user) {
+        if ($user->whereHas('roles', function ($query) {
             $query->where('title', '=', 'Admin');
         })) {
 
-           $domains = Domain::latest('registered_at')
+            $domains = Domain::latest('registered_at')
                 ->limit(10)
                 ->get();
         } else {
@@ -38,6 +35,7 @@ class LatestDomains extends Component
                 ->limit(10)
                 ->get();
         }
-        return view('components.latest-domains',['domains' => $domains]);
+
+        return view('components.latest-domains', ['domains' => $domains]);
     }
 }
