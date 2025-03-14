@@ -18,8 +18,7 @@
         <!-- Navbar Search -->
         <li class="nav-item">
             <a class="nav-link" href="#">
-                <i class="bi bi-cart-dash-fill"></i>
-                <span class="badge badge-primary navbar-badge">{{ $cartCount }}</span>
+                <livewire:cart-total/>
             </a>
 
         </li>
