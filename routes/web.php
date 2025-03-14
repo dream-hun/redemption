@@ -70,4 +70,8 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
+Route::get('/cart-iframe', function () {
+    return view('domains.cart-frame');
+})->name('cart.iframe');
+
 require __DIR__.'/auth.php';

@@ -136,13 +136,15 @@ class DomainSearch extends Component
 
             if (! empty($eppResults) && isset($eppResults[$domainName])) {
                 $result = $eppResults[$domainName];
+                $rawPrice = intval($tld->register_price);
+
                 $results[$domainName] = [
                     'available' => $result->available,
                     'reason' => $result->reason,
-                    'register_price' => $tld->register_price,
+                    'register_price' => $rawPrice,
                     'transfer_price' => $tld->transfer_price,
                     'renew_price' => $tld->renew_price,
-                    'formatted_price' => Money::RWF($tld->register_price)->format(),
+                    'formatted_price' => Money::RWF($rawPrice)->format(),
                     'in_cart' => $cartContent->has($domainName),
                     'is_primary' => $isPrimary,
                 ];
@@ -150,6 +152,7 @@ class DomainSearch extends Component
                 Log::debug('Domain check successful', [
                     'domain' => $domainName,
                     'available' => $result->available,
+                    'raw_price' => $rawPrice,
                 ]);
             }
         } catch (Exception $e) {
@@ -163,6 +166,7 @@ class DomainSearch extends Component
     public function addToCart($domain, $price): void
     {
         try {
+
             // Check if domain is already in cart by searching through cart items
             $cartContent = Cart::getContent();
             if ($cartContent->firstWhere('id', $domain)) {
@@ -173,6 +177,12 @@ class DomainSearch extends Component
 
                 return;
             }
+
+            // Add debug logging before cart addition
+            \Illuminate\Support\Facades\Log::debug('Adding to cart:', [
+                'domain' => $domain,
+                'price' => $price,
+            ]);
 
             // Add to cart with proper attributes
             Cart::add([
@@ -187,13 +197,19 @@ class DomainSearch extends Component
                 'associatedModel' => Domain::class,
             ]);
 
+            // Add debug logging after cart addition
+            \Illuminate\Support\Facades\Log::debug('Cart after addition:', [
+                'total' => Cart::getTotal(),
+                'items' => Cart::getContent()->toArray(),
+            ]);
+
             // Update the in_cart status for this domain in results
             if (isset($this->results[$domain])) {
                 $this->results[$domain]['in_cart'] = true;
             }
 
-            // Dispatch events for cart update and notification
-            $this->dispatch('update-cart');
+            // Dispatch cart update event
+            $this->dispatch('update-cart')->to(CartTotal::class);
 
         } catch (Exception $e) {
             Log::error('Add to cart error:', [
@@ -215,7 +231,8 @@ class DomainSearch extends Component
             // Remove from cart
             Cart::remove($domain);
 
-            $this->dispatch('update-cart')->to('cart-total');
+            // Dispatch cart update event
+            $this->dispatch('update-cart')->to(CartTotal::class);
 
             // Update the in_cart status for this domain in results
             if (isset($this->results[$domain])) {

@@ -21,8 +21,8 @@ class CartTotal extends Component
     #[On('update-cart')]
     public function updateCartTotal(): void
     {
-        $this->total = Cart::getTotal();
 
+        $this->total = Cart::getTotal();
     }
 
     public function render(): Factory|Application|View|\Illuminate\View\View

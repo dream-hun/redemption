@@ -40,7 +40,6 @@
     <link rel="preload stylesheet" href="assets/css/plugins/fontawesome.min.css" as="style">
     <!-- Custom css -->
     <link rel="preload stylesheet" href="assets/css/style.css" as="style">
-    <link href="{{ asset('css/app.css') }}" rel="stylesheet">
     @yield('styles')
 </head>
 

@@ -28,20 +28,6 @@ class AppServiceProvider extends ServiceProvider
         }));
 
         View::share('settings', Setting::first());
-        view()->composer('*', function ($view) {
-            if (session()->isStarted()) {
-                $view->with('cartCount', \App\Models\Cart::where('session_id', session()->getId())->count());
-            } else {
-                $view->with('cartCount', 0);
-            }
-        });
-        view()->composer('*', function ($view) {
-            if (session()->isStarted()) {
-                $view->with('total', \App\Models\Cart::where('session_id', session()->getId())->sum('price'));
-            } else {
-                $view->with('total', 0);
-            }
-        });
 
     }
 }

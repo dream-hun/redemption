@@ -2,64 +2,32 @@
 
 namespace App\Livewire;
 
-use Cknow\Money\Money;
 use Darryldecode\Cart\Facades\CartFacade as Cart;
+use Exception;
 use Illuminate\Contracts\View\Factory;
 use Illuminate\Contracts\View\View;
 use Illuminate\Foundation\Application;
+use Livewire\Attributes\On;
 use Livewire\Component;
+use Cknow\Money\Money;
 
 class CartComponent extends Component
 {
-    public $items = [];
-
+    public $items;
     public $subtotalAmount = 0;
-
-    public $taxAmount = 0;
-
     public $totalAmount = 0;
 
     public function mount(): void
     {
-        $this->refreshCart();
+        $this->updateCartTotal();
     }
 
     #[On('update-cart')]
-    public function refreshCart(): void
+    public function updateCartTotal(): void
     {
-        try {
-            $cartContent = Cart::getContent();
-            $this->items = $cartContent;
-            $this->calculateTotals();
-        } catch (\Exception $e) {
-            \Log::error('Error refreshing cart: '.$e->getMessage());
-            $this->items = collect();
-            $this->calculateTotals();
-        }
-    }
-
-    private function calculateTotals(): void
-    {
-        try {
-            if ($this->items->isNotEmpty()) {
-                $subtotal = $this->items->sum(function ($item) {
-                    return floatval($item->price) * $item->quantity;
-                });
-
-                $this->subtotalAmount = $subtotal;
-                $this->taxAmount = $subtotal * 0.18; // 18% VAT
-                $this->totalAmount = $subtotal + $this->taxAmount;
-            } else {
-                $this->subtotalAmount = 0;
-                $this->taxAmount = 0;
-                $this->totalAmount = 0;
-            }
-        } catch (\Exception $e) {
-            \Log::error('Error calculating totals: '.$e->getMessage());
-            $this->subtotalAmount = 0;
-            $this->taxAmount = 0;
-            $this->totalAmount = 0;
-        }
+        $this->items = Cart::getContent();
+        $this->subtotalAmount = Cart::getSubTotal();
+        $this->totalAmount = Cart::getTotal();
     }
 
     public function getFormattedSubtotalProperty(): string
@@ -67,10 +35,7 @@ class CartComponent extends Component
         return Money::RWF($this->subtotalAmount)->format();
     }
 
-    public function getFormattedTaxProperty(): string
-    {
-        return Money::RWF($this->taxAmount)->format();
-    }
+
 
     public function getFormattedTotalProperty(): string
     {
@@ -88,14 +53,16 @@ class CartComponent extends Component
                     ],
                 ]);
 
-                $this->refreshCart();
-                $this->dispatch('notify', [
-                    'type' => 'success',
-                    'message' => 'Quantity updated successfully',
-                ]);
+                // Update local cart data
+                $this->updateCartTotal();
+
+                // Dispatch cart update event to CartTotal component
+                $this->dispatch('update-cart')->to(CartTotal::class);
+
+
             }
-        } catch (\Exception $e) {
-            \Log::error('Error updating quantity: '.$e->getMessage());
+        } catch (Exception $e) {
+
             $this->dispatch('notify', [
                 'type' => 'error',
                 'message' => 'Failed to update quantity',
@@ -107,14 +74,19 @@ class CartComponent extends Component
     {
         try {
             Cart::remove($id);
-            $this->refreshCart();
+
+            // Update local cart data
+            $this->updateCartTotal();
+
+            // Dispatch cart update event to CartTotal component
+            $this->dispatch('update-cart')->to(CartTotal::class);
 
             $this->dispatch('notify', [
                 'type' => 'success',
                 'message' => 'Item removed from cart successfully',
             ]);
-        } catch (\Exception $e) {
-            \Log::error('Error removing item: '.$e->getMessage());
+        } catch (Exception $e) {
+
             $this->dispatch('notify', [
                 'type' => 'error',
                 'message' => 'Failed to remove item from cart',

@@ -1,5 +1,5 @@
 <div>
-    <section class="rts-hero-three rts-hero__one rts-hosting-banner domain-checker-padding banner-default-height">
+    <section class="rts-hero-three rts-hero__one rts-hosting-banner domain-checker-padding banner-default-height" style="max-height: 450px !important;">
         <div class="container">
             <div class="row align-items-center">
                 <div class="col-lg-12">
@@ -109,9 +109,7 @@
                                                 <span class="status {{ $primaryResult['available'] ? 'available' : 'unavailable' }} h5">
                                                     {{ $primaryResult['available'] ? 'Available!' : 'Not Available' }}
                                                 </span>
-                                                @if ($primaryResult['reason'])
-                                                    <p class="mt-2"><small>{{ $primaryResult['reason'] }}</small></p>
-                                                @endif
+
                                             </div>
                                             <div class="col-md-3 text-center">
                                                 @if ($primaryResult['available'])
@@ -125,7 +123,7 @@
                                                     <button
                                                         wire:click="{{ $primaryResult['in_cart'] ? 'removeFromCart(\'' . $primaryDomain . '\')' : 'addToCart(\'' . $primaryDomain . '\', ' . $primaryResult['register_price'] . ')' }}"
                                                         wire:loading.attr="disabled"
-                                                        class="btn btn-lg {{ $primaryResult['in_cart'] ? 'btn-danger' : 'btn-success' }}"
+                                                        class="btn btn-lg {{ $primaryResult['in_cart'] ? 'btn-danger' : 'btn-success' }} w-75"
                                                     >
                                                         <span wire:loading.remove>{{ $primaryResult['in_cart'] ? 'Remove from cart' : 'Add to Cart' }}</span>
                                                         <span wire:loading>Loading...</span>
@@ -140,45 +138,41 @@
                             <!-- Suggested Domains -->
                             @if(count($suggestedDomains) > 0)
                                 <h4 class="pb--20 pt--20">Suggested Domains</h4>
-                                <div class="row g-3">
-                                    @foreach ($suggestedDomains as $domain => $result)
-                                        <div class="col-md-4">
-                                            <div class="pricing-wrapper {{ $result['available'] ? 'available' : 'unavailable' }} p-3">
-                                                <div class="content">
-                                                    <p class="desc">
-                                                        <strong>{{ $domain }}</strong><br>
-                                                        <span class="status {{ $result['available'] ? 'available' : 'unavailable' }}">
-                                                            {{ $result['available'] ? 'Available!' : 'Not Available' }}
-                                                        </span>
-                                                        @if ($result['reason'])
-                                                            <br><small>{{ $result['reason'] }}</small>
-                                                        @endif
-                                                    </p>
-                                                    <div class="price-area">
+                                <div class="table-responsive">
+                                    <table class="table table-borderless">
+                                        <tbody>
+                                            @foreach ($suggestedDomains as $domain => $result)
+                                                <tr class="pricing-wrapper {{ $result['available'] ? 'available' : 'unavailable' }}">
+                                                    <td class="align-middle" style="width: 40%">
+                                                        <strong>{{ $domain }}</strong>
+                                                        <div>
+                                                            <span class="status {{ $result['available'] ? 'available' : 'unavailable' }}">
+                                                                {{ $result['available'] ? 'Available!' : 'Not Available' }}
+                                                            </span>
+
+                                                        </div>
+                                                    </td>
+                                                    <td class="align-middle text-center" style="width: 30%">
                                                         @if ($result['available'])
                                                             <span class="now">{{ $result['formatted_price'] }}</span>
                                                         @endif
-                                                    </div>
-                                                    <div class="button-area mt-2">
+                                                    </td>
+                                                    <td class="align-middle text-end" style="width: 30%">
                                                         @if ($result['available'])
                                                             <button
                                                                 wire:click="{{ $result['in_cart'] ? 'removeFromCart(\'' . $domain . '\')' : 'addToCart(\'' . $domain . '\', ' . $result['register_price'] . ')' }}"
                                                                 wire:loading.attr="disabled"
-                                                                class="btn {{ $result['in_cart'] ? 'btn-danger' : 'btn-success' }}"
+                                                                class="btn btn-lg {{ $result['in_cart'] ? 'btn-danger' : 'btn-success' }} w-50"
                                                             >
-                                                                <span wire:loading.remove>{{ $result['in_cart'] ? 'Remove' : 'Add to Cart' }}</span>
+                                                                <span wire:loading.remove>{{ $result['in_cart'] ? 'Remove from cart' : 'Add to Cart' }}</span>
                                                                 <span wire:loading>Loading...</span>
                                                             </button>
-                                                        @else
-                                                            <p class="unavailable-reason">
-                                                                {{ $result['reason'] ?? 'This domain is not available for registration' }}
-                                                            </p>
                                                         @endif
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    @endforeach
+                                                    </td>
+                                                </tr>
+                                            @endforeach
+                                        </tbody>
+                                    </table>
                                 </div>
                             @endif
                         @endif
