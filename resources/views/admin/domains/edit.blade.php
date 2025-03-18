@@ -17,44 +17,60 @@
     <div class="row">
         <div class="col-md-12">
             <div class="card">
-              <div class="card-header p-2">
-                <ul class="nav nav-pills">
-                  <li class="nav-item"><a class="nav-link active" href="#nameserver" data-toggle="tab">Nameserver Management</a></li>
-                  <li class="nav-item"><a class="nav-link" href="#contacts" data-toggle="tab">Domain Contacts</a></li>
-                  <li class="nav-item"><a class="nav-link" href="#renew" data-toggle="tab">Renew Domain</a></li>
-                </ul>
-              </div><!-- /.card-header -->
-              <div class="card-body">
-                    <div class="tab-content">
-                        <div class="tab-pane active" id="nameserver">
-                            <!-- Post -->
-                            <div class="post">
-                                @include('admin.domains.nameserver')
-                            </div>
-                        </div>
-                        <!-- /.tab-pane -->
-                        <div class="tab-pane" id="contacts">
-                            <div class="row">
+                <div class="card-header p-2">
+                    NameServers
 
-                                    @include('admin.domains.contact')
+                </div><!-- /.card-header -->
+                <div class="card-body">
+                    @include('admin.domains.nameserver')
 
-
-                            </div>
-                        </div>
-
-                  <!-- /.tab-pane -->
-
-                  <div class="tab-pane" id="renew">
-                    @include('admin.domains.renew')
-                  </div>
-                  <!-- /.tab-pane -->
-                </div>
-                <!-- /.tab-content -->
-              </div><!-- /.card-body -->
+                </div><!-- /.card-body -->
             </div>
-            <!-- /.card -->
-          </div>
+
+            <div class="row">
+                @foreach($contacts as $type => $contact)
+                    <div class="col-md-3">
+                        <div class="card card-primary card-outline">
+                            <div class="card-header">
+                                <h3 class="card-title">{{ ucfirst($type) }} Contacts</h3>
+                            </div>
+
+                            <div class="card-body">
+
+                                <p class="text-muted">
+                                    {{$contact?->name}}
+                                </p>
+                                <hr>
+                                <p class="text-muted">
+                                    {{$contact?->street1}},{{$contact?->street2}}
+                                </p>
+                                <hr>
+                                <p class="text-muted">
+                                    {{$contact?->city}},{{$contact?->province}}
+                                </p>
+                                <hr>
+                                <p class="text-muted">
+                                    {{$contact?->country_code}},{{$contact?->voice}}
+                                </p>
+                                <hr>
+                                <p class="text-muted">
+                                    {{$contact?->email}}
+                                <hr>
+
+                                <a href="{{ route('admin.contacts.edit', ['contact' => $contact?->id, 'type' => $contact?->contact_type, 'domain' => $domain->name]) }}"
+                                   class="btn btn-primary btn-block">
+                                    <b>Edit Contact</b>
+                                </a>
+
+                            </div>
+                        </div>
+
+                    </div>
+                @endforeach
+
+            </div>
+        </div>
     </div>
 @endsection
 
-</div>
+

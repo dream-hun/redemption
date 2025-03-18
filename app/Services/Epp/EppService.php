@@ -16,6 +16,7 @@ use AfriCC\EPP\Frame\Command\Renew\Domain as RenewDomain;
 use AfriCC\EPP\Frame\Command\Transfer\Domain as TransferDomain;
 use AfriCC\EPP\Frame\Command\Update\Domain as UpdateDomain;
 use AfriCC\EPP\Frame\Response;
+use DateTime;
 use Exception;
 use Illuminate\Support\Facades\Log;
 
@@ -85,7 +86,7 @@ class EppService
             } catch (Exception $e) {
                 $lastException = $e;
                 $attempts++;
-                Log::warning("EPP Client initialization attempt {$attempts} failed: ".$e->getMessage());
+                Log::warning("EPP Client initialization attempt $attempts failed: ".$e->getMessage());
 
                 if ($attempts < $this->maxRetries) {
                     sleep($this->retryDelay);
@@ -99,6 +100,8 @@ class EppService
 
     /**
      * Connect to the EPP server with retries
+     *
+     * @throws Exception
      */
     public function connect(): ?string
     {
@@ -118,7 +121,7 @@ class EppService
             } catch (Exception $e) {
                 $lastException = $e;
                 $attempts++;
-                Log::warning("EPP Connection attempt {$attempts} failed: ".$e->getMessage());
+                Log::warning("EPP Connection attempt $attempts failed: ".$e->getMessage());
 
                 if ($attempts < $this->maxRetries) {
                     sleep($this->retryDelay);
@@ -156,7 +159,7 @@ class EppService
                 $frame->addDomain($this->config['host']); // Use host as test domain
                 $response = $this->client->request($frame);
 
-                if (! $response || ! ($response instanceof \AfriCC\EPP\Frame\Response)) {
+                if (! ($response instanceof Response)) {
                     $this->connected = false;
                     throw new Exception('EPP connection test failed - invalid response');
                 }
@@ -188,6 +191,8 @@ class EppService
 
     /**
      * Check Domain Availability
+     *
+     * @throws Exception
      */
     public function checkDomain(array $domains): array
     {
@@ -215,7 +220,7 @@ class EppService
 
                 foreach ($items as $item) {
                     // Extract domain name - handle both string and array formats
-                    $domainName = isset($item['name']['_text']) ? $item['name']['_text'] : $item['name'];
+                    $domainName = $item['name']['_text'] ?? $item['name'];
 
                     // Extract availability - check both formats
                     $available = false;
@@ -251,8 +256,10 @@ class EppService
 
     /**
      * Check Contact availability
+     *
+     * @throws Exception
      */
-    public function checkContacts(array $contactIds)
+    public function checkContacts(array $contactIds): CheckContact
     {
         try {
             $this->ensureConnection();
@@ -274,8 +281,10 @@ class EppService
 
     /**
      * Create Domain Contact
+     *
+     * @throws Exception
      */
-    public function createContacts(array $contacts)
+    public function createContacts(array $contacts): array
     {
         try {
             $this->ensureConnection();
@@ -314,8 +323,10 @@ class EppService
 
     /**
      * Check available hosts
+     *
+     * @throws Exception
      */
-    public function checkHosts(array $hosts)
+    public function checkHosts(array $hosts): CheckHost
     {
         try {
             $this->ensureConnection();
@@ -336,8 +347,10 @@ class EppService
 
     /**
      * Create Hosts
+     *
+     * @throws Exception
      */
-    public function createHost(string $host, array $addresses)
+    public function createHost(string $host, array $addresses): CreateHost
     {
         try {
             $this->ensureConnection();
@@ -360,9 +373,9 @@ class EppService
     /**
      * Create domain functionality
      *
-     * @return void
+     * @throws Exception
      */
-    public function createDomain(string $domain, string $period, array $hostAttrs, string $registrant, string $adminContact, string $techContact)
+    public function createDomain(string $domain, string $period, array $hostAttrs, string $registrant, string $adminContact, string $techContact, string $billingContact): CreateDomain
     {
         try {
             $this->ensureConnection();
@@ -381,6 +394,8 @@ class EppService
             $frame->setRegistrant($registrant);
             $frame->setAdminContact($adminContact);
             $frame->setTechContact($techContact);
+            $frame->setBillingContact($billingContact);
+
             $frame->setAuthInfo();
 
             return $frame;
@@ -394,8 +409,10 @@ class EppService
 
     /**
      * Domain transfer
+     *
+     * @throws Exception
      */
-    public function transferDomain(string $domain, string $operation, string $period, string $authInfo)
+    public function transferDomain(string $domain, string $operation, string $period, string $authInfo): TransferDomain
     {
         try {
             $this->ensureConnection();
@@ -416,14 +433,16 @@ class EppService
 
     /**
      * Renew Domain
+     *
+     * @throws Exception
      */
-    public function renewDomain(string $domain, $currentExpirationDate, string $period)
+    public function renewDomain(string $domain, $currentExpirationDate, string $period): RenewDomain
     {
         try {
             $this->ensureConnection();
 
             // Format the expiration date to EPP standard format (YYYY-MM-DD)
-            if ($currentExpirationDate instanceof \DateTime || $currentExpirationDate instanceof \Carbon\Carbon) {
+            if ($currentExpirationDate instanceof DateTime) {
                 $currentExpirationDate = $currentExpirationDate->format('Y-m-d');
             }
 
@@ -457,8 +476,10 @@ class EppService
 
     /**
      * Delete Domain
+     *
+     * @throws Exception
      */
-    public function deleteDomain(string $domain)
+    public function deleteDomain(string $domain): DeleteDomain
     {
         try {
             $this->ensureConnection();
@@ -477,9 +498,9 @@ class EppService
     /**
      * Acknowledge domain messages
      *
-     * @return void
+     * @throws Exception
      */
-    public function pollAcknowledge(string $messageId)
+    public function pollAcknowledge(string $messageId): Poll
     {
         try {
             $this->ensureConnection();
@@ -497,8 +518,10 @@ class EppService
 
     /**
      * Update domain
+     *
+     * @throws Exception
      */
-    public function updateDomain(string $domain, array $adminContacts, array $techContacts, array $hostObjs, array $hostAttrs, array $statuses, array $removeHostAttrs)
+    public function updateDomain(string $domain, array $adminContacts, array $techContacts, array $hostObjs, array $hostAttrs, array $statuses, array $removeHostAttrs): array
     {
         try {
             $this->ensureConnection();
@@ -582,8 +605,10 @@ class EppService
 
     /**
      * Get domain info from registry
+     *
+     * @throws Exception
      */
-    public function getDomainInfo(string $domain)
+    public function getDomainInfo(string $domain): array
     {
         try {
             $this->ensureConnection();

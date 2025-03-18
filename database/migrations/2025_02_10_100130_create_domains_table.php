@@ -13,6 +13,7 @@ return new class extends Migration
     {
         Schema::create('domains', function (Blueprint $table) {
             $table->id();
+            $table->uuid();
             $table->string('name')->unique();
             $table->string('auth_code')->nullable();
             $table->string('registrar');

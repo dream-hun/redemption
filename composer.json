@@ -14,14 +14,12 @@
         "africc/php-epp2": "^2.0",
         "cknow/laravel-money": "^8.3.1",
         "darryldecode/cart": "^4.2",
-        "jantinnerezo/livewire-alert": "^4.0",
         "laravel/framework": "^11.44.0",
         "laravel/tinker": "^2.10.1",
         "livewire/livewire": "^3.6",
         "opcodesio/log-viewer": "^3.15"
     },
     "require-dev": {
-        "barryvdh/laravel-debugbar": "^3.15.2",
         "fakerphp/faker": "^1.24.1",
         "laravel/breeze": "^2.3.5",
         "laravel/pail": "^1.2.2",

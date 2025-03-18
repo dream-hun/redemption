@@ -3,7 +3,7 @@
     @can('domain_pricing_create')
         <div style="margin-bottom: 10px;" class="row">
             <div class="col-lg-12">
-                <a class="btn btn-success" href="{{ route('admin.domain-pricings.create') }}">
+                <a class="btn btn-success" href="{{ route('admin.contacts.create') }}">
                     {{ trans('global.add') }} {{ trans('cruds.contact.title_singular') }}
                 </a>
             </div>
@@ -69,7 +69,7 @@
                                 {{ $contact->email ?? '' }}
                             </td>
                             <td>
-                                {{ $contact->fax_number ?? '' }}
+                                {{ $contact->voice ?? '' }}
                             </td>
                             <td>
                                 {{ $contact->organization ?? '' }}

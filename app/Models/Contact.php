@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Str;
 
 class Contact extends Model
 {
@@ -41,6 +42,32 @@ class Contact extends Model
     {
         return $this->hasMany(Domain::class, 'registrant_contact_id')
             ->orWhere('admin_contact_id', $this->id)
-            ->orWhere('tech_contact_id', $this->id);
+            ->orWhere('tech_contact_id', $this->id)
+            ->orWhere('billing_contact_id');
+    }
+
+    public static function generateContactIds(?string $type = null): array|string
+    {
+        if ($type) {
+            return strtoupper($type).'-'.Str::random(8);
+        }
+
+        $contactTypes = ['admin', 'billing', 'registrant', 'tech'];
+        $contactIds = [];
+
+        foreach ($contactTypes as $contactType) {
+            $contactIds[$contactType] = strtoupper($contactType).'-'.Str::random(8);
+        }
+
+        return $contactIds;
+    }
+
+    public static function boot(): void
+    {
+        parent::boot();
+        static::creating(function ($model) {
+            $model->uuid = (string) Str::uuid();
+        });
+
     }
 }

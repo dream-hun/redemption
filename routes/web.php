@@ -32,7 +32,11 @@ Route::group(['middleware' => 'auth', 'prefix' => 'admin', 'as' => 'admin.'], fu
     Route::resource('users', UsersController::class);
     Route::resource('roles', RolesController::class);
     Route::resource('permissions', PermissionsController::class);
-    Route::resource('contacts', ContactController::class);
+
+    Route::get('contacts', [ContactController::class, 'index'])->name('contacts.index');
+    Route::get('contacts/create', [ContactController::class, 'create'])->name('contacts.create');
+    Route::post('contacts/store', [ContactController::class, 'store'])->name('contacts.store');
+    Route::get('contacts/{domain}/contacts/{type}', [ContactController::class, 'edit'])->name('contacts.edit');
     Route::resource('domain-pricings', DomainPricingController::class)->except('show');
     Route::resource('domains', DomainController::class)->except(['show', 'update']);
     Route::put('domains/{domain}/nameservers', [DomainRegistrationController::class, 'updateNameservers'])->name('nameservers.update');
@@ -61,8 +65,8 @@ Route::middleware('auth')->group(function () {
         ->name('client.domains.destroy');
 
     // Domain Registration
-    Route::get('/domain-registration', [DomainRegistrationController::class, 'create'])->name('contacts.create');
-    Route::post('/domains/register', [DomainRegistrationController::class, 'registerDomains'])->name('domains.register');
+     Route::get('/domain-registration', [DomainRegistrationController::class, 'create'])->name('contacts.create');
+    // Route::post('/domains/register', [DomainRegistrationController::class, 'registerDomains'])->name('domains.register');
 
     // Profile
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
@@ -70,8 +74,6 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
-Route::get('/cart-iframe', function () {
-    return view('domains.cart-frame');
-})->name('cart.iframe');
+
 
 require __DIR__.'/auth.php';

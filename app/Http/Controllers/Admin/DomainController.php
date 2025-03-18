@@ -23,11 +23,12 @@ class DomainController extends Controller
     {
         abort_if(Gate::denies('domain_edit'), Response::HTTP_FORBIDDEN, '403 Forbidden');
         $countries = Country::pluck('name', 'code');
-        $domain->load('registrantContact', 'adminContact', 'techContact', 'owner');
+        $domain->load('registrantContact', 'adminContact', 'techContact', 'owner', 'billingContact');
         $contacts = [
             'registrant' => $domain->registrantContact,
             'admin' => $domain->adminContact,
             'tech' => $domain->techContact,
+            'billing' => $domain->billingContact,
         ];
 
         return view('admin.domains.edit', compact('domain', 'countries', 'contacts'));

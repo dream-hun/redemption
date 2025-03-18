@@ -35,6 +35,7 @@ class Domain extends Model
         'registrant_contact_id',
         'admin_contact_id',
         'tech_contact_id',
+        'billing_contact_id',
     ];
 
     protected $casts = [
@@ -67,17 +68,22 @@ class Domain extends Model
         return $this->belongsTo(Contact::class, 'tech_contact_id');
     }
 
-    public function isExpiring($days = 30)
+    public function billingContact(): BelongsTo
+    {
+        return $this->belongsTo(Contact::class, 'billing_contact_id');
+    }
+
+    public function isExpiring($days = 30): bool
     {
         return $this->expires_at->diffInDays(now()) <= $days;
     }
 
-    public function isActive()
+    public function isActive(): bool
     {
         return $this->status === 'active';
     }
 
-    public function getDaysUntilExpiration()
+    public function getDaysUntilExpiration(): float
     {
         return now()->diffInDays($this->expires_at);
     }

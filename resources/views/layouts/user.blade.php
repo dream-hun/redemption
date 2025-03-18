@@ -41,11 +41,12 @@
     <!-- Custom css -->
     <link rel="preload stylesheet" href="assets/css/style.css" as="style">
     @yield('styles')
+
 </head>
 
 <body class="loaded">
     <x-menu-component />
-    <x-notification />
+
     @yield('content')
     <x-footer-component />
     <div id="anywhere-home" class="">
@@ -179,11 +180,10 @@
     <!-- BACK TO TOP AREA EDN -->
 
     <!-- All Plugin -->
-    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <script defer src="{{ asset('assets/js/plugins.min.js') }}"></script>
     <!-- main js -->
     <script defer src="{{ asset('assets/js/main.js') }}"></script>
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
     @yield('scripts')
 </body>
 

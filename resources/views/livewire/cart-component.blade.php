@@ -7,51 +7,53 @@
             </div>
         @endif
 
-        <div class="col-lg-9">
+        <div class="col-lg-9 justify-content-center">
             <div class="card border shadow-0">
-                <div class="m-4 py-4">
+                <div class="m-4">
                     @forelse ($items as $item)
-                        <div class="row gy-3 mb-4" data-item-id="{{ $item->id }}">
-                            <div class="col-lg-5">
-                                <div class="me-lg-5">
-                                    <div class="d-flex">
-                                        <div class="">
-                                            <a href="#" class="nav-link">{{ $item->name }}</a>
+                        <div class="row gy-3 mb-4 align-items-center" data-item-id="{{ $item->id }}">
+                            <div class="col-lg-3">
+                                <div class="me-lg-3">
+                                    <div class="d-flex align-items-center">
+                                        <p class="nav-link h5 mb-0">{{ $item->name }}</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-lg-6 d-flex flex-row align-items-center">
+                                <div class="d-flex align-items-center gap-4">
+                                    <div class="quantity-controls d-flex align-items-center">
+                                        <button type="button" class="btn btn-outline-primary rounded-circle p-2" style="width: 45px; height: 45px;"
+                                            wire:click="updateQuantity('{{ $item->id }}', {{ $item->quantity - 1 }})"
+                                            {{ $item->quantity <= 1 ? 'disabled' : '' }}>
+                                            <i class="bi bi-dash fs-4"></i>
+                                        </button>
+                                        <span class="mx-4 fs-5 fw-semibold">{{ $item->quantity }} {{ Str::plural('Year', $item->quantity) }}</span>
+                                        <button type="button" class="btn btn-outline-primary rounded-circle p-2" style="width: 45px; height: 45px;"
+                                            wire:click="updateQuantity('{{ $item->id }}', {{ $item->quantity + 1 }})"
+                                            {{ $item->quantity >= 10 ? 'disabled' : '' }}>
+                                            <i class="bi bi-plus fs-4"></i>
+                                        </button>
+                                    </div>
+                                    <div class="price-display">
+                                        <div class="h5 mb-0 d-flex align-items-center gap-2">
+                                            <span class="text-primary fw-bold">{{ \Cknow\Money\Money::RWF($item->price * $item->quantity)->format() }}</span>
                                         </div>
                                     </div>
                                 </div>
                             </div>
-                            <div class="col-lg-2 col-sm-6 col-6 d-flex flex-row flex-lg-column flex-xl-row text-nowrap">
-                                <div class="">
-                                    <select style="width: 100px;" class="form-select me-4"
-                                        wire:change="updateQuantity('{{ $item->id }}', $event.target.value)">
-                                        @for ($i = 1; $i <= 10; $i++)
-                                            <option value="{{ $i }}" {{ $item->quantity == $i ? 'selected' : '' }}>
-                                                {{ $i }} {{ Str::plural('Year', $i) }}
-                                            </option>
-                                        @endfor
-                                    </select>
-                                </div>
-                                <div class="">
-                                    <text class="h6">{{ \Cknow\Money\Money::RWF($item->price)->format() }}</text> / year
-                                </div>
-                            </div>
-                            <div class="col-lg col-sm-6 d-flex justify-content-sm-center justify-content-md-start justify-content-lg-center justify-content-xl-end mb-2">
-                                <div class="float-md-end">
-                                    <button wire:click="removeItem('{{ $item->id }}')"
-                                        wire:loading.attr="disabled"
-                                        class="btn btn-light border text-danger icon-hover-danger"
-                                    >
-                                        <span wire:loading.remove wire:target="removeItem('{{ $item->id }}')">
-                                            <i class="bi bi-trash3-fill"></i>
-                                            Remove
-                                        </span>
-                                        <span wire:loading wire:target="removeItem('{{ $item->id }}')">
-                                            <i class="bi bi-hourglass-split"></i>
-                                            Removing...
-                                        </span>
-                                    </button>
-                                </div>
+                            <div class="col-lg-3 d-flex justify-content-end">
+                                <button wire:click="removeItem('{{ $item->id }}')"
+                                    wire:loading.attr="disabled"
+                                    class="btn btn-outline-danger btn-lg px-4 w-50 d-flex align-items-center gap-2">
+                                    <span wire:loading.remove wire:target="removeItem('{{ $item->id }}')">
+                                        <i class="bi bi-trash3-fill"></i>
+                                        Remove
+                                    </span>
+                                    <span wire:loading wire:target="removeItem('{{ $item->id }}')">
+                                        <i class="bi bi-hourglass-split"></i>
+                                        Removing...
+                                    </span>
+                                </button>
                             </div>
                         </div>
                     @empty
