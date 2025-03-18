@@ -197,6 +197,9 @@ class DomainSearch extends Component
                 'associatedModel' => Domain::class,
             ]);
 
+            // Dispatch event to refresh cart total
+            $this->dispatch('refreshCart');
+
             // Add debug logging after cart addition
             \Illuminate\Support\Facades\Log::debug('Cart after addition:', [
                 'total' => Cart::getTotal(),

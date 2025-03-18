@@ -2,8 +2,8 @@
 
 namespace App\Livewire;
 
-use Darryldecode\Cart\Facades\CartFacade as Cart;
 use Cknow\Money\Money;
+use Darryldecode\Cart\Facades\CartFacade as Cart;
 use Illuminate\Contracts\View\Factory;
 use Illuminate\Contracts\View\View;
 use Illuminate\Foundation\Application;

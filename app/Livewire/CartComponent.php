@@ -13,7 +13,9 @@ use Livewire\Component;
 class CartComponent extends Component
 {
     public $items;
+
     public $subtotalAmount = 0;
+
     public $totalAmount = 0;
 
     protected $listeners = ['refreshCart' => '$refresh'];
@@ -47,7 +49,7 @@ class CartComponent extends Component
                 Cart::update($id, [
                     'quantity' => [
                         'relative' => false,
-                        'value' => (int)$quantity,
+                        'value' => (int) $quantity,
                     ],
                 ]);
 

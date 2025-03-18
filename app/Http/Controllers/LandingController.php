@@ -11,6 +11,6 @@ class LandingController extends Controller
      */
     public function __invoke(Request $request)
     {
-        return response()-> view('index');
+        return response()->view('index');
     }
 }

@@ -65,7 +65,7 @@ Route::middleware('auth')->group(function () {
         ->name('client.domains.destroy');
 
     // Domain Registration
-     Route::get('/domain-registration', [DomainRegistrationController::class, 'create'])->name('contacts.create');
+    Route::get('/domain-registration', [DomainRegistrationController::class, 'create'])->name('contacts.create');
     // Route::post('/domains/register', [DomainRegistrationController::class, 'registerDomains'])->name('domains.register');
 
     // Profile
@@ -73,7 +73,5 @@ Route::middleware('auth')->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
-
-
 
 require __DIR__.'/auth.php';

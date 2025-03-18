@@ -5,7 +5,6 @@ namespace App\Providers;
 use App\Models\DomainPricing;
 use App\Models\Setting;
 use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\Response;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
 
@@ -29,9 +28,6 @@ class AppServiceProvider extends ServiceProvider
         }));
 
         View::share('settings', Setting::first());
-        Response::macro('noIframe', function ($response) {
-            return $response->header('Content-Security-Policy', "frame-ancestors 'none';");
-        });
 
     }
 }
