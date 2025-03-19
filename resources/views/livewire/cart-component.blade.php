@@ -22,12 +22,12 @@
                             <div class="col-lg-6 d-flex flex-row align-items-center">
                                 <div class="d-flex align-items-center gap-4">
                                     <div class="quantity-controls d-flex align-items-center">
-                                        <button type="button" class="btn btn-outline-primary rounded-circle p-2" style="width: 45px; height: 45px;"
+                                        <button type="button" class="btn btn-outline-primary rounded-circle p-2" style="width: 45px; height: 45px; font-size:18px !important;"
                                             wire:click="updateQuantity('{{ $item->id }}', {{ $item->quantity - 1 }})"
                                             {{ $item->quantity <= 1 ? 'disabled' : '' }}>
                                             <i class="bi bi-dash fs-4"></i>
                                         </button>
-                                        <span class="mx-4 fs-5 fw-semibold">{{ $item->quantity }} {{ Str::plural('Year', $item->quantity) }}</span>
+                                        <span class="mx-4 fs-5 fw-semibold" style="font-size: 18px !important;">{{ $item->quantity }} {{ Str::plural('Year', $item->quantity) }}</span>
                                         <button type="button" class="btn btn-outline-primary rounded-circle p-2" style="width: 45px; height: 45px;"
                                             wire:click="updateQuantity('{{ $item->id }}', {{ $item->quantity + 1 }})"
                                             {{ $item->quantity >= 10 ? 'disabled' : '' }}>
@@ -44,7 +44,7 @@
                             <div class="col-lg-3 d-flex justify-content-end">
                                 <button wire:click="removeItem('{{ $item->id }}')"
                                     wire:loading.attr="disabled"
-                                    class="btn btn-outline-danger btn-lg px-4 w-50 d-flex align-items-center gap-2">
+                                    class="btn__long btn-outline-danger  btn-danger text-white px-4 w-50 d-flex align-items-center gap-2">
                                     <span wire:loading.remove wire:target="removeItem('{{ $item->id }}')">
                                         <i class="bi bi-trash3-fill"></i>
                                         Remove
@@ -84,7 +84,7 @@
                     <div class="mt-3">
                         @if ($items->isNotEmpty())
                             <a href="{{ route('contacts.create') }}"
-                                class="btn btn-success bg-success btn-lg w-100 mb-2">Confirm Order</a>
+                                class="btn__long btn btn-success bg-success btn-lg w-100 mb-2">Confirm Order</a>
                         @endif
                     </div>
                 </div>

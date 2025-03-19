@@ -1,4 +1,77 @@
 <div>
+    <style>
+        .domain-loading-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(255, 255, 255, 0.9);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+        }
+        .spinner-border {
+            width: 3rem;
+            height: 3rem;
+        }
+        .results-wrapper {
+            position: relative;
+            min-height: 200px;
+        }
+        .domain-badge {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-weight: 600;
+            display: inline-block;
+            margin-left: 10px;
+        }
+        .domain-badge.available {
+            background-color: #28a745;
+            color: white;
+            box-shadow: 0 2px 4px rgba(40, 167, 69, 0.2);
+        }
+        .domain-badge.unavailable {
+            background-color: #dc3545;
+            color: white;
+            box-shadow: 0 2px 4px rgba(220, 53, 69, 0.2);
+        }
+        .cart-button {
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            border: none;
+            cursor: pointer;
+            width: 75%;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-size: 0.9rem;
+        }
+        .cart-button.add {
+            color: white;
+            box-shadow: 0 4px 6px rgba(40, 167, 69, 0.2);
+        }
+        .cart-button.add:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 8px rgba(40, 167, 69, 0.3);
+        }
+        .cart-button.remove {
+            color: white;
+            box-shadow: 0 4px 6px rgba(220, 53, 69, 0.2);
+        }
+        .cart-button.remove:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 8px rgba(220, 53, 69, 0.3);
+        }
+        .cart-button:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+            transform: none;
+        }
+    </style>
+
     <section class="rts-hero-three rts-hero__one rts-hosting-banner domain-checker-padding banner-default-height" style="max-height: 450px !important;">
         <div class="container">
             <div class="row align-items-center">
@@ -81,7 +154,14 @@
                         </div>
                     @endif
 
-                    <div id="resultsContainer" class="col-lg-12">
+                    <div class="results-wrapper">
+                        <!-- Loading Overlay -->
+                        <div wire:loading wire:target="search" class="domain-loading-overlay">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                        </div>
+                        <div id="resultsContainer" class="col-lg-12">
                         @if($results && count($results) > 0)
                             @php
                                 // Find the primary domain
@@ -106,7 +186,7 @@
                                         <div class="row align-items-center">
                                             <div class="col-md-6">
                                                 <p class="mb-2"><strong>{{ $primaryDomain }}</strong></p>
-                                                <span class="status {{ $primaryResult['available'] ? 'available' : 'unavailable' }} h5">
+                                                <span class="domain-badge {{ $primaryResult['available'] ? 'available' : 'unavailable' }}">
                                                     {{ $primaryResult['available'] ? 'Available!' : 'Not Available' }}
                                                 </span>
 
@@ -123,7 +203,7 @@
                                                     <button
                                                         wire:click="{{ $primaryResult['in_cart'] ? 'removeFromCart(\'' . $primaryDomain . '\')' : 'addToCart(\'' . $primaryDomain . '\', ' . $primaryResult['register_price'] . ')' }}"
                                                         wire:loading.attr="disabled"
-                                                        class="btn btn-lg {{ $primaryResult['in_cart'] ? 'btn-danger' : 'btn-success' }} w-75"
+                                                        class="rts-btn btn__long {{ $primaryResult['in_cart'] ? 'btn-danger' : 'btn-success' }} m-auto"
                                                     >
                                                         <span wire:loading.remove>{{ $primaryResult['in_cart'] ? 'Remove from cart' : 'Add to Cart' }}</span>
                                                         <span wire:loading>Loading...</span>
@@ -162,7 +242,7 @@
                                                             <button
                                                                 wire:click="{{ $result['in_cart'] ? 'removeFromCart(\'' . $domain . '\')' : 'addToCart(\'' . $domain . '\', ' . $result['register_price'] . ')' }}"
                                                                 wire:loading.attr="disabled"
-                                                                class="btn btn-lg {{ $result['in_cart'] ? 'btn-danger' : 'btn-success' }} w-50"
+                                                                class="rts-btn btn__long {{ $result['in_cart'] ? 'bg-danger' : 'bg-success' }} w-75"
                                                             >
                                                                 <span wire:loading.remove>{{ $result['in_cart'] ? 'Remove from cart' : 'Add to Cart' }}</span>
                                                                 <span wire:loading>Loading...</span>
