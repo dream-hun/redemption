@@ -1,5 +1,25 @@
 @extends('layouts.admin')
+
+@section('page-title')
+    {{ trans('cruds.domain.title_singular') }} {{ trans('global.show') }}
+@endsection
+
 @section('content')
+    @if(session('message'))
+        <div class="alert alert-success alert-dismissible">
+            <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
+            <h5><i class="icon fas fa-check"></i> Success!</h5>
+            {{ session('message') }}
+        </div>
+    @endif
+
+    @if(session('error'))
+        <div class="alert alert-danger alert-dismissible">
+            <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
+            <h5><i class="icon fas fa-ban"></i> Error!</h5>
+            {{ session('error') }}
+        </div>
+    @endif
 
 <div class="card">
     <div class="card-header">
@@ -135,6 +155,29 @@
                 <a class="btn btn-info" href="{{ route('admin.domains.edit', $domain->id) }}">
                     {{ trans('global.edit') }}
                 </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="card-footer">
+        <div class="row">
+            <div class="col-md-6">
+                <a href="{{ route('admin.domains.index') }}" class="btn btn-default">
+                    <i class="fas fa-arrow-left"></i> Back to List
+                </a>
+            </div>
+            <div class="col-md-6 text-right">
+                @can('domain_delete')
+                    @if($domain->owner_id === auth()->id())
+                        <form action="{{ route('admin.domains.destroy', $domain->id) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this domain? This action cannot be undone and will remove the domain from the registry.');" style="display: inline-block;">
+                            <input type="hidden" name="_method" value="DELETE">
+                            <input type="hidden" name="_token" value="{{ csrf_token() }}">
+                            <button type="submit" class="btn btn-danger">
+                                <i class="fas fa-trash"></i> Delete Domain
+                            </button>
+                        </form>
+                    @endif
+                @endcan
             </div>
         </div>
     </div>

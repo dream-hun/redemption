@@ -1,5 +1,25 @@
 @extends('layouts.admin')
+
+@section('page-title')
+    {{ trans('cruds.domain.title_singular') }} {{ trans('global.list') }}
+@endsection
+
 @section('content')
+    @if(session('message'))
+        <div class="alert alert-success alert-dismissible">
+            <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
+            <h5><i class="icon fas fa-check"></i> Success!</h5>
+            {{ session('message') }}
+        </div>
+    @endif
+
+    @if(session('error'))
+        <div class="alert alert-danger alert-dismissible">
+            <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
+            <h5><i class="icon fas fa-ban"></i> Error!</h5>
+            {{ session('error') }}
+        </div>
+    @endif
 
     <div style="margin-bottom: 10px;" class="row">
         <div class="col-lg-12">
@@ -76,11 +96,15 @@
 
 
                                 @can('domain_delete')
-                                    <form action="{{ route('admin.domains.destroy', $domain->id) }}" method="POST" onsubmit="return confirm('{{ trans('global.areYouSure') }}');" style="display: inline-block;">
-                                        <input type="hidden" name="_method" value="DELETE">
-                                        <input type="hidden" name="_token" value="{{ csrf_token() }}">
-                                        <input type="submit" class="btn btn-xs btn-danger" value="{{ trans('global.delete') }}">
-                                    </form>
+                                    @if($domain->owner_id === auth()->id())
+                                        <form action="{{ route('admin.domains.destroy', $domain->id) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this domain? This action cannot be undone and will remove the domain from the registry.');" style="display: inline-block;">
+                                            <input type="hidden" name="_method" value="DELETE">
+                                            <input type="hidden" name="_token" value="{{ csrf_token() }}">
+                                            <button type="submit" class="btn btn-xs btn-danger">
+                                                <i class="fas fa-trash"></i> {{ trans('global.delete') }}
+                                            </button>
+                                        </form>
+                                    @endif
                                 @endcan
 
                             </td>
