@@ -37,7 +37,7 @@ Route::group(['middleware' => 'auth', 'prefix' => 'admin', 'as' => 'admin.'], fu
     Route::post('contacts/store', [ContactController::class, 'store'])->name('contacts.store');
     Route::get('contacts/{domain}/contacts/{type}', [ContactController::class, 'edit'])->name('contacts.edit');
     Route::resource('domain-pricings', DomainPricingController::class)->except('show');
-    Route::resource('domains', DomainController::class)->except(['show', 'update']);
+    Route::resource('domains', DomainController::class)->except(['update']);
     Route::put('domains/{domain}/nameservers', [DomainRegistrationController::class, 'updateNameservers'])->name('nameservers.update');
     Route::put('domains/{domain}/contacts/{type}', [DomainRegistrationController::class, 'updateContacts'])
         ->name('contacts.update');
