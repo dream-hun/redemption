@@ -26,8 +26,6 @@ Route::post('/check-domains', [SearchDomainController::class, 'search'])->name('
 
 Route::get('/shopping-cart', [CartController::class, 'cart'])->name('cart.index');
 
-
-
 Route::group(['middleware' => 'auth', 'prefix' => 'admin', 'as' => 'admin.'], function () {
     Route::resource('settings', SettingController::class);
     Route::resource('users', UsersController::class);

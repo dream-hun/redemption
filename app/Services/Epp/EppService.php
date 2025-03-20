@@ -614,7 +614,8 @@ class EppService
             $this->ensureConnection();
 
             $frame = new InfoDomain;
-            $frame->setDomain($domain);
+            // Request all available information including auth info
+            $frame->setDomain($domain, 'all');
 
             $response = $this->getClient()->request($frame);
 
@@ -636,7 +637,32 @@ class EppService
                 ));
             }
 
-            return $response->data();
+            $data = $response->data();
+
+            // Extract and format domain information
+            $domainInfo = [
+                'name' => $data['name'],
+                'roid' => $data['roid'] ?? null,
+                'status' => $data['status'] ?? [],
+                'registrant' => $data['registrant'] ?? null,
+                'contacts' => [
+                    'admin' => $data['admin'] ?? null,
+                    'tech' => $data['tech'] ?? null,
+                    'billing' => $data['billing'] ?? null,
+                ],
+                'nameservers' => $data['ns'] ?? [],
+                'hosts' => $data['host'] ?? [],
+                'clID' => $data['clID'] ?? null,
+                'crID' => $data['crID'] ?? null,
+                'crDate' => $data['crDate'] ?? null,
+                'upID' => $data['upID'] ?? null,
+                'upDate' => $data['upDate'] ?? null,
+                'exDate' => $data['exDate'] ?? null,
+                'trDate' => $data['trDate'] ?? null,
+                'authInfo' => $data['authInfo'] ?? null,
+            ];
+
+            return $domainInfo;
         } catch (Exception $e) {
             Log::error('Failed to get domain info: '.$e->getMessage(), [
                 'domain' => $domain,

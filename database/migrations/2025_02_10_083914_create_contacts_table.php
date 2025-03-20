@@ -29,7 +29,7 @@ return new class extends Migration
             $table->string('fax_number')->nullable();
             $table->string('fax_ext')->nullable();
             $table->string('email');
-            $table->string('auth_info');
+            $table->string('auth_info')->nullable();
             $table->string('epp_status')->default('active');
             $table->timestamps();
             // Index for faster lookups

@@ -17,6 +17,8 @@ class DatabaseSeeder extends Seeder
             CountrySeeder::class,
             DomainPricingSeeder::class,
             SettingSeeder::class,
+            ContactSeeder::class,
+            DomainSeeder::class,
         ]);
     }
 }

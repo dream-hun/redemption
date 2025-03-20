@@ -12,12 +12,13 @@ use Symfony\Component\HttpFoundation\Response;
 
 class DomainController extends Controller
 {
-
     protected EppService $eppService;
+
     public function __construct(EppService $eppService)
     {
-        $this->eppService=$eppService;
+        $this->eppService = $eppService;
     }
+
     public function index()
     {
         abort_if(Gate::denies('domain_access'), Response::HTTP_FORBIDDEN, '403 Forbidden');
@@ -48,7 +49,36 @@ class DomainController extends Controller
 
         $domain->load('registrantContact', 'adminContact', 'techContact', 'billingContact', 'owner');
 
-        return view('admin.domains.show', compact('domain'));
+        try {
+            $eppInfo = $this->eppService->getDomainInfo($domain->name);
+
+            // Format dates for display
+            if (! empty($eppInfo['crDate'])) {
+                $eppInfo['crDate'] = date('Y-m-d H:i:s', strtotime($eppInfo['crDate']));
+            }
+            if (! empty($eppInfo['upDate'])) {
+                $eppInfo['upDate'] = date('Y-m-d H:i:s', strtotime($eppInfo['upDate']));
+            }
+            if (! empty($eppInfo['exDate'])) {
+                $eppInfo['exDate'] = date('Y-m-d H:i:s', strtotime($eppInfo['exDate']));
+            }
+            if (! empty($eppInfo['trDate'])) {
+                $eppInfo['trDate'] = date('Y-m-d H:i:s', strtotime($eppInfo['trDate']));
+            }
+
+            return view('admin.domains.show', compact('domain', 'eppInfo'));
+        } catch (\Exception $e) {
+            Log::error('Failed to fetch EPP domain info: '.$e->getMessage(), [
+                'domain' => $domain->name,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+
+            // Still show the page but with local data only
+            session()->flash('error', 'Could not fetch latest domain information from registry. Showing local data only.');
+
+            return view('admin.domains.show', compact('domain'));
+        }
     }
 
     public function destroy(Domain $domain)
@@ -60,6 +90,7 @@ class DomainController extends Controller
             if (request()->wantsJson()) {
                 return response()->json(['message' => 'You do not have permission to delete this domain'], Response::HTTP_FORBIDDEN);
             }
+
             return back()->with('error', 'You do not have permission to delete this domain');
         }
 
@@ -71,27 +102,30 @@ class DomainController extends Controller
             if ($response->code() === 1000) {
                 // Successfully deleted from registry, now delete from database
                 $domain->delete();
-                
+
                 if (request()->wantsJson()) {
                     return response()->json(['message' => 'Domain deleted successfully']);
                 }
+
                 return redirect()->route('admin.domains.index')->with('message', 'Domain deleted successfully');
             } else {
-                $errorMessage = 'Failed to delete domain: ' . $response->message();
-                Log::error('EPP domain deletion failed: ' . $response->message());
-                
+                $errorMessage = 'Failed to delete domain: '.$response->message();
+                Log::error('EPP domain deletion failed: '.$response->message());
+
                 if (request()->wantsJson()) {
                     return response()->json(['message' => $errorMessage], Response::HTTP_INTERNAL_SERVER_ERROR);
                 }
+
                 return back()->with('error', $errorMessage);
             }
         } catch (\Exception $e) {
             $errorMessage = 'An error occurred while deleting the domain';
-            Log::error('Domain deletion error: ' . $e->getMessage());
-            
+            Log::error('Domain deletion error: '.$e->getMessage());
+
             if (request()->wantsJson()) {
                 return response()->json(['message' => $errorMessage], Response::HTTP_INTERNAL_SERVER_ERROR);
             }
+
             return back()->with('error', $errorMessage);
         }
     }

@@ -89,6 +89,68 @@
                 </tbody>
             </table>
 
+            @if(isset($eppInfo))
+            <h4 class="mt-4">Registry Information</h4>
+            <div class="card mb-4">
+                <div class="card-body">
+                    <table class="table table-bordered table-striped">
+                        <tbody>
+                            <tr>
+                                <th>Registry Object ID</th>
+                                <td>{{ $eppInfo['roid'] ?? 'N/A' }}</td>
+                            </tr>
+                            <tr>
+                                <th>Domain Status</th>
+                                <td>
+                                    @if(!empty($eppInfo['status']))
+                                        @foreach($eppInfo['status'] as $status)
+                                            <span class="badge badge-info">{{ $status }}</span>
+                                        @endforeach
+                                    @else
+                                        N/A
+                                    @endif
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>Nameservers</th>
+                                <td>
+                                    @if(!empty($eppInfo['nameservers']))
+                                        <ul class="list-unstyled mb-0">
+                                            @foreach($eppInfo['nameservers'] as $ns)
+                                                <li>{{ $ns }}</li>
+                                            @endforeach
+                                        </ul>
+                                    @else
+                                        N/A
+                                    @endif
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>Created By</th>
+                                <td>{{ $eppInfo['crID'] ?? 'N/A' }} on {{ $eppInfo['crDate'] ?? 'N/A' }}</td>
+                            </tr>
+                            <tr>
+                                <th>Last Updated By</th>
+                                <td>{{ $eppInfo['upID'] ?? 'N/A' }} on {{ $eppInfo['upDate'] ?? 'N/A' }}</td>
+                            </tr>
+                            <tr>
+                                <th>Expiration Date</th>
+                                <td>{{ $eppInfo['exDate'] ?? 'N/A' }}</td>
+                            </tr>
+                            <tr>
+                                <th>Last Transfer Date</th>
+                                <td>{{ $eppInfo['trDate'] ?? 'N/A' }}</td>
+                            </tr>
+                            <tr>
+                                <th>Sponsoring Registrar</th>
+                                <td>{{ $eppInfo['clID'] ?? 'N/A' }}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            @endif
+
             <h4 class="mt-4">Contact Information</h4>
             <div class="card">
                 <div class="card-header p-2">
