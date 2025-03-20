@@ -22,7 +22,7 @@
                             <div class="col-lg-6 d-flex flex-row align-items-center">
                                 <div class="d-flex align-items-center gap-4">
                                     <div class="quantity-controls d-flex align-items-center">
-                                        <button type="button" class="btn btn-outline-primary rounded-circle p-2" style="width: 45px; height: 45px; font-size:18px !important;"
+                                        <button type="button" class="btn btn-outline-primary rounded-circle p-2" style="width: 45px; height: 45px; font-size:14px !important;"
                                             wire:click="updateQuantity('{{ $item->id }}', {{ $item->quantity - 1 }})"
                                             {{ $item->quantity <= 1 ? 'disabled' : '' }}>
                                             <i class="bi bi-dash fs-4"></i>
@@ -82,9 +82,9 @@
                     </div>
 
                     <div class="mt-3">
-                        @if ($items->isNotEmpty())
-                            <a href="{{ route('contacts.create') }}"
-                                class="btn__long btn btn-success bg-success btn-lg w-100 mb-2">Confirm Order</a>
+                        @if ($items && $items->isNotEmpty())
+                            <a href="{{ route('contacts.create',['domain' => $items->first()->name])}}"
+                                class="btn__long btn btn-success bg-success btn-lg w-100 mb-2">Proceed to Registration</a>
                         @endif
                     </div>
                 </div>

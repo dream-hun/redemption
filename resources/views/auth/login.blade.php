@@ -1,47 +1,38 @@
 <x-guest-layout>
-    <!-- Session Status -->
-    <x-auth-session-status class="mb-4" :status="session('status')" />
+    <div class="rts-sign-up-section">
+        <div class="section-inner">
+            <div class="logo-area">
+                <a href="{{ route('home') }}"><img src="{{ asset('logo.webp') }}" alt=""></a>
+            </div>
+            <form method="POST" action="{{ route('login') }}">
+                @csrf
+                <h2 class="form-title">Sign In</h2>
+                <div class="form-inner">
+                    <div class="single-wrapper">
+                        <input type="email" placeholder="Your email" name="email" required>
+                    </div>
+                    <div class="single-wrapper">
+                        <input type="password" name="password" placeholder="Password" required>
+                    </div>
+                    <div class="check">
+                        <div class="check-box-area">
+                            <input type="checkbox" id="remember_me" name="remenber" />
+                            <label for="remember_me">Remember me</label>
+                        </div>
+                        @if (Route::has('password'))
+                            <a href="{{ route('password.request') }}" class="forgot-password">Forgot password?</a>
+                        @endif
 
-    <form method="POST" action="{{ route('login') }}">
-        @csrf
-
-        <!-- Email Address -->
-        <div>
-            <x-input-label for="email" :value="__('Email')" />
-            <x-text-input id="email" class="block mt-1 w-full" type="email" name="email" :value="old('email')" required autofocus autocomplete="username" />
-            <x-input-error :messages="$errors->get('email')" class="mt-2" />
+                    </div>
+                    <div class="form-btn">
+                        <button type="submit" class="primary__btn">Log In</button>
+                    </div>
+                </div>
+                <p class="sign-in-option">Have no account yet? <a href="{{ route('register') }}">Sign Up</a></p>
+            </form>
         </div>
-
-        <!-- Password -->
-        <div class="mt-4">
-            <x-input-label for="password" :value="__('Password')" />
-
-            <x-text-input id="password" class="block mt-1 w-full"
-                            type="password"
-                            name="password"
-                            required autocomplete="current-password" />
-
-            <x-input-error :messages="$errors->get('password')" class="mt-2" />
+        <div class="copyright-area">
+            <p>&copy;{{ date('Y') }} {{ config('app.name') }}. All Rights Reserved.</p>
         </div>
-
-        <!-- Remember Me -->
-        <div class="block mt-4">
-            <label for="remember_me" class="inline-flex items-center">
-                <input id="remember_me" type="checkbox" class="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500" name="remember">
-                <span class="ms-2 text-sm text-gray-600">{{ __('Remember me') }}</span>
-            </label>
-        </div>
-
-        <div class="flex items-center justify-end mt-4">
-            @if (Route::has('password.request'))
-                <a class="underline text-sm text-gray-600 hover:text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500" href="{{ route('password.request') }}">
-                    {{ __('Forgot your password?') }}
-                </a>
-            @endif
-
-            <x-primary-button class="ms-3">
-                {{ __('Log in') }}
-            </x-primary-button>
-        </div>
-    </form>
+    </div>
 </x-guest-layout>

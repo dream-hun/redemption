@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use AfriCC\EPP\Frame\Response;
-use App\Models\Cart;
+use Darryldecode\Cart\Facades\CartFacade as Cart;
 use App\Models\Contact;
 use App\Models\Country;
 use App\Models\Domain;
@@ -28,9 +28,15 @@ class DomainRegistrationController extends Controller
     public function create()
     {
         $countries = Country::all();
-        $cartItems = Cart::where('user_id', Auth::id())->get();
+        $cartItems = Cart::getContent();
+        $total=Cart::getTotal();
 
-        return view('domains.create-contact', compact('countries', 'cartItems'));
+        return view('domains.create-contact', compact('countries', 'cartItems','total'));
+    }
+
+    public function success(string $domain)
+    {
+        return view('domains.registration-success', compact('domain'));
     }
 
     public function registerDomains(Request $request)

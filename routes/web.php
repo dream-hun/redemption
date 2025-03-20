@@ -24,8 +24,9 @@ Route::get('/hosting', [HostingController::class, 'index'])->name('hosting.index
 Route::get('/domains', [SearchDomainController::class, 'index'])->name('domains.index');
 Route::post('/check-domains', [SearchDomainController::class, 'search'])->name('domain.check');
 
-Route::post('/add-to-cart', [CartController::class, 'addToCart'])->name('cart.add')->middleware('web');
 Route::get('/shopping-cart', [CartController::class, 'cart'])->name('cart.index');
+
+
 
 Route::group(['middleware' => 'auth', 'prefix' => 'admin', 'as' => 'admin.'], function () {
     Route::resource('settings', SettingController::class);
@@ -65,8 +66,8 @@ Route::middleware('auth')->group(function () {
         ->name('client.domains.destroy');
 
     // Domain Registration
-    Route::get('/domain-registration', [DomainRegistrationController::class, 'create'])->name('contacts.create');
-    // Route::post('/domains/register', [DomainRegistrationController::class, 'registerDomains'])->name('domains.register');
+    Route::get('/domain-registration/{domain}', [DomainRegistrationController::class, 'create'])->name('contacts.create');
+    Route::post('/domains/register', [DomainRegistrationController::class, 'registerDomains'])->name('domains.register');
 
     // Profile
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
