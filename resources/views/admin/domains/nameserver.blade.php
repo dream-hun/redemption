@@ -5,7 +5,7 @@
         </div>
         <div class="card-body">
             <p class="text-muted">Enter at least 2 nameservers. You can add up to 13 nameservers.</p>
-            <form action="{{ route('admin.nameservers.update', $domain) }}" method="POST">
+            <form action="{{ route('admin.domains.nameservers.update', $domain->uuid) }}" method="POST">
                 @csrf
                 @method('PUT')
 
@@ -38,7 +38,7 @@
 
                 <button type="button" class="btn btn-secondary mt-2" onclick="addNameserver()">Add Nameserver</button>
                 <div class="mt-3">
-                    <a href="{{ route('client.domains.show', $domain) }}" class="btn btn-outline-secondary">Cancel</a>
+                    <a href="{{ route('admin.domains.show', $domain->uuid) }}" class="btn btn-outline-secondary">Cancel</a>
                     <button type="submit" class="btn btn-primary">Update Nameservers</button>
                 </div>
             </form>

@@ -18,6 +18,7 @@ class Domain extends Model
     ];
 
     protected $fillable = [
+        'uuid',
         'name',
         'auth_code',
         'registrar',
@@ -48,6 +49,7 @@ class Domain extends Model
         'whois_privacy' => 'boolean',
         'nameservers' => 'array',
     ];
+
 
     public function owner(): BelongsTo
     {
@@ -117,12 +119,16 @@ class Domain extends Model
         );
     }
 
-
-    public static function boot(): void
+    protected static function boot(): void
     {
         parent::boot();
+
         static::creating(function ($model) {
-            $model->uuid = (string) Str::uuid();
+            // Generate UUID if not provided
+            if (! $model->uuid) {
+                $model->uuid = (string) Str::uuid();
+            }
         });
+
     }
 }

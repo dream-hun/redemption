@@ -3,7 +3,7 @@
         <h3 class="card-title">Renew Domain</h3>
     </div>
     <div class="card-body">
-        <form action="{{ route('admin.domains.renew', $domain) }}" method="POST">
+        <form action="{{ route('admin.domains.renew', $domain->uuid) }}" method="POST">
             @csrf
             @method('PUT')
             <div class="form-group">

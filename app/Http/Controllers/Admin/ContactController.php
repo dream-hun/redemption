@@ -25,7 +25,7 @@ class ContactController extends Controller
     public function index()
     {
         abort_if(Gate::denies('contact_access'), Response::HTTP_FORBIDDEN, '403 Forbidden');
-        $contacts = Contact::where('user_id', '=', auth()->user()->id)->get();
+        $contacts = Contact::where('user_id', '=', auth()->id())->get();
 
         return view('admin.contacts.index', ['contacts' => $contacts]);
     }

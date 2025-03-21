@@ -15,7 +15,7 @@
             <div class="tab-content">
                 @foreach($contacts as $type => $contact)
                 <div class="tab-pane fade {{ $loop->first ? 'show active' : '' }}" id="{{ $type }}-tab">
-                    <form action="{{ route('admin.contacts.update', ['domain' => $domain, 'type' => $type]) }}" method="POST">
+                    <form action="{{ route('admin.domains.contacts.update', ['domain' => $domain->uuid, 'type' => $type]) }}" method="POST">
                         @csrf
                         @method('PUT')
                         <div class="row">

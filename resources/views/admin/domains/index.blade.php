@@ -89,15 +89,20 @@
 
 
                                 @can('domain_edit')
-                                    <a class="btn btn-xs btn-info" href="{{ route('admin.domains.edit', $domain->id) }}">
+                                    <a class="btn btn-xs btn-info" href="{{ route('admin.domains.edit', $domain->uuid) }}">
                                     Manage Domain
+                                    </a>
+                                @endcan
+                                @can('domain_show')
+                                    <a class="btn btn-xs btn-info" href="{{ route('admin.domains.show', $domain->uuid) }}">
+                                       Domain Info
                                     </a>
                                 @endcan
 
 
                                 @can('domain_delete')
                                     @if($domain->owner_id === auth()->id())
-                                        <form action="{{ route('admin.domains.destroy', $domain->id) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this domain? This action cannot be undone and will remove the domain from the registry.');" style="display: inline-block;">
+                                        <form action="{{ route('admin.domains.destroy', $domain->uuid) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this domain? This action cannot be undone and will remove the domain from the registry.');" style="display: inline-block;">
                                             <input type="hidden" name="_method" value="DELETE">
                                             <input type="hidden" name="_token" value="{{ csrf_token() }}">
                                             <button type="submit" class="btn btn-xs btn-danger">

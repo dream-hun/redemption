@@ -9,32 +9,17 @@ use Illuminate\View\Component;
 
 class LatestDomains extends Component
 {
-    /**
-     * Create a new component instance.
-     */
-    public function __construct() {}
 
-    /**
-     * Get the view / contents that represent the component.
-     */
     public function render(): View
     {
-        $user = Auth::user();
 
-        if ($user->whereHas('roles', function ($query) {
-            $query->where('title', '=', 'Admin');
-        })) {
 
-            $domains = Domain::latest('registered_at')
-                ->limit(10)
-                ->get();
-        } else {
-
-            $domains = Domain::where('owner_id', $user->id)
+            $domains = Domain::with(['registrantContact', 'adminContact', 'techContact', 'owner'])
+            ->where('owner_id',auth()->id())
                 ->latest('registered_at')
                 ->limit(10)
                 ->get();
-        }
+        
 
         return view('components.latest-domains', ['domains' => $domains]);
     }

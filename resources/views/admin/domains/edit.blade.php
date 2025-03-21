@@ -57,10 +57,12 @@
                                     {{$contact?->email}}
                                 <hr>
 
-                                <a href="{{ route('admin.contacts.edit', ['contact' => $contact?->id, 'type' => $contact?->contact_type, 'domain' => $domain->name]) }}"
+                                @if($contact && $contact->type)
+                                <a href="{{ route('admin.domains.contacts.edit', ['domain' => $domain->uuid, 'type' => $contact->type]) }}"
                                    class="btn btn-primary btn-block">
                                     <b>Edit Contact</b>
                                 </a>
+                                @endif
 
                             </div>
                         </div>

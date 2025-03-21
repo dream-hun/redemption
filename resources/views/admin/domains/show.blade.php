@@ -116,9 +116,11 @@
                                 <td>
                                     @if(!empty($eppInfo['nameservers']))
                                         <ul class="list-unstyled mb-0">
-                                            @foreach($eppInfo['nameservers'] as $ns)
-                                                <li>{{ $ns }}</li>
-                                            @endforeach
+                                            @if(is_array($eppInfo['nameservers']))
+                                                @foreach($eppInfo['nameservers'] as $ns)
+                                                    <li>{{ $ns }}</li>
+                                                @endforeach
+                                            @endif
                                         </ul>
                                     @else
                                         N/A
@@ -214,7 +216,7 @@
                     {{ trans('global.back_to_list') }}
                 </a>
 
-                <a class="btn btn-info" href="{{ route('admin.domains.edit', $domain->id) }}">
+                <a class="btn btn-info" href="{{ route('admin.domains.edit', $domain->uuid) }}">
                     {{ trans('global.edit') }}
                 </a>
             </div>
@@ -231,7 +233,7 @@
             <div class="col-md-6 text-right">
                 @can('domain_delete')
                     @if($domain->owner_id === auth()->id())
-                        <form action="{{ route('admin.domains.destroy', $domain->id) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this domain? This action cannot be undone and will remove the domain from the registry.');" style="display: inline-block;">
+                        <form action="{{ route('admin.domains.destroy', $domain->uuid) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this domain? This action cannot be undone and will remove the domain from the registry.');" style="display: inline-block;">
                             <input type="hidden" name="_method" value="DELETE">
                             <input type="hidden" name="_token" value="{{ csrf_token() }}">
                             <button type="submit" class="btn btn-danger">

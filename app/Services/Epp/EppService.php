@@ -613,45 +613,79 @@ class EppService
         try {
             $this->ensureConnection();
 
+            // Create and send request
             $frame = new InfoDomain;
-            // Request all available information including auth info
             $frame->setDomain($domain, 'all');
-
             $response = $this->getClient()->request($frame);
 
-            if (! ($response instanceof Response)) {
-                throw new Exception('Invalid response received from registry');
+            // Validate response
+            if (!($response instanceof Response) || !($result = $response->results()[0])) {
+                throw new Exception('Invalid response from registry');
             }
 
-            // Get the result details
-            $result = $response->results()[0];
-            if (! $result) {
-                throw new Exception('No result in registry response');
-            }
-
-            // Check if the response indicates success
+            // Check response status
             if ($result->code() < 1000 || $result->code() >= 2000) {
-                throw new Exception(sprintf('Registry error (code: %d): %s',
-                    $result->code(),
-                    $result->message()
-                ));
+                throw new Exception("Registry error (code: {$result->code()}): {$result->message()}");
             }
 
+            // Get response data
             $data = $response->data();
-
-            // Extract and format domain information
-            $domainInfo = [
+            
+            // Check if data is nested in 'infData' key (common EPP response format)
+            if (isset($data['infData']) && is_array($data['infData'])) {
+                // Extract data from nested structure
+                $infData = $data['infData'];
+                
+                // Log the structure for debugging
+                Log::debug('EPP response has nested infData structure', [
+                    'domain' => $domain,
+                    'infData' => $infData
+                ]);
+                
+                // Merge infData with main data array, giving priority to infData values
+                $data = array_merge($data, $infData);
+            }
+            
+            // Use queried domain if name not in response
+            if (empty($data['name'])) {
+                $data['name'] = $domain;
+                Log::warning('Domain name not found in EPP response, using queried name', [
+                    'domain' => $domain,
+                    'response_data' => $data
+                ]);
+            }
+            
+            // Extract nameservers from nested structure if present
+            $nameservers = [];
+            if (!empty($data['ns']['hostObj']) && is_array($data['ns']['hostObj'])) {
+                $nameservers = $data['ns']['hostObj'];
+            } elseif (!empty($data['ns']) && is_array($data['ns'])) {
+                $nameservers = $data['ns'];
+            }
+            
+            // Extract contacts from nested structure
+            $adminContacts = $data['contact@admin'] ?? [];
+            $techContacts = $data['contact@tech'] ?? [];
+            $billingContacts = $data['contact@billing'] ?? [];
+            
+            // Ensure contacts are in array format
+            if (!is_array($adminContacts)) $adminContacts = [$adminContacts];
+            if (!is_array($techContacts)) $techContacts = [$techContacts];
+            if (!is_array($billingContacts)) $billingContacts = [$billingContacts];
+            
+            // Format and return domain info
+            return [
                 'name' => $data['name'],
                 'roid' => $data['roid'] ?? null,
-                'status' => $data['status'] ?? [],
+                'status' => is_array($data['status'] ?? null) ? $data['status'] : [$data['status'] ?? null],
                 'registrant' => $data['registrant'] ?? null,
                 'contacts' => [
-                    'admin' => $data['admin'] ?? null,
-                    'tech' => $data['tech'] ?? null,
-                    'billing' => $data['billing'] ?? null,
+                    'admin' => !empty($adminContacts) ? $adminContacts : ($data['admin'] ?? null),
+                    'tech' => !empty($techContacts) ? $techContacts : ($data['tech'] ?? null),
+                    'billing' => !empty($billingContacts) ? $billingContacts : ($data['billing'] ?? null),
                 ],
-                'nameservers' => $data['ns'] ?? [],
-                'hosts' => $data['host'] ?? [],
+                'nameservers' => $nameservers,
+                'hosts' => is_array($data['host'] ?? null) ? $data['host'] : [],
                 'clID' => $data['clID'] ?? null,
                 'crID' => $data['crID'] ?? null,
                 'crDate' => $data['crDate'] ?? null,
@@ -661,10 +695,8 @@ class EppService
                 'trDate' => $data['trDate'] ?? null,
                 'authInfo' => $data['authInfo'] ?? null,
             ];
-
-            return $domainInfo;
         } catch (Exception $e) {
-            Log::error('Failed to get domain info: '.$e->getMessage(), [
+            Log::error('Failed to get domain info: ' . $e->getMessage(), [
                 'domain' => $domain,
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
@@ -672,7 +704,6 @@ class EppService
             throw $e;
         }
     }
-
     /**
      * Get the EPP client instance
      */

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use AfriCC\EPP\Frame\Response;
+use App\Http\Requests\Admin\CreateContactRequest;
 use App\Models\Contact;
 use App\Models\Country;
 use App\Models\Domain;
@@ -39,21 +40,8 @@ class DomainRegistrationController extends Controller
         return view('domains.registration-success', compact('domain'));
     }
 
-    public function registerDomains(Request $request)
+    public function registerDomains(CreateContactRequest $request)
     {
-        // Validate request
-        $request->validate([
-            'contact_info' => 'required|array',
-            'contact_info.name' => 'required|string',
-            'contact_info.organization' => 'required|string',
-            'contact_info.streets' => 'required|array',
-            'contact_info.city' => 'required|string',
-            'contact_info.province' => 'required|string',
-            'contact_info.postal_code' => 'required|string',
-            'contact_info.country_code' => 'required|string|size:2',
-            'contact_info.voice' => 'required|string',
-            'contact_info.email' => 'required|email',
-        ]);
 
         try {
             DB::beginTransaction();

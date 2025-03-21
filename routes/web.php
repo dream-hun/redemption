@@ -32,17 +32,50 @@ Route::group(['middleware' => 'auth', 'prefix' => 'admin', 'as' => 'admin.'], fu
     Route::resource('roles', RolesController::class);
     Route::resource('permissions', PermissionsController::class);
 
-    Route::get('contacts', [ContactController::class, 'index'])->name('contacts.index');
-    Route::get('contacts/create', [ContactController::class, 'create'])->name('contacts.create');
-    Route::post('contacts/store', [ContactController::class, 'store'])->name('contacts.store');
-    Route::get('contacts/{domain}/contacts/{type}', [ContactController::class, 'edit'])->name('contacts.edit');
+    // Contact management (global)
+    Route::group(['prefix' => 'contacts', 'as' => 'contacts.'], function () {
+        Route::get('/', [ContactController::class, 'index'])->name('index');
+        Route::get('/create', [ContactController::class, 'create'])->name('create');
+        Route::post('/', [ContactController::class, 'store'])->name('store');
+    });
+
     Route::resource('domain-pricings', DomainPricingController::class)->except('show');
-    Route::resource('domains', DomainController::class)->except(['update']);
-    Route::put('domains/{domain}/nameservers', [DomainRegistrationController::class, 'updateNameservers'])->name('nameservers.update');
-    Route::put('domains/{domain}/contacts/{type}', [DomainRegistrationController::class, 'updateContacts'])
-        ->name('contacts.update');
-    Route::put('domains/{domain}/renew', [DomainRegistrationController::class, 'renew'])->name('domains.renew');
+
+    // Domain management routes
+    Route::group(['prefix' => 'domains', 'as' => 'domains.'], function () {
+
+        // Core domain actions
+        Route::get('/', [DomainController::class, 'index'])->name('index');
+        Route::get('/create', [DomainController::class, 'create'])->name('create');
+        Route::post('/', [DomainController::class, 'store'])->name('store');
+        Route::get('/{domain:uuid}', [DomainController::class, 'show'])->name('show');
+        Route::get('/{domain:uuid}/edit', [DomainController::class, 'edit'])->name('edit');
+        Route::delete('/{domain:uuid}', [DomainController::class, 'destroy'])->name('destroy');
+
+        // Domain operations
+        Route::prefix('{domain:uuid}')->group(function () {
+            // Contact management
+            Route::prefix('contacts')->name('contacts.')->group(function () {
+                Route::get('{type}/edit', [ContactController::class, 'edit'])->name('edit');
+                Route::put('{type}', [DomainRegistrationController::class, 'updateContacts'])->name('update');
+            });
+            
+            // Nameserver management
+            Route::put('nameservers', [DomainRegistrationController::class, 'updateNameservers'])->name('nameservers.update');
+            
+            // Domain renewal
+            Route::put('renew', [DomainRegistrationController::class, 'renew'])->name('renew');
+        });
+
+        // Domain registration flow
+        Route::prefix('registration')->name('registration.')->group(function () {
+            Route::get('/{domain:uuid}', [DomainRegistrationController::class, 'create'])->name('create');
+            Route::post('/{domain:uuid}', [DomainRegistrationController::class, 'store'])->name('store');
+            Route::get('/{domain:uuid}/success', [DomainRegistrationController::class, 'success'])->name('success');
+        });
+    });
 });
+
 
 Route::get('/dashboard', DashboardController::class)->middleware(['auth', 'verified'])->name('dashboard');
 

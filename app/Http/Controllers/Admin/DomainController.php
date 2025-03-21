@@ -6,6 +6,9 @@ use App\Http\Controllers\Controller;
 use App\Models\Country;
 use App\Models\Domain;
 use App\Services\Epp\EppService;
+use Exception;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Log;
 use Symfony\Component\HttpFoundation\Response;
@@ -23,7 +26,8 @@ class DomainController extends Controller
     {
         abort_if(Gate::denies('domain_access'), Response::HTTP_FORBIDDEN, '403 Forbidden');
 
-        $domains = Domain::with(['registrantContact', 'adminContact', 'techContact', 'owner'])->get();
+        $domains = Domain::with(['registrantContact', 'adminContact', 'techContact', 'owner'])
+            ->where('owner_id',auth()->id())->get();
 
         return view('admin.domains.index', compact('domains'));
     }
@@ -50,38 +54,66 @@ class DomainController extends Controller
         $domain->load('registrantContact', 'adminContact', 'techContact', 'billingContact', 'owner');
 
         try {
+            // Ensure we have a valid domain with name
+            if (!$domain->name) {
+                throw new Exception('Domain name not found in local database');
+            }
+
+            // Attempt to fetch EPP info
             $eppInfo = $this->eppService->getDomainInfo($domain->name);
+            if (!$eppInfo) {
+                throw new Exception('No EPP information returned for domain');
+            }
 
             // Format dates for display
-            if (! empty($eppInfo['crDate'])) {
-                $eppInfo['crDate'] = date('Y-m-d H:i:s', strtotime($eppInfo['crDate']));
+            $datesToFormat = ['crDate', 'upDate', 'exDate', 'trDate'];
+            foreach ($datesToFormat as $dateField) {
+                if (!empty($eppInfo[$dateField])) {
+                    $eppInfo[$dateField] = date('Y-m-d H:i:s', strtotime($eppInfo[$dateField]));
+                }
             }
-            if (! empty($eppInfo['upDate'])) {
-                $eppInfo['upDate'] = date('Y-m-d H:i:s', strtotime($eppInfo['upDate']));
+
+            // Process nameservers for display
+            if (!empty($eppInfo['nameservers']) && is_array($eppInfo['nameservers'])) {
+                // Ensure nameservers are in a flat array format for the view
+                $flatNameservers = [];
+                array_walk_recursive($eppInfo['nameservers'], function($ns) use (&$flatNameservers) {
+                    if (is_string($ns)) {
+                        $flatNameservers[] = $ns;
+                    }
+                });
+                $eppInfo['nameservers'] = $flatNameservers;
             }
-            if (! empty($eppInfo['exDate'])) {
-                $eppInfo['exDate'] = date('Y-m-d H:i:s', strtotime($eppInfo['exDate']));
-            }
-            if (! empty($eppInfo['trDate'])) {
-                $eppInfo['trDate'] = date('Y-m-d H:i:s', strtotime($eppInfo['trDate']));
+
+            // Process contacts for display
+            if (!empty($eppInfo['contacts'])) {
+                foreach (['admin', 'tech', 'billing'] as $contactType) {
+                    if (isset($eppInfo['contacts'][$contactType]) && !is_array($eppInfo['contacts'][$contactType])) {
+                        $eppInfo['contacts'][$contactType] = [$eppInfo['contacts'][$contactType]];
+                    }
+                }
             }
 
             return view('admin.domains.show', compact('domain', 'eppInfo'));
-        } catch (\Exception $e) {
+
+        } catch (Exception $e) {
             Log::error('Failed to fetch EPP domain info: '.$e->getMessage(), [
-                'domain' => $domain->name,
+                'domain' => $domain->name ?? 'unknown',
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
             ]);
 
-            // Still show the page but with local data only
-            session()->flash('error', 'Could not fetch latest domain information from registry. Showing local data only.');
+            // Show the page with local data and appropriate error message
+            $errorMessage = $domain->name
+                ? 'Could not fetch latest domain information from registry. Showing local data only.'
+                : 'Domain information is incomplete. Please ensure the domain is properly registered.';
 
+            session()->flash('error', $errorMessage);
             return view('admin.domains.show', compact('domain'));
         }
     }
 
-    public function destroy(Domain $domain)
+    public function destroy(Domain $domain): JsonResponse|RedirectResponse
     {
         abort_if(Gate::denies('domain_delete'), Response::HTTP_FORBIDDEN, '403 Forbidden');
 
@@ -118,7 +150,7 @@ class DomainController extends Controller
 
                 return back()->with('error', $errorMessage);
             }
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $errorMessage = 'An error occurred while deleting the domain';
             Log::error('Domain deletion error: '.$e->getMessage());
 
