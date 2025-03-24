@@ -14,14 +14,14 @@
                             {{ session('success') }}
                         </div>
                     @endif
-                    
+
                     @if(session('error'))
                         <div class="alert alert-danger">
                             {{ session('error') }}
                         </div>
                     @endif
-                    
-                    <form action="{{ route('admin.contacts.update', $contact) }}" method="POST">
+
+                    <form action="/admin/contacts/{{ $contact->uuid }}" method="POST">
                             @csrf
                             @method('PUT')
                             <div class="row">
@@ -143,7 +143,7 @@
                             </div>
 
                             <input type="hidden" name="type" value="{{ $contact->contact_type }}">
-                            
+
                             <div class="mt-4 d-flex justify-content-end">
                                 <a href="{{ route('admin.contacts.index') }}" class="btn btn-secondary mr-2">Cancel</a>
                                 <button type="submit" class="btn btn-primary">Update Contact</button>

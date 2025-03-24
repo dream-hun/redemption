@@ -959,15 +959,25 @@ class DomainRegistrationController extends Controller
             $newNameservers = array_values(array_filter($request->nameservers));
             $oldNameservers = array_values(array_filter($domain->nameservers ?? []));
 
+            // Determine which nameservers to add and which to remove
+            $nameserversToAdd = array_values(array_diff($newNameservers, $oldNameservers));
+            $nameserversToRemove = array_values(array_diff($oldNameservers, $newNameservers));
+            
+            Log::info('Nameserver changes', [
+                'domain' => $domain->name,
+                'to_add' => $nameserversToAdd,
+                'to_remove' => $nameserversToRemove,
+            ]);
+            
             // Update nameservers in a single operation
             $frame = $this->eppService->updateDomain(
                 $domain->name,
                 [], // No admin contacts to update
                 [], // No tech contacts to update
-                $newNameservers, // Add new nameservers
+                $nameserversToAdd, // Only add new nameservers that weren't there before
                 [], // No host attributes
                 [], // No statuses to update
-                $oldNameservers // Remove old nameservers
+                $nameserversToRemove // Only remove nameservers that are no longer in the list
             );
 
             // Send the update request

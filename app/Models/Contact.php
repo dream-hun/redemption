@@ -68,6 +68,15 @@ class Contact extends Model
         static::creating(function ($model) {
             $model->uuid = (string) Str::uuid();
         });
-
+    }
+    
+    /**
+     * Get the route key for the model.
+     *
+     * @return string
+     */
+    public function getRouteKeyName(): string
+    {
+        return 'uuid';
     }
 }

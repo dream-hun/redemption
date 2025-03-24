@@ -167,37 +167,14 @@ class ContactController extends Controller
         try {
             $data = $request->validated();
             
-            // Check if contact exists in EPP registry
-            $contactExists = false;
-            try {
-                // Check if contact exists in EPP registry
-                $checkResult = $this->eppService->checkContacts([$contact->contact_id]);
-                $client = $this->eppService->getClient();
-                $response = $client->request($checkResult);
-                
-                // Parse response to determine if contact exists
-                if ($response && isset($response->data()['cd'])) {
-                    $checkData = $response->data()['cd'];
-                    if (isset($checkData['id']) && isset($checkData['id']['avail'])) {
-                        // If avail is 0, contact exists (not available for creation)
-                        $contactExists = ($checkData['id']['avail'] === '0');
-                    }
-                }
-                
-                Log::info('Contact check result', [
-                    'contact_id' => $contact->contact_id,
-                    'exists' => $contactExists,
-                    'response' => $response->data(),
-                ]);
-                
-            } catch (Exception $e) {
-                Log::warning('Error checking contact existence: ' . $e->getMessage(), [
-                    'contact_id' => $contact->contact_id,
-                    'error' => $e->getMessage(),
-                ]);
-                // Assume contact doesn't exist if check fails
-                $contactExists = false;
-            }
+            // Always assume the contact exists in the EPP registry if it has a contact_id
+            // This prevents "Object exists" errors when trying to create a contact that already exists
+            $contactExists = !empty($contact->contact_id);
+            
+            Log::info('Contact update operation', [
+                'contact_id' => $contact->contact_id,
+                'assuming_exists' => $contactExists,
+            ]);
             
             // Prepare contact data for EPP service
             $contactData = [
@@ -286,6 +263,7 @@ class ContactController extends Controller
                 'fax_number' => $data['fax'] ?? null,
                 'fax_ext' => $data['fax_ext'] ?? null,
                 'email' => $data['email'],
+                'contact_type' => $data['type'] ?? $contact->contact_type, // Update contact type if provided
                 'auth_info' => $newAuthInfo ?? $contact->auth_info, // Update auth_info if a new one was generated
             ]);
             

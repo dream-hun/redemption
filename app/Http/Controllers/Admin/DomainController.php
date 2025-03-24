@@ -38,10 +38,10 @@ class DomainController extends Controller
         $countries = Country::pluck('name', 'code');
         $domain->load('registrantContact', 'adminContact', 'techContact', 'owner', 'billingContact');
         $contacts = [
-            'registrant' => $domain->registrantContact,
-            'admin' => $domain->adminContact,
-            'tech' => $domain->techContact,
-            'billing' => $domain->billingContact,
+            'registrant' => $domain->registrantContact ? tap($domain->registrantContact, function($contact) { $contact->type = 'registrant'; }) : null,
+            'admin' => $domain->adminContact ? tap($domain->adminContact, function($contact) { $contact->type = 'admin'; }) : null,
+            'tech' => $domain->techContact ? tap($domain->techContact, function($contact) { $contact->type = 'tech'; }) : null,
+            'billing' => $domain->billingContact ? tap($domain->billingContact, function($contact) { $contact->type = 'billing'; }) : null,
         ];
 
         return view('admin.domains.edit', compact('domain', 'countries', 'contacts'));

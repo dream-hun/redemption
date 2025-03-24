@@ -18,11 +18,12 @@
         <div class="col-md-12">
             <div class="row">
                 <div class="col-md-6">
-                    @include('admin.domains.nameserver')
+                    <x-domain-information-component :domain="$domain"/>
                 </div>
                 <div class="col-md-6">
-                   <x-domain-information-component :domain="$domain"/>
+                    @include('admin.domains.nameserver')
                 </div>
+
 
             </div>
 
@@ -57,10 +58,10 @@
                                 <hr>
 
                                 @if($contact && $contact->type)
-                                <a href="{{ route('admin.domains.contacts.edit', ['domain' => $domain->uuid, 'type' => $contact->type]) }}"
-                                   class="btn btn-primary btn-block">
-                                    <b>Edit Contact</b>
-                                </a>
+                                    <a href="{{ route('admin.domains.contacts.edit', ['domain' => $domain->uuid, 'type' => $contact->type]) }}"
+                                    class="btn btn-primary btn-block">
+                                        <b>Edit Contact</b>
+                                    </a>
                                 @endif
 
                             </div>
@@ -73,5 +74,3 @@
         </div>
     </div>
 @endsection
-
-

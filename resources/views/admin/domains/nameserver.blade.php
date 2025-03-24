@@ -10,24 +10,19 @@
                 @method('PUT')
 
                 <div id="nameservers-container">
-                    <div class="row">
-
-                            @foreach($domain->nameservers ?? [] as $index => $nameserver)
-                                <div class="input-group mb-3">
-                                    <div class="input-group-prepend">
-                                        <span class="input-group-text">Nameserver {{ $index + 1 }}</span>
-                                    </div>
-                                    <input type="text" class="form-control" name="nameservers[]" value="{{old('$nameservers.'.$index,$nameserver)}}" placeholder="ns1.example.com">
-                                    <div class="input-group-append">
-                                        @if($index > 1)
-                                            <button type="button" class="input-group-text btn btn-danger" onclick="removeNameserver(this)"><i class="bi bi-x"></i></button>
-                                        @endif
-                                    </div>
-                                </div>
-
-                            @endforeach
-
-                    </div>
+                    @foreach($domain->nameservers ?? [] as $index => $nameserver)
+                        <div class="input-group mb-3">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text">Nameserver {{ $index + 1 }}</span>
+                            </div>
+                            <input type="text" class="form-control" name="nameservers[]" value="{{old('nameservers.'.$index,$nameserver)}}" placeholder="ns1.example.com">
+                            <div class="input-group-append">
+                                <button type="button" class="btn btn-danger" onclick="removeNameserver(this)" {{ count($domain->nameservers ?? []) <= 2 ? 'disabled' : '' }}>
+                                    <i class="bi bi-x"></i> Remove
+                                </button>
+                            </div>
+                        </div>
+                    @endforeach
 
                 </div>
 
@@ -60,19 +55,58 @@
             const div = document.createElement('div');
             div.className = 'input-group mb-3';
             div.innerHTML = `
-                <span class="input-group-text">Nameserver ${count + 1}</span>
+                <div class="input-group-prepend">
+                    <span class="input-group-text">Nameserver ${count + 1}</span>
+                </div>
                 <input type="text" name="nameservers[]" class="form-control" placeholder="ns1.example.com">
-                <button type="button" class="btn btn-danger" onclick="removeNameserver(this)">X</button>
+                <div class="input-group-append">
+                    <button type="button" class="btn btn-danger" onclick="removeNameserver(this)">
+                        <i class="bi bi-x"></i> Remove
+                    </button>
+                </div>
             `;
             container.appendChild(div);
+            
+            // Enable all remove buttons when we have more than 2 nameservers
+            updateRemoveButtons();
         }
 
         function removeNameserver(button) {
             const container = document.getElementById('nameservers-container');
             if (container.children.length > 2) {
                 button.closest('.input-group').remove();
+                // Update the numbering of the nameservers
+                updateNameserverNumbers();
+                // Disable remove buttons if we're down to 2 nameservers
+                updateRemoveButtons();
             } else {
                 alert('Minimum 2 nameservers required');
             }
         }
+        
+        function updateNameserverNumbers() {
+            const container = document.getElementById('nameservers-container');
+            const nameservers = container.querySelectorAll('.input-group');
+            nameservers.forEach((nameserver, index) => {
+                const label = nameserver.querySelector('.input-group-text');
+                if (label) {
+                    label.textContent = `Nameserver ${index + 1}`;
+                }
+            });
+        }
+        
+        function updateRemoveButtons() {
+            const container = document.getElementById('nameservers-container');
+            const removeButtons = container.querySelectorAll('.btn-danger');
+            const disabled = container.children.length <= 2;
+            
+            removeButtons.forEach(button => {
+                button.disabled = disabled;
+            });
+        }
+        
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            updateRemoveButtons();
+        });
     </script>
