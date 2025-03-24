@@ -20,6 +20,7 @@ return new class extends Migration
             $table->foreignId('registrant_contact_id')->nullable()->constrained('contacts')->nullOnDelete();
             $table->foreignId('admin_contact_id')->nullable()->constrained('contacts')->nullOnDelete();
             $table->foreignId('tech_contact_id')->nullable()->constrained('contacts')->nullOnDelete();
+            $table->foreignId('billing_contact_id')->nullable()->constrained('contacts')->nullOnDelete();
             $table->enum('status', ['active', 'pending', 'expired', 'suspended']);
             $table->timestamp('registered_at');
             $table->timestamp('expires_at');
@@ -27,6 +28,7 @@ return new class extends Migration
             $table->string('dns_provider')->nullable();
             $table->json('nameservers')->nullable();
             $table->foreignId('owner_id')->constrained('users');
+            $table->foreignId('domain_pricing_id')->constrained('domain_pricings');
             $table->string('ssl_status')->nullable();
             $table->timestamp('ssl_expires_at')->nullable();
             $table->boolean('whois_privacy')->default(false);

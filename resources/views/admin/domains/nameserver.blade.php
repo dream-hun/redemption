@@ -1,7 +1,7 @@
 
-    <div class="card">
-        <div class="card-header bg-light text-white">
-            <h3 class="card-title">Update Name servers for {{$domain->name}}</h3>
+    <div class="card card-primary card-outline">
+        <div class="card-header">
+            <h3 class="card-title">Nameservers</h3>
         </div>
         <div class="card-body">
             <p class="text-muted">Enter at least 2 nameservers. You can add up to 13 nameservers.</p>
@@ -11,21 +11,23 @@
 
                 <div id="nameservers-container">
                     <div class="row">
-                        <div class="col-md-6">
-                            @foreach($domain->nameservers ?? [] as $index => $nameserver)
 
+                            @foreach($domain->nameservers ?? [] as $index => $nameserver)
                                 <div class="input-group mb-3">
                                     <div class="input-group-prepend">
                                         <span class="input-group-text">Nameserver {{ $index + 1 }}</span>
                                     </div>
-                                    <input type="text" name="nameservers[]" class="form-control" value="{{ old('nameservers.'.$index, $nameserver) }}" placeholder="ns1.example.com">
-                                    @if($index > 1)
-                                        <button type="button" class="btn btn-danger" onclick="removeNameserver(this)">X</button>
-                                    @endif
+                                    <input type="text" class="form-control" name="nameservers[]" value="{{old('$nameservers.'.$index,$nameserver)}}" placeholder="ns1.example.com">
+                                    <div class="input-group-append">
+                                        @if($index > 1)
+                                            <button type="button" class="input-group-text btn btn-danger" onclick="removeNameserver(this)"><i class="bi bi-x"></i></button>
+                                        @endif
+                                    </div>
                                 </div>
+
                             @endforeach
-                            </div>
-                        </div>
+
+                    </div>
 
                 </div>
 

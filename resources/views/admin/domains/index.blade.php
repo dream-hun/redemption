@@ -52,6 +52,7 @@
                         <th>
                             {{ trans('cruds.domain.fields.expires_at') }}
                         </th>
+                        <th> Renewal Price</th>
                         <th>
                             {{ trans('cruds.domain.fields.auto_renew') }}
                         </th>
@@ -77,6 +78,9 @@
                             </td>
                             <td>
                                 {{ $domain->expires_at ?? '' }}
+                            </td>
+                            <td>
+                                {{ $domain->domainPricing->formatedRenewPrice() ?? '' }}
                             </td>
                             <td>
                                 <span style="display:none">{{ $domain->auto_renew ?? '' }}</span>

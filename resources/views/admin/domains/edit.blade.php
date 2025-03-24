@@ -16,15 +16,14 @@
     @endif
     <div class="row">
         <div class="col-md-12">
-            <div class="card">
-                <div class="card-header p-2">
-                    NameServers
-
-                </div><!-- /.card-header -->
-                <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
                     @include('admin.domains.nameserver')
+                </div>
+                <div class="col-md-6">
+                   <x-domain-information-component :domain="$domain"/>
+                </div>
 
-                </div><!-- /.card-body -->
             </div>
 
             <div class="row">

@@ -1,32 +1,44 @@
-<div class="col-12">
-    <div class="card">
-        <div class="card-header">
+@extends('layouts.admin')
 
-
-                            {{ ucfirst($type) }} Contact
-
-        </div>
-        <div class="card-body">
-
-
-                        <form action="{{ route('admin.contacts.update', ['domain' => $domain, 'type' => $type]) }}" method="POST">
+@section('content')
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h4>Edit Contact</h4>
+                </div>
+                <div class="card-body">
+                    @if(session('success'))
+                        <div class="alert alert-success">
+                            {{ session('success') }}
+                        </div>
+                    @endif
+                    
+                    @if(session('error'))
+                        <div class="alert alert-danger">
+                            {{ session('error') }}
+                        </div>
+                    @endif
+                    
+                    <form action="{{ route('admin.contacts.update', $contact) }}" method="POST">
                             @csrf
                             @method('PUT')
                             <div class="row">
                                 <div class="col-md-6">
                                     <div class="form-group">
-                                        <label for="{{ $type }}_name">Full Name</label>
-                                        <input type="text" name="contact[name]" id="{{ $type }}_name" class="form-control"
-                                               value="{{ old('contact.name', $contact?->name) }}">
-                                        @error('contact.name')<small class="text-danger">{{ $message }}</small>@enderror
+                                        <label for="name">Full Name</label>
+                                        <input type="text" name="name" id="name" class="form-control"
+                                               value="{{ old('name', $contact->name) }}" required>
+                                        @error('name')<small class="text-danger">{{ $message }}</small>@enderror
                                     </div>
                                 </div>
                                 <div class="col-md-6">
                                     <div class="form-group">
-                                        <label for="{{ $type }}_organization">Organization</label>
-                                        <input type="text" name="contact[organization]" id="{{ $type }}_organization" class="form-control"
-                                               value="{{ old('contact.organization', $contact?->organization) }}">
-                                        @error('contact.organization')<small class="text-danger">{{ $message }}</small>@enderror
+                                        <label for="organization">Organization</label>
+                                        <input type="text" name="organization" id="organization" class="form-control"
+                                               value="{{ old('organization', $contact->organization) }}">
+                                        @error('organization')<small class="text-danger">{{ $message }}</small>@enderror
                                     </div>
                                 </div>
                             </div>
@@ -34,18 +46,18 @@
                             <div class="row">
                                 <div class="col-md-6">
                                     <div class="form-group">
-                                        <label for="{{ $type }}_street1">Street Address</label>
-                                        <input type="text" name="contact[streets][]" id="{{ $type }}_street1" class="form-control"
-                                               value="{{ old('contact.streets.0', $contact?->street1) }}">
-                                        @error('contact.streets.0')<small class="text-danger">{{ $message }}</small>@enderror
+                                        <label for="street1">Street Address</label>
+                                        <input type="text" name="street1" id="street1" class="form-control"
+                                               value="{{ old('street1', $contact->street1) }}" required>
+                                        @error('street1')<small class="text-danger">{{ $message }}</small>@enderror
                                     </div>
                                 </div>
                                 <div class="col-md-6">
                                     <div class="form-group">
-                                        <label for="{{ $type }}_street2">Street Address Line 2</label>
-                                        <input type="text" name="contact[streets][]" id="{{ $type }}_street2" class="form-control"
-                                               value="{{ old('contact.streets.1', $contact?->street2) }}">
-                                        @error('contact.streets.1')<small class="text-danger">{{ $message }}</small>@enderror
+                                        <label for="street2">Street Address Line 2</label>
+                                        <input type="text" name="street2" id="street2" class="form-control"
+                                               value="{{ old('street2', $contact->street2) }}">
+                                        @error('street2')<small class="text-danger">{{ $message }}</small>@enderror
                                     </div>
                                 </div>
                             </div>
@@ -53,26 +65,26 @@
                             <div class="row">
                                 <div class="col-md-4">
                                     <div class="form-group">
-                                        <label for="{{ $type }}_city">City</label>
-                                        <input type="text" name="contact[city]" id="{{ $type }}_city" class="form-control"
-                                               value="{{ old('contact.city', $contact?->city) }}">
-                                        @error('contact.city')<small class="text-danger">{{ $message }}</small>@enderror
+                                        <label for="city">City</label>
+                                        <input type="text" name="city" id="city" class="form-control"
+                                               value="{{ old('city', $contact->city) }}" required>
+                                        @error('city')<small class="text-danger">{{ $message }}</small>@enderror
                                     </div>
                                 </div>
                                 <div class="col-md-4">
                                     <div class="form-group">
-                                        <label for="{{ $type }}_province">Province/State</label>
-                                        <input type="text" name="contact[province]" id="{{ $type }}_province" class="form-control"
-                                               value="{{ old('contact.province', $contact?->province) }}">
-                                        @error('contact.province')<small class="text-danger">{{ $message }}</small>@enderror
+                                        <label for="province">Province/State</label>
+                                        <input type="text" name="province" id="province" class="form-control"
+                                               value="{{ old('province', $contact->province) }}" required>
+                                        @error('province')<small class="text-danger">{{ $message }}</small>@enderror
                                     </div>
                                 </div>
                                 <div class="col-md-4">
                                     <div class="form-group">
-                                        <label for="{{ $type }}_postal_code">Postal Code</label>
-                                        <input type="text" name="contact[postal_code]" id="{{ $type }}_postal_code" class="form-control"
-                                               value="{{ old('contact.postal_code', $contact?->postal_code) }}">
-                                        @error('contact.postal_code')<small class="text-danger">{{ $message }}</small>@enderror
+                                        <label for="postal_code">Postal Code</label>
+                                        <input type="text" name="postal_code" id="postal_code" class="form-control"
+                                               value="{{ old('postal_code', $contact->postal_code) }}" required>
+                                        @error('postal_code')<small class="text-danger">{{ $message }}</small>@enderror
                                     </div>
                                 </div>
                             </div>
@@ -80,42 +92,66 @@
                             <div class="row">
                                 <div class="col-md-4">
                                     <div class="form-group">
-                                        <label for="{{ $type }}_country_code">Country</label>
-                                        <select name="contact[country_code]" id="{{ $type }}_country_code" class="form-control">
+                                        <label for="country_code">Country</label>
+                                        <select name="country_code" id="country_code" class="form-control" required>
                                             @foreach($countries as $code => $name)
-                                                <option value="{{ $code }}" {{ old('contact.country_code', $contact?->country_code) == $code ? 'selected' : '' }}>
+                                                <option value="{{ $code }}" {{ old('country_code', $contact->country_code) == $code ? 'selected' : '' }}>
                                                     {{ $name }}
                                                 </option>
                                             @endforeach
                                         </select>
-                                        @error('contact.country_code')<small class="text-danger">{{ $message }}</small>@enderror
+                                        @error('country_code')<small class="text-danger">{{ $message }}</small>@enderror
                                     </div>
                                 </div>
                                 <div class="col-md-4">
                                     <div class="form-group">
-                                        <label for="{{ $type }}_voice">Phone Number</label>
-                                        <input type="tel" name="contact[voice]" id="{{ $type }}_voice" class="form-control"
-                                               value="{{ old('contact.voice', $contact?->voice) }}">
-                                        @error('contact.voice')<small class="text-danger">{{ $message }}</small>@enderror
+                                        <label for="voice">Phone Number</label>
+                                        <input type="tel" name="voice" id="voice" class="form-control"
+                                               value="{{ old('voice', $contact->voice) }}" required
+                                               placeholder="+xx.xxxxxxxxxx">
+                                        @error('voice')<small class="text-danger">{{ $message }}</small>@enderror
                                     </div>
                                 </div>
                                 <div class="col-md-4">
                                     <div class="form-group">
-                                        <label for="{{ $type }}_email">Email Address</label>
-                                        <input type="email" name="contact[email]" id="{{ $type }}_email" class="form-control"
-                                               value="{{ old('contact.email', $contact?->email) }}">
-                                        @error('contact.email')<small class="text-danger">{{ $message }}</small>@enderror
+                                        <label for="email">Email Address</label>
+                                        <input type="email" name="email" id="email" class="form-control"
+                                               value="{{ old('email', $contact->email) }}" required>
+                                        @error('email')<small class="text-danger">{{ $message }}</small>@enderror
                                     </div>
                                 </div>
                             </div>
 
+                            <div class="row mt-3">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="fax">Fax Number</label>
+                                        <input type="tel" name="fax" id="fax" class="form-control"
+                                               value="{{ old('fax', $contact->fax_number) }}"
+                                               placeholder="+xx.xxxxxxxxxx">
+                                        @error('fax')<small class="text-danger">{{ $message }}</small>@enderror
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="fax_ext">Fax Extension</label>
+                                        <input type="text" name="fax_ext" id="fax_ext" class="form-control"
+                                               value="{{ old('fax_ext', $contact->fax_ext) }}">
+                                        @error('fax_ext')<small class="text-danger">{{ $message }}</small>@enderror
+                                    </div>
+                                </div>
+                            </div>
+
+                            <input type="hidden" name="type" value="{{ $contact->contact_type }}">
+                            
                             <div class="mt-4 d-flex justify-content-end">
-                                <button type="submit" class="btn btn-primary">Update {{ ucfirst($type) }} Contact</button>
+                                <a href="{{ route('admin.contacts.index') }}" class="btn btn-secondary mr-2">Cancel</a>
+                                <button type="submit" class="btn btn-primary">Update Contact</button>
                             </div>
                         </form>
-
-
-
+                </div>
+            </div>
         </div>
     </div>
 </div>
+@endsection

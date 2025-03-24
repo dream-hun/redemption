@@ -27,7 +27,7 @@ class DomainController extends Controller
         abort_if(Gate::denies('domain_access'), Response::HTTP_FORBIDDEN, '403 Forbidden');
 
         $domains = Domain::with(['registrantContact', 'adminContact', 'techContact', 'owner'])
-            ->where('owner_id',auth()->id())->get();
+            ->where('owner_id', auth()->id())->get();
 
         return view('admin.domains.index', compact('domains'));
     }
@@ -55,29 +55,29 @@ class DomainController extends Controller
 
         try {
             // Ensure we have a valid domain with name
-            if (!$domain->name) {
+            if (! $domain->name) {
                 throw new Exception('Domain name not found in local database');
             }
 
             // Attempt to fetch EPP info
             $eppInfo = $this->eppService->getDomainInfo($domain->name);
-            if (!$eppInfo) {
+            if (! $eppInfo) {
                 throw new Exception('No EPP information returned for domain');
             }
 
             // Format dates for display
             $datesToFormat = ['crDate', 'upDate', 'exDate', 'trDate'];
             foreach ($datesToFormat as $dateField) {
-                if (!empty($eppInfo[$dateField])) {
+                if (! empty($eppInfo[$dateField])) {
                     $eppInfo[$dateField] = date('Y-m-d H:i:s', strtotime($eppInfo[$dateField]));
                 }
             }
 
             // Process nameservers for display
-            if (!empty($eppInfo['nameservers']) && is_array($eppInfo['nameservers'])) {
+            if (! empty($eppInfo['nameservers']) && is_array($eppInfo['nameservers'])) {
                 // Ensure nameservers are in a flat array format for the view
                 $flatNameservers = [];
-                array_walk_recursive($eppInfo['nameservers'], function($ns) use (&$flatNameservers) {
+                array_walk_recursive($eppInfo['nameservers'], function ($ns) use (&$flatNameservers) {
                     if (is_string($ns)) {
                         $flatNameservers[] = $ns;
                     }
@@ -86,9 +86,9 @@ class DomainController extends Controller
             }
 
             // Process contacts for display
-            if (!empty($eppInfo['contacts'])) {
+            if (! empty($eppInfo['contacts'])) {
                 foreach (['admin', 'tech', 'billing'] as $contactType) {
-                    if (isset($eppInfo['contacts'][$contactType]) && !is_array($eppInfo['contacts'][$contactType])) {
+                    if (isset($eppInfo['contacts'][$contactType]) && ! is_array($eppInfo['contacts'][$contactType])) {
                         $eppInfo['contacts'][$contactType] = [$eppInfo['contacts'][$contactType]];
                     }
                 }
@@ -109,6 +109,7 @@ class DomainController extends Controller
                 : 'Domain information is incomplete. Please ensure the domain is properly registered.';
 
             session()->flash('error', $errorMessage);
+
             return view('admin.domains.show', compact('domain'));
         }
     }

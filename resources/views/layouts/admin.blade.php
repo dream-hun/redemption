@@ -10,7 +10,7 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/css/adminlte.min.css">
     <link rel="stylesheet" href="{{ asset('css/custom.css') }}">
-    @livewireStyles
+
 </head>
 
 <body class="hold-transition sidebar-mini">
@@ -28,11 +28,11 @@
                 <div class="container-fluid">
                     <div class="row mb-2">
                         <div class="col-sm-6">
-                            <h1>@yield('page-title')</h1>
+                            <h1>@yield('page-title', 'Dashboard')</h1>
                         </div>
                         <div class="col-sm-6">
                             <ol class="breadcrumb float-sm-right">
-                                @yield('breadcrumb')
+                                @yield('breadcrumb', '')
                             </ol>
                         </div>
                     </div>
@@ -86,7 +86,6 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.5/js/select2.full.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/dropzone/5.5.1/min/dropzone.min.js"></script>
     @yield('scripts')
-    @livewireScripts
 </body>
 
 </html>

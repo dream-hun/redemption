@@ -23,6 +23,7 @@ class Domain extends Model
         'auth_code',
         'registrar',
         'status',
+        'domain_pricing_id',
         'registered_at',
         'expires_at',
         'auto_renew',
@@ -50,7 +51,6 @@ class Domain extends Model
         'nameservers' => 'array',
     ];
 
-
     public function owner(): BelongsTo
     {
         return $this->belongsTo(User::class, 'owner_id');
@@ -74,6 +74,11 @@ class Domain extends Model
     public function billingContact(): BelongsTo
     {
         return $this->belongsTo(Contact::class, 'billing_contact_id');
+    }
+
+    public function domainPricing(): BelongsTo
+    {
+        return $this->belongsTo(DomainPricing::class);
     }
 
     public function isExpiring($days = 30): bool

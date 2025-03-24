@@ -83,6 +83,30 @@ class ContactSeeder extends Seeder
                 'created_at' => '2025-03-06 20:58:03',
                 'updated_at' => '2025-03-06 20:58:03',
             ],
+            [
+                'id' => 4,
+                'user_id' => 1,
+                'uuid' => Str::uuid(),
+                'contact_id' => 'bill-VKJzV35U',
+                'contact_type' => 'billing',
+                'name' => 'Jacques MBABAZI',
+                'organization' => 'BLUHUB',
+                'street1' => 'KN 20 Ave Nyakabanda',
+                'street2' => null,
+                'city' => 'Kigali city',
+                'province' => 'Kigali',
+                'postal_code' => '00000',
+                'country_code' => 'RW',
+                'voice' => '0785446262',
+                'fax_number' => null,
+                'fax_ext' => null,
+                'email' => 'mbabazijacques@gmail.com',
+                'auth_info' => null,
+                'epp_status' => 'active',
+                'created_at' => '2025-03-06 20:58:03',
+                'updated_at' => '2025-03-06 20:58:03',
+
+            ],
         ];
 
         Contact::insert($contacts);

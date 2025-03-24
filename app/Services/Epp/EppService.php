@@ -320,6 +320,107 @@ class EppService
             throw $e;
         }
     }
+    
+    /**
+     * Update Domain Contact in EPP registry
+     *
+     * @throws Exception
+     */
+    public function updateContact(string $contactId, array $contactData): array
+    {
+        try {
+            $this->ensureConnection();
+            
+            // Import the UpdateContact class
+            $updateContactClass = 'AfriCC\EPP\Frame\Command\Update\Contact';
+            if (!class_exists($updateContactClass)) {
+                throw new Exception("UpdateContact class not found in EPP library");
+            }
+            
+            // Create update frame
+            $frame = new $updateContactClass();
+            $frame->setId($contactId);
+            
+            // Set contact information to update
+            if (isset($contactData['name'])) {
+                $frame->setChgName($contactData['name']);
+            }
+            
+            if (isset($contactData['organization'])) {
+                $frame->setChgOrganization($contactData['organization']);
+            }
+            
+            // Handle address changes
+            if (!empty($contactData['streets']) || 
+                isset($contactData['city']) || 
+                isset($contactData['province']) || 
+                isset($contactData['postal_code']) || 
+                isset($contactData['country_code'])) {
+                
+                // Add streets
+                if (!empty($contactData['streets'])) {
+                    foreach ($contactData['streets'] as $street) {
+                        $frame->addChgStreet($street);
+                    }
+                }
+                
+                // Set other address fields
+                if (isset($contactData['city'])) {
+                    $frame->setChgCity($contactData['city']);
+                }
+                
+                if (isset($contactData['province'])) {
+                    $frame->setChgProvince($contactData['province']);
+                }
+                
+                if (isset($contactData['postal_code'])) {
+                    $frame->setChgPostalCode($contactData['postal_code']);
+                }
+                
+                if (isset($contactData['country_code'])) {
+                    $frame->setChgCountryCode($contactData['country_code']);
+                }
+            }
+            
+            // Set contact details
+            if (isset($contactData['voice'])) {
+                $frame->setChgVoice($contactData['voice']);
+            }
+            
+            if (isset($contactData['fax'])) {
+                $frame->setChgFax($contactData['fax']['number'], $contactData['fax']['ext'] ?? '');
+            }
+            
+            if (isset($contactData['email'])) {
+                $frame->setChgEmail($contactData['email']);
+            }
+            
+            // Update disclosure preferences if provided
+            if (!empty($contactData['disclose'])) {
+                foreach ($contactData['disclose'] as $item) {
+                    $frame->addChgDisclose($item);
+                }
+            }
+            
+            // Generate new auth info if requested
+            $auth = null;
+            if (!empty($contactData['generate_new_auth'])) {
+                $auth = $frame->setChgAuthInfo();
+            }
+            
+            return ['frame' => $frame, 'auth' => $auth];
+            
+        } catch (Exception $e) {
+            Log::error('Contact update failed: ' . $e->getMessage(), [
+                'contact_id' => $contactId,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+            // Try to reconnect on next request
+            $this->connected = false;
+            throw $e;
+        }
+    }
 
     /**
      * Check available hosts
@@ -619,7 +720,7 @@ class EppService
             $response = $this->getClient()->request($frame);
 
             // Validate response
-            if (!($response instanceof Response) || !($result = $response->results()[0])) {
+            if (! ($response instanceof Response) || ! ($result = $response->results()[0])) {
                 throw new Exception('Invalid response from registry');
             }
 
@@ -630,49 +731,55 @@ class EppService
 
             // Get response data
             $data = $response->data();
-            
+
             // Check if data is nested in 'infData' key (common EPP response format)
             if (isset($data['infData']) && is_array($data['infData'])) {
                 // Extract data from nested structure
                 $infData = $data['infData'];
-                
+
                 // Log the structure for debugging
                 Log::debug('EPP response has nested infData structure', [
                     'domain' => $domain,
-                    'infData' => $infData
+                    'infData' => $infData,
                 ]);
-                
+
                 // Merge infData with main data array, giving priority to infData values
                 $data = array_merge($data, $infData);
             }
-            
+
             // Use queried domain if name not in response
             if (empty($data['name'])) {
                 $data['name'] = $domain;
                 Log::warning('Domain name not found in EPP response, using queried name', [
                     'domain' => $domain,
-                    'response_data' => $data
+                    'response_data' => $data,
                 ]);
             }
-            
+
             // Extract nameservers from nested structure if present
             $nameservers = [];
-            if (!empty($data['ns']['hostObj']) && is_array($data['ns']['hostObj'])) {
+            if (! empty($data['ns']['hostObj']) && is_array($data['ns']['hostObj'])) {
                 $nameservers = $data['ns']['hostObj'];
-            } elseif (!empty($data['ns']) && is_array($data['ns'])) {
+            } elseif (! empty($data['ns']) && is_array($data['ns'])) {
                 $nameservers = $data['ns'];
             }
-            
+
             // Extract contacts from nested structure
             $adminContacts = $data['contact@admin'] ?? [];
             $techContacts = $data['contact@tech'] ?? [];
             $billingContacts = $data['contact@billing'] ?? [];
-            
+
             // Ensure contacts are in array format
-            if (!is_array($adminContacts)) $adminContacts = [$adminContacts];
-            if (!is_array($techContacts)) $techContacts = [$techContacts];
-            if (!is_array($billingContacts)) $billingContacts = [$billingContacts];
-            
+            if (! is_array($adminContacts)) {
+                $adminContacts = [$adminContacts];
+            }
+            if (! is_array($techContacts)) {
+                $techContacts = [$techContacts];
+            }
+            if (! is_array($billingContacts)) {
+                $billingContacts = [$billingContacts];
+            }
+
             // Format and return domain info
             return [
                 'name' => $data['name'],
@@ -680,9 +787,9 @@ class EppService
                 'status' => is_array($data['status'] ?? null) ? $data['status'] : [$data['status'] ?? null],
                 'registrant' => $data['registrant'] ?? null,
                 'contacts' => [
-                    'admin' => !empty($adminContacts) ? $adminContacts : ($data['admin'] ?? null),
-                    'tech' => !empty($techContacts) ? $techContacts : ($data['tech'] ?? null),
-                    'billing' => !empty($billingContacts) ? $billingContacts : ($data['billing'] ?? null),
+                    'admin' => ! empty($adminContacts) ? $adminContacts : ($data['admin'] ?? null),
+                    'tech' => ! empty($techContacts) ? $techContacts : ($data['tech'] ?? null),
+                    'billing' => ! empty($billingContacts) ? $billingContacts : ($data['billing'] ?? null),
                 ],
                 'nameservers' => $nameservers,
                 'hosts' => is_array($data['host'] ?? null) ? $data['host'] : [],
@@ -696,7 +803,7 @@ class EppService
                 'authInfo' => $data['authInfo'] ?? null,
             ];
         } catch (Exception $e) {
-            Log::error('Failed to get domain info: ' . $e->getMessage(), [
+            Log::error('Failed to get domain info: '.$e->getMessage(), [
                 'domain' => $domain,
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
@@ -704,6 +811,7 @@ class EppService
             throw $e;
         }
     }
+
     /**
      * Get the EPP client instance
      */

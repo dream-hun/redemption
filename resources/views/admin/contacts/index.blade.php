@@ -9,6 +9,18 @@
             </div>
         </div>
     @endcan
+    @if(session('success'))
+        <div class="alert alert-success">
+            {{ session('success') }}
+        </div>
+    @endif
+
+    @if(session('error'))
+        <div class="alert alert-danger">
+            {{ session('error') }}
+        </div>
+    @endif
+
     <div class="card">
         <div class="card-header">
             {{ trans('cruds.contact.title_singular') }} {{ trans('global.list') }}
@@ -78,9 +90,11 @@
                                {{ $contact->created_at ?? '' }}
                             </td>
                             <td>
-
-
-
+                                @can('contact_edit')
+                                    <a class="btn btn-sm btn-primary" href="{{ route('admin.contacts.edit', $contact) }}">
+                                        <i class="fas fa-edit"></i> {{ trans('global.edit') }}
+                                    </a>
+                                @endcan
                             </td>
 
                         </tr>

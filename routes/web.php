@@ -5,6 +5,7 @@ use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\DomainController;
 use App\Http\Controllers\Admin\DomainPricingController;
 use App\Http\Controllers\Admin\PermissionsController;
+use App\Http\Controllers\Admin\RenewDomainController;
 use App\Http\Controllers\Admin\RolesController;
 use App\Http\Controllers\Admin\SettingController;
 use App\Http\Controllers\Admin\UsersController;
@@ -31,15 +32,18 @@ Route::group(['middleware' => 'auth', 'prefix' => 'admin', 'as' => 'admin.'], fu
     Route::resource('users', UsersController::class);
     Route::resource('roles', RolesController::class);
     Route::resource('permissions', PermissionsController::class);
+    Route::resource('domain-pricings', DomainPricingController::class)->except('show');
 
     // Contact management (global)
     Route::group(['prefix' => 'contacts', 'as' => 'contacts.'], function () {
         Route::get('/', [ContactController::class, 'index'])->name('index');
         Route::get('/create', [ContactController::class, 'create'])->name('create');
         Route::post('/', [ContactController::class, 'store'])->name('store');
+        Route::get('/{contact}/edit', [ContactController::class, 'edit'])->name('edit');
+        Route::put('/{contact}', [ContactController::class, 'update'])->name('update');
     });
 
-    Route::resource('domain-pricings', DomainPricingController::class)->except('show');
+
 
     // Domain management routes
     Route::group(['prefix' => 'domains', 'as' => 'domains.'], function () {
@@ -59,12 +63,13 @@ Route::group(['middleware' => 'auth', 'prefix' => 'admin', 'as' => 'admin.'], fu
                 Route::get('{type}/edit', [ContactController::class, 'edit'])->name('edit');
                 Route::put('{type}', [DomainRegistrationController::class, 'updateContacts'])->name('update');
             });
-            
+
             // Nameserver management
             Route::put('nameservers', [DomainRegistrationController::class, 'updateNameservers'])->name('nameservers.update');
-            
+
             // Domain renewal
-            Route::put('renew', [DomainRegistrationController::class, 'renew'])->name('renew');
+            Route::post('renewal', [RenewDomainController::class, 'addToCart'])->name('renewal.addToCart');
+            Route::put('renew', [RenewDomainController::class, 'renew'])->name('renew');
         });
 
         // Domain registration flow
@@ -75,7 +80,6 @@ Route::group(['middleware' => 'auth', 'prefix' => 'admin', 'as' => 'admin.'], fu
         });
     });
 });
-
 
 Route::get('/dashboard', DashboardController::class)->middleware(['auth', 'verified'])->name('dashboard');
 
