@@ -319,7 +319,7 @@ class DomainRegistrationController extends Controller
                 } else {
                     $domainName = $item->id;
                 }
-                
+
                 // Remove 'renew_' prefix if present for renewal items
                 if (strpos($domainName, 'renew_') === 0) {
                     $domainName = substr($domainName, 6); // Remove the 'renew_' prefix
@@ -327,7 +327,7 @@ class DomainRegistrationController extends Controller
 
                 // Determine if this is a renewal or registration
                 // Check both the item type attribute and the item ID prefix for renewal
-                $isRenewal = (isset($item->attributes->type) && $item->attributes->type === 'renewal') || 
+                $isRenewal = (isset($item->attributes->type) && $item->attributes->type === 'renewal') ||
                             (strpos($item->id, 'renew_') === 0);
                 if ($isRenewal) {
                     $operationType = 'renewal';
@@ -358,8 +358,8 @@ class DomainRegistrationController extends Controller
                 // For renewal, we skip this check since the domain should already exist
                 if (! $isRenewal) {
                     // Only perform domain availability check for new registrations
-                    Log::info("Checking domain availability for registration", ['domain' => $domainName]);
-                    
+                    Log::info('Checking domain availability for registration', ['domain' => $domainName]);
+
                     $availability = $this->eppService->checkDomain([$domainName]);
 
                     $domainAvailable = ! empty($availability) &&
@@ -372,12 +372,12 @@ class DomainRegistrationController extends Controller
                     }
                 } else {
                     // For renewals, verify the domain exists in our database
-                    Log::info("Skipping availability check for renewal", ['domain' => $domainName]);
-                    
+                    Log::info('Skipping availability check for renewal', ['domain' => $domainName]);
+
                     $existingDomain = Domain::where('name', $domainName)
                         ->where('owner_id', Auth::id())
                         ->first();
-                        
+
                     if (! $existingDomain) {
                         throw new Exception("Domain {$domainName} not found in your account for renewal.");
                     }
@@ -395,7 +395,7 @@ class DomainRegistrationController extends Controller
                     'registrant' => $contacts['registrant']['id'],
                     'admin' => $contacts['admin']['id'],
                     'tech' => $contacts['tech']['id'],
-                    'billing' => isset($contacts['billing']['id']) ? $contacts['billing']['id'] : $contacts['registrant']['id'],
+                    'billing' => $contacts['billing']['id'] ?? $contacts['registrant']['id'],
                     'operation_type' => $operationType,
                 ]);
 
@@ -404,21 +404,21 @@ class DomainRegistrationController extends Controller
                     try {
                         // For renewal, use the renewDomain method
                         // First, get the domain info to get the expiration date
-                        Log::info("Retrieving domain info for renewal", ['domain' => $domainName]);
-                        
+                        Log::info('Retrieving domain info for renewal', ['domain' => $domainName]);
+
                         try {
                             $domainInfo = $this->eppService->getDomainInfo($domainName);
-                            
+
                             if (! $domainInfo || ! isset($domainInfo['exDate'])) {
                                 throw new Exception("Could not retrieve expiration date for domain {$domainName}");
                             }
-                            
-                            Log::info("Successfully retrieved domain info for renewal", [
+
+                            Log::info('Successfully retrieved domain info for renewal', [
                                 'domain' => $domainName,
                                 'expiry_date' => $domainInfo['exDate'],
                             ]);
                         } catch (Exception $e) {
-                            Log::error("Failed to retrieve domain info for renewal", [
+                            Log::error('Failed to retrieve domain info for renewal', [
                                 'domain' => $domainName,
                                 'error' => $e->getMessage(),
                             ]);
@@ -428,12 +428,12 @@ class DomainRegistrationController extends Controller
                         // Parse the expiration date
                         try {
                             $expiryDate = new DateTime($domainInfo['exDate']);
-                            Log::info("Parsed expiry date for renewal", [
+                            Log::info('Parsed expiry date for renewal', [
                                 'domain' => $domainName,
                                 'expiry_date' => $expiryDate->format('Y-m-d'),
                             ]);
                         } catch (Exception $e) {
-                            Log::error("Failed to parse expiry date for renewal", [
+                            Log::error('Failed to parse expiry date for renewal', [
                                 'domain' => $domainName,
                                 'expiry_date_raw' => $domainInfo['exDate'],
                                 'error' => $e->getMessage(),
@@ -468,7 +468,7 @@ class DomainRegistrationController extends Controller
                         $contacts['registrant']['id'],
                         $contacts['admin']['id'],
                         $contacts['tech']['id'],
-                        isset($contacts['billing']['id']) ? $contacts['billing']['id'] : $contacts['registrant']['id'] // Use registrant as billing if not specified
+                        $contacts['billing']['id'] ?? $contacts['registrant']['id'] // Use registrant as billing if not specified
                     );
                 }
 
@@ -962,13 +962,13 @@ class DomainRegistrationController extends Controller
             // Determine which nameservers to add and which to remove
             $nameserversToAdd = array_values(array_diff($newNameservers, $oldNameservers));
             $nameserversToRemove = array_values(array_diff($oldNameservers, $newNameservers));
-            
+
             Log::info('Nameserver changes', [
                 'domain' => $domain->name,
                 'to_add' => $nameserversToAdd,
                 'to_remove' => $nameserversToRemove,
             ]);
-            
+
             // Update nameservers in a single operation
             $frame = $this->eppService->updateDomain(
                 $domain->name,

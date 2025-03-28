@@ -83,7 +83,7 @@
 
                     <div class="mt-3">
                         @if ($items && $items->isNotEmpty())
-                            <a href="{{ route('contacts.create',['domain' => $items->first()->name])}}"
+                            <a href="{{ route('domain.register')}}"
                                 class="btn__long btn btn-success bg-success btn-lg w-100 mb-2">Proceed to Registration</a>
                         @endif
                     </div>

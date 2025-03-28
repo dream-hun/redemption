@@ -123,6 +123,8 @@ class DomainSearch extends Component
             $this->error = 'An error occurred while searching for domains.';
         } finally {
             $this->isSearching = false;
+            // Emit event to notify Alpine.js that search is complete
+            $this->dispatch('searchComplete');
         }
     }
 

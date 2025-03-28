@@ -1,20 +1,58 @@
-<div>
+<div x-data="{ loading: false }" @loading.window="loading = $event.detail.loading">
     <style>
-        .domain-loading-overlay {
-            position: absolute;
+        .modal-overlay {
+            position: fixed;
             top: 0;
             left: 0;
             right: 0;
             bottom: 0;
-            background: rgba(255, 255, 255, 0.9);
+            background: rgba(10, 10, 30, 0.5);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
             display: flex;
             justify-content: center;
             align-items: center;
             z-index: 9999;
+            transition: all 0.4s ease;
+            width: 100vw;
+            height: 100vh;
         }
-        .spinner-border {
-            width: 3rem;
-            height: 3rem;
+        .modal-content {
+            background: rgba(255, 255, 255, 0.25);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            padding: 3rem;
+            border-radius: 16px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            transform: translateY(0);
+            transition: transform 0.4s ease;
+            width: 90%;
+            max-width: 600px;
+            color: white;
+        }
+        .spinner {
+            width: 4rem;
+            height: 4rem;
+            border: 4px solid rgba(0, 123, 255, 0.1);
+            border-radius: 50%;
+            border-top: 4px solid #007bff;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+        }
+        /* Custom height for hero section */
+        .rts-hero-three {
+            max-height: 550px !important;
+            height: 550px !important;
+            min-height: 550px !important;
+            padding-top: 250px !important;
+            padding-bottom: 70px !important;
+            overflow: hidden;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
         .results-wrapper {
             position: relative;
@@ -72,20 +110,18 @@
         }
     </style>
 
-    <section class="rts-hero-three rts-hero__one rts-hosting-banner domain-checker-padding banner-default-height" style="max-height: 450px !important;">
+    <section class="rts-hero-three rts-hero__one rts-hosting-banner domain-checker-padding" style="max-height: 300px; height: 300px; min-height: 300px; padding-top: 30px; padding-bottom: 30px;">
         <div class="container">
             <div class="row align-items-center">
                 <div class="col-lg-12">
                     <div class="rts-hero__content domain">
-                        <h1 data-sal="slide-down" data-sal-delay="100" data-sal-duration="800" class="sal-animate">
-                            Find Best Unique Domains Checker!
+                        <h1 data-sal="slide-down" data-sal-delay="100" data-sal-duration="800" class="sal-animate" style="font-size: 2.5rem !important; margin-bottom: 25px;">
+                            Search for a Domain you desire
                         </h1>
-                        <p class="description sal-animate" data-sal="slide-down" data-sal-delay="200"
-                            data-sal-duration="800">
-                            Web Hosting, Domain Name and Hosting Center Solutions
-                        </p>
 
-                        <form wire:submit.prevent="search" id="domainForm" data-sal-delay="300" data-sal-duration="800">
+                        <form wire:submit.prevent="search" id="domainForm" data-sal-delay="300" data-sal-duration="800"
+                              x-on:submit="$dispatch('loading', { loading: true })">
+                              <!-- Added Alpine.js event dispatch -->
                             <div class="rts-hero__form-area">
                                 <input type="text" placeholder="Type your domain without extension Ex: jhonsmith"
                                     wire:model.defer="domain" id="domainText" autocomplete="off"
@@ -97,7 +133,7 @@
                                         @endforeach
                                     </select>
                                     <button type="submit" id="checkButton" wire:loading.attr="disabled"
-                                        wire:target="search">
+                                        wire:target="search" x-on:click="$dispatch('loading', { loading: true })">
                                         <span wire:loading.remove wire:target="search">Search</span>
                                         <span wire:loading wire:target="search">Searching...</span>
                                     </button>
@@ -127,7 +163,8 @@
         </div>
     </section>
 
-    <section class="rts-domain-pricing-area pt--30 pb--70">
+    <section class="rts-domain-pricing-area pt--30 pb--70"
+         x-init="$wire.on('searchComplete', () => { loading = false; })">
         <div class="container">
             <div class="row justify-content-center">
                 <div class="section-title-area w-full">
@@ -155,12 +192,23 @@
                     @endif
 
                     <div class="results-wrapper">
-                        <!-- Loading Overlay -->
-                        <div wire:loading wire:target="search" class="domain-loading-overlay">
-                            <div class="spinner-border text-primary" role="status">
-                                <span class="visually-hidden">Loading...</span>
+                        <!-- Alpine.js Loading Modal -->
+                        <template x-teleport="body">
+                            <div x-show="loading"
+                                 x-transition:enter="transition ease-out duration-300"
+                                 x-transition:enter-start="opacity-0"
+                                 x-transition:enter-end="opacity-100"
+                                 x-transition:leave="transition ease-in duration-300"
+                                 x-transition:leave-start="opacity-100"
+                                 x-transition:leave-end="opacity-0"
+                                 class="modal-overlay">
+                                <div class="modal-content">
+                                    <div class="spinner"></div>
+                                    <h4 style="color: white; font-size: 1.8rem; margin-top: 1.5rem; text-shadow: 0 2px 4px rgba(0,0,0,0.2);">Searching Domains</h4>
+                                    <p style="color: rgba(255,255,255,0.9); font-size: 1.1rem; margin-top: 0.5rem;">Please wait while we check domain availability...</p>
+                                </div>
                             </div>
-                        </div>
+                        </template>
                         <div id="resultsContainer" class="col-lg-12">
                         @if($results && count($results) > 0)
                             @php

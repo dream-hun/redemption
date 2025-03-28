@@ -9,12 +9,13 @@ use App\Http\Controllers\Admin\RenewDomainController;
 use App\Http\Controllers\Admin\RolesController;
 use App\Http\Controllers\Admin\SettingController;
 use App\Http\Controllers\Admin\UsersController;
+use App\Http\Controllers\Api\UserContactController;
 use App\Http\Controllers\CartController;
-use App\Http\Controllers\ClientDomainsController;
 use App\Http\Controllers\DomainRegistrationController;
 use App\Http\Controllers\HostingController;
 use App\Http\Controllers\LandingController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\RegisterDomainController;
 use App\Http\Controllers\SearchDomainController;
 use Illuminate\Support\Facades\Route;
 
@@ -43,8 +44,6 @@ Route::group(['middleware' => 'auth', 'prefix' => 'admin', 'as' => 'admin.'], fu
         Route::put('/{contact}', [ContactController::class, 'update'])->name('update');
     });
 
-
-
     // Domain management routes
     Route::group(['prefix' => 'domains', 'as' => 'domains.'], function () {
 
@@ -61,11 +60,11 @@ Route::group(['middleware' => 'auth', 'prefix' => 'admin', 'as' => 'admin.'], fu
             // Contact management
             Route::prefix('contacts')->name('contacts.')->group(function () {
                 Route::get('{type}/edit', [ContactController::class, 'edit'])->name('edit');
-                Route::put('{type}', [DomainRegistrationController::class, 'updateContacts'])->name('update');
+                Route::put('/', [DomainController::class, 'updateContacts'])->name('update');
             });
 
             // Nameserver management
-            Route::put('nameservers', [DomainRegistrationController::class, 'updateNameservers'])->name('nameservers.update');
+            Route::put('nameservers', [DomainController::class, 'updateNameservers'])->name('nameservers.update');
 
             // Domain renewal
             Route::post('renewal', [RenewDomainController::class, 'addToCart'])->name('renewal.addToCart');
@@ -78,36 +77,30 @@ Route::group(['middleware' => 'auth', 'prefix' => 'admin', 'as' => 'admin.'], fu
             Route::post('/{domain:uuid}', [DomainRegistrationController::class, 'store'])->name('store');
             Route::get('/{domain:uuid}/success', [DomainRegistrationController::class, 'success'])->name('success');
         });
+
     });
 });
 
 Route::get('/dashboard', DashboardController::class)->middleware(['auth', 'verified'])->name('dashboard');
+// Domain registration routes
+Route::middleware(['auth', 'verified'])->group(function () {
+    Route::get('/domain/register', [RegisterDomainController::class, 'index'])->name('domain.register');
+    Route::post('/domain/register', [RegisterDomainController::class, 'register'])->name('domain.register');
+    Route::post('/domain/contact/create', [RegisterDomainController::class, 'createContact'])->name('domain.contact.create');
+    Route::get('/domain/registration/success/{domain}', [RegisterDomainController::class, 'success'])->name('domain.registration.success');
+});
 
 Route::middleware('auth')->group(function () {
-    // Client Domains
-    Route::get('/my-domains', [ClientDomainsController::class, 'index'])->name('client.domains');
-    Route::get('/my-domains/manage/{domain:name}', [ClientDomainsController::class, 'manage'])->name('client.domains.manage');
-    Route::get('/my-domains/{domain}', [ClientDomainsController::class, 'show'])->name('client.domains.show');
 
-    // Domain Management
-    Route::get('/my-domains/{domain}/edit-contacts', [DomainRegistrationController::class, 'editContacts'])
-        ->name('client.domains.edit-contacts');
-
-    Route::get('/my-domains/{domain}/renew', [DomainRegistrationController::class, 'renewForm'])
-        ->name('client.domains.renew');
-    Route::put('/my-domains/{domain}/renew', [DomainRegistrationController::class, 'renew']);
-
-    Route::delete('/my-domains/{domain}', [DomainRegistrationController::class, 'destroy'])
-        ->name('client.domains.destroy');
-
-    // Domain Registration
-    Route::get('/domain-registration/{domain}', [DomainRegistrationController::class, 'create'])->name('contacts.create');
-    Route::post('/domains/register', [DomainRegistrationController::class, 'registerDomains'])->name('domains.register');
-
-    // Profile
+        // Profile
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+    
+    // API routes
+    Route::prefix('api')->name('api.')->group(function () {
+        Route::get('/user/contacts', [UserContactController::class, 'index'])->name('user.contacts');
+    });
 });
 
 require __DIR__.'/auth.php';

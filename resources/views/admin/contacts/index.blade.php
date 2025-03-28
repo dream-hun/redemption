@@ -35,12 +35,7 @@
                         <th>
                             {{ trans('cruds.contact.fields.id') }}
                         </th>
-                        <th>
-                            Contact ID
-                        </th>
-                        <th>
-                            {{ trans('cruds.contact.fields.contact_type') }}
-                        </th>
+
                         <th>
                             {{ trans('cruds.contact.fields.name') }}
                         </th>
@@ -68,12 +63,7 @@
                             <td>
                                 {{ $contact->id ?? '' }}
                             </td>
-                            <td>
-                                {{ $contact->contact_id ?? '' }}
-                            </td>
-                            <td>
-                                {{ $contact->contact_type ?? '' }}
-                            </td>
+
                             <td>
                                 {{ $contact->name ?? '' }}
                             </td>

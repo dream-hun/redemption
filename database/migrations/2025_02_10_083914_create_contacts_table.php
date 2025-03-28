@@ -16,7 +16,6 @@ return new class extends Migration
             $table->uuid();
             $table->foreignId('user_id')->constrained()->cascadeOnDelete();
             $table->string('contact_id')->unique();
-            $table->string('contact_type');
             $table->string('name');
             $table->string('organization')->nullable();
             $table->string('street1');
@@ -28,12 +27,11 @@ return new class extends Migration
             $table->string('voice');
             $table->string('fax_number')->nullable();
             $table->string('fax_ext')->nullable();
-            $table->string('email');
+            $table->string('email')->unique();
             $table->string('auth_info')->nullable();
             $table->string('epp_status')->default('active');
             $table->timestamps();
             // Index for faster lookups
-            $table->index('contact_type');
             $table->index('email');
         });
     }

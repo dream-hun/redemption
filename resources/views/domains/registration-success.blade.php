@@ -20,7 +20,24 @@
                         <i class="bi bi-check-circle text-success" style="font-size: 4rem;"></i>
                     </div>
                     <h2 class="card-title h3 mb-4">Domain Registration Successful!</h2>
-                    <p class="text-muted mb-4">Your domain <strong>{{ $domain }}</strong> has been successfully registered.</p>
+                    <p class="text-muted mb-4">Your domain <strong>{{ $domain->name }}</strong> has been successfully registered.</p>
+                    <div class="card mb-4">
+                        <div class="card-header bg-light">
+                            <h5 class="mb-0">Domain Details</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6 text-start">
+                                    <p><strong>Registration Date:</strong> {{ $domain->registration_date->format('Y-m-d') }}</p>
+                                    <p><strong>Expiration Date:</strong> {{ $domain->expiration_date->format('Y-m-d') }}</p>
+                                </div>
+                                <div class="col-md-6 text-start">
+                                    <p><strong>Status:</strong> <span class="badge bg-success">{{ ucfirst($domain->status) }}</span></p>
+                                    <p><strong>Nameservers:</strong> {{ count(json_decode($domain->nameservers, true)) }} configured</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                     <div class="d-flex justify-content-center gap-3">
                         <a href="{{ route('domains.index') }}" class="btn btn-primary">
                             <i class="bi bi-plus-circle me-2"></i>Register Another Domain

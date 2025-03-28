@@ -11,13 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('nameservers', function (Blueprint $table) {
+        Schema::create('domain_contacts', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('domain_id')->constrained();
-            $table->string('dns_provider')->nullable();
-            $table->string('hostname');
-            $table->json('ipv4_addresses')->nullable();
-            $table->json('ipv6_addresses')->nullable();
+            $table->foreignId('domain_id')->constrained('domains');
+            $table->foreignId('contact_id')->constrained('contacts');
+            $table->string('type');
+            $table->foreignId('user_id')->constrained('users');
             $table->timestamps();
         });
     }
@@ -27,6 +26,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('nameservers');
+        Schema::dropIfExists('domain_contacts');
     }
 };

@@ -320,7 +320,7 @@ class EppService
             throw $e;
         }
     }
-    
+
     /**
      * Update Domain Contact in EPP registry
      *
@@ -330,88 +330,88 @@ class EppService
     {
         try {
             $this->ensureConnection();
-            
+
             // Import the UpdateContact class
             $updateContactClass = 'AfriCC\EPP\Frame\Command\Update\Contact';
-            if (!class_exists($updateContactClass)) {
-                throw new Exception("UpdateContact class not found in EPP library");
+            if (! class_exists($updateContactClass)) {
+                throw new Exception('UpdateContact class not found in EPP library');
             }
-            
+
             // Create update frame
-            $frame = new $updateContactClass();
+            $frame = new $updateContactClass;
             $frame->setId($contactId);
-            
+
             // Set contact information to update
             if (isset($contactData['name'])) {
                 $frame->setChgName($contactData['name']);
             }
-            
+
             if (isset($contactData['organization'])) {
                 $frame->setChgOrganization($contactData['organization']);
             }
-            
+
             // Handle address changes
-            if (!empty($contactData['streets']) || 
-                isset($contactData['city']) || 
-                isset($contactData['province']) || 
-                isset($contactData['postal_code']) || 
+            if (! empty($contactData['streets']) ||
+                isset($contactData['city']) ||
+                isset($contactData['province']) ||
+                isset($contactData['postal_code']) ||
                 isset($contactData['country_code'])) {
-                
+
                 // Add streets
-                if (!empty($contactData['streets'])) {
+                if (! empty($contactData['streets'])) {
                     foreach ($contactData['streets'] as $street) {
                         $frame->addChgStreet($street);
                     }
                 }
-                
+
                 // Set other address fields
                 if (isset($contactData['city'])) {
                     $frame->setChgCity($contactData['city']);
                 }
-                
+
                 if (isset($contactData['province'])) {
                     $frame->setChgProvince($contactData['province']);
                 }
-                
+
                 if (isset($contactData['postal_code'])) {
                     $frame->setChgPostalCode($contactData['postal_code']);
                 }
-                
+
                 if (isset($contactData['country_code'])) {
                     $frame->setChgCountryCode($contactData['country_code']);
                 }
             }
-            
+
             // Set contact details
             if (isset($contactData['voice'])) {
                 $frame->setChgVoice($contactData['voice']);
             }
-            
+
             if (isset($contactData['fax'])) {
                 $frame->setChgFax($contactData['fax']['number'], $contactData['fax']['ext'] ?? '');
             }
-            
+
             if (isset($contactData['email'])) {
                 $frame->setChgEmail($contactData['email']);
             }
-            
+
             // Update disclosure preferences if provided
-            if (!empty($contactData['disclose'])) {
+            if (! empty($contactData['disclose'])) {
                 foreach ($contactData['disclose'] as $item) {
                     $frame->addChgDisclose($item);
                 }
             }
-            
+
             // Generate new auth info if requested
             $auth = null;
-            if (!empty($contactData['generate_new_auth'])) {
+            if (! empty($contactData['generate_new_auth'])) {
                 $auth = $frame->setChgAuthInfo();
             }
-            
+
             return ['frame' => $frame, 'auth' => $auth];
-            
+
         } catch (Exception $e) {
-            Log::error('Contact update failed: ' . $e->getMessage(), [
+            Log::error('Contact update failed: '.$e->getMessage(), [
                 'contact_id' => $contactId,
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),

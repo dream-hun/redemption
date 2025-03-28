@@ -166,13 +166,17 @@
                         <li class="nav-item">
                             <a class="nav-link" href="#tech" data-toggle="tab">Technical Contact</a>
                         </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#billing" data-toggle="tab">Billing Contact</a>
+                        </li>
                     </ul>
                 </div>
                 <div class="card-body">
                     <div class="tab-content">
-                        @foreach(['registrant' => $domain->registrantContact, 'admin' => $domain->adminContact, 'tech' => $domain->techContact] as $type => $contact)
+                        @foreach(['registrant', 'admin', 'tech', 'billing'] as $type)
                         <div class="tab-pane fade {{ $loop->first ? 'show active' : '' }}" id="{{ $type }}">
-                            @if($contact)
+                            @if(isset($contactsByType[$type]) && $contactsByType[$type])
+                            @php $contact = $contactsByType[$type]; @endphp
                             <table class="table table-bordered">
                                 <tr>
                                     <th style="width: 200px;">Name</th>
@@ -201,9 +205,20 @@
                                     <th>Email</th>
                                     <td>{{ $contact->email }}</td>
                                 </tr>
+                                <tr>
+                                    <th>Contact ID</th>
+                                    <td>{{ $contact->contact_id }}</td>
+                                </tr>
                             </table>
                             @else
-                            <p>No contact information available.</p>
+                            <div class="alert alert-info">
+                                No {{ ucfirst($type) }} contact information available.
+                                <div class="mt-3">
+                                    <a href="{{ route('admin.domains.edit', $domain->uuid) }}" class="btn btn-sm btn-primary">
+                                        <i class="fas fa-user-plus"></i> Add {{ ucfirst($type) }} Contact
+                                    </a>
+                                </div>
+                            </div>
                             @endif
                         </div>
                         @endforeach
@@ -211,37 +226,38 @@
                 </div>
             </div>
 
-            <div class="mt-4">
-                <a class="btn btn-default" href="{{ route('admin.domains.index') }}">
-                    {{ trans('global.back_to_list') }}
-                </a>
-
-                <a class="btn btn-info" href="{{ route('admin.domains.edit', $domain->uuid) }}">
-                    {{ trans('global.edit') }}
-                </a>
-            </div>
         </div>
     </div>
 
     <div class="card-footer">
         <div class="row">
             <div class="col-md-6">
-                <a href="{{ route('admin.domains.index') }}" class="btn btn-default">
-                    <i class="fas fa-arrow-left"></i> Back to List
+                <a class="btn btn-default" href="{{ route('admin.domains.index') }}">
+                    <i class="fas fa-arrow-left"></i> {{ trans('global.back_to_list') }}
                 </a>
             </div>
             <div class="col-md-6 text-right">
-                @can('domain_delete')
-                    @if($domain->owner_id === auth()->id())
-                        <form action="{{ route('admin.domains.destroy', $domain->uuid) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this domain? This action cannot be undone and will remove the domain from the registry.');" style="display: inline-block;">
-                            <input type="hidden" name="_method" value="DELETE">
-                            <input type="hidden" name="_token" value="{{ csrf_token() }}">
-                            <button type="submit" class="btn btn-danger">
-                                <i class="fas fa-trash"></i> Delete Domain
-                            </button>
-                        </form>
-                    @endif
-                @endcan
+                <div class="btn-group">
+                    <a class="btn btn-info" href="{{ route('admin.domains.edit', $domain->uuid) }}">
+                        <i class="fas fa-edit"></i> {{ trans('global.edit') }}
+                    </a>
+                    
+                    <form action="{{ route('admin.domains.renewal.addToCart', $domain->uuid) }}" method="POST" style="display: inline-block;">
+                        @csrf
+                        <input type="hidden" name="period" value="1">
+                        <button type="submit" class="btn btn-success">
+                            <i class="fas fa-sync"></i> Renew Domain
+                        </button>
+                    </form>
+                    
+                    <form action="{{ route('admin.domains.destroy', $domain->uuid) }}" method="POST" style="display: inline-block;">
+                        @csrf
+                        @method('DELETE')
+                        <button type="submit" class="btn btn-danger" onclick="return confirm('{{ trans('global.areYouSure') }}')">
+                            <i class="fas fa-trash"></i> {{ trans('global.delete') }}
+                        </button>
+                    </form>
+                </div>
             </div>
         </div>
     </div>

@@ -19,6 +19,8 @@ class DatabaseSeeder extends Seeder
             SettingSeeder::class,
             ContactSeeder::class,
             DomainSeeder::class,
+            DomainContactSeeder::class,
+            NameserverSeeder::class,
         ]);
     }
 }

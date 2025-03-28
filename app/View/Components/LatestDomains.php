@@ -11,7 +11,7 @@ class LatestDomains extends Component
     public function render(): View
     {
 
-        $domains = Domain::with(['registrantContact', 'adminContact', 'techContact', 'owner'])
+        $domains = Domain::with(['owner'])
             ->where('owner_id', auth()->id())
             ->latest('registered_at')
             ->limit(10)

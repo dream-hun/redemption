@@ -6,6 +6,7 @@ use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Facades\Str;
 
 class Domain extends Model
@@ -56,29 +57,19 @@ class Domain extends Model
         return $this->belongsTo(User::class, 'owner_id');
     }
 
-    public function registrantContact(): BelongsTo
-    {
-        return $this->belongsTo(Contact::class, 'registrant_contact_id');
-    }
-
-    public function adminContact(): BelongsTo
-    {
-        return $this->belongsTo(Contact::class, 'admin_contact_id');
-    }
-
-    public function techContact(): BelongsTo
-    {
-        return $this->belongsTo(Contact::class, 'tech_contact_id');
-    }
-
-    public function billingContact(): BelongsTo
-    {
-        return $this->belongsTo(Contact::class, 'billing_contact_id');
-    }
-
     public function domainPricing(): BelongsTo
     {
         return $this->belongsTo(DomainPricing::class);
+    }
+
+    public function nameservers(): HasMany
+    {
+        return $this->hasMany(Nameserver::class, 'domain_id');
+    }
+
+    public function contacts(): HasMany
+    {
+        return $this->hasMany(DomainContact::class, 'domain_id');
     }
 
     public function isExpiring($days = 30): bool
