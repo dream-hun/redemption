@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Contact;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class UserContactController extends Controller
 {
@@ -15,12 +16,55 @@ class UserContactController extends Controller
     public function index(Request $request): JsonResponse
     {
         $contacts = Contact::where('user_id', auth()->id())
-            ->select('id', 'uuid', 'contact_id', 'name', 'organization', 'email', 'contact_type')
+            ->select('id', 'uuid', 'contact_id', 'name', 'organization', 'email')
             ->get();
+            
+        // Get the domain contacts to determine the contact type
+        $contacts->each(function ($contact) {
+            // Get the domain contact types for this contact
+            $domainContacts = \App\Models\DomainContact::where('contact_id', $contact->id)
+                ->distinct('type')
+                ->pluck('type')
+                ->toArray();
+                
+            // Set the contact type based on domain contacts, or default to null
+            $contact->contact_type = !empty($domainContacts) ? $domainContacts[0] : null;
+        });
 
         return response()->json([
             'success' => true,
             'contacts' => $contacts,
+        ]);
+    }
+    
+    /**
+     * Get full details for a specific contact.
+     */
+    public function show(int $id): JsonResponse
+    {
+        // Find the contact and ensure it belongs to the authenticated user
+        $contact = Contact::where('id', $id)
+            ->where('user_id', Auth::id())
+            ->first();
+        
+        if (!$contact) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Contact not found or does not belong to you',
+            ], 404);
+        }
+        
+        // Get the domain contact type for this contact
+        $domainContact = \App\Models\DomainContact::where('contact_id', $contact->id)
+            ->first();
+            
+        if ($domainContact) {
+            $contact->contact_type = $domainContact->type;
+        }
+        
+        return response()->json([
+            'success' => true,
+            'contact' => $contact,
         ]);
     }
 }

@@ -100,6 +100,7 @@ Route::middleware('auth')->group(function () {
     // API routes
     Route::prefix('api')->name('api.')->group(function () {
         Route::get('/user/contacts', [UserContactController::class, 'index'])->name('user.contacts');
+        Route::get('/contacts/{id}', [UserContactController::class, 'show'])->name('contacts.show');
     });
 });
 

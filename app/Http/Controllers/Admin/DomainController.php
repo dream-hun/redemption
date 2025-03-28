@@ -267,10 +267,8 @@ class DomainController extends Controller
                         }
                     }
                     
-                    // Update domain nameservers array
-                    $domain->update([
-                        'nameservers' => $nameservers,
-                    ]);
+                    // Mark the domain as updated
+                    $domain->touch();
                 });
                 
                 return redirect()->route('admin.domains.edit', $domain)

@@ -19,6 +19,7 @@ use AfriCC\EPP\Frame\Response;
 use DateTime;
 use Exception;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 
 class EppService
 {
@@ -476,7 +477,7 @@ class EppService
      *
      * @throws Exception
      */
-    public function createDomain(string $domain, string $period, array $hostAttrs, string $registrant, string $adminContact, string $techContact, string $billingContact): CreateDomain
+    public function createDomain(string $domain, string $period, array $nameservers, string $registrant, string $adminContact, string $techContact, string $billingContact): CreateDomain
     {
         try {
             $this->ensureConnection();
@@ -484,11 +485,19 @@ class EppService
             $frame->setDomain($domain);
             $frame->setPeriod($period);
 
-            foreach ($hostAttrs as $host => $ips) {
-                if (is_array($ips)) {
-                    $frame->addHostAttr($host, $ips);
-                } else {
-                    $frame->addHostAttr($host);
+            // Use hostObj instead of hostAttr as required by the EPP server
+            foreach ($nameservers as $host) {
+                if (!empty($host)) {
+                    // Make sure the host is properly formatted
+                    $host = trim($host);
+                    if (!empty($host)) {
+                        // Log the nameserver being added
+                        \Log::info('Adding nameserver to domain', [
+                            'domain' => $domain,
+                            'nameserver' => $host
+                        ]);
+                        $frame->addHostObj($host);
+                    }
                 }
             }
 
@@ -617,6 +626,122 @@ class EppService
         }
     }
 
+    /**
+     * Update domain nameservers
+     *
+     * @param string $domain Domain name
+     * @param array $nameservers Array of nameserver hostnames
+     * @return UpdateDomain EPP frame
+     * @throws Exception
+     */
+    public function updateDomainNameservers(string $domain, array $nameservers): UpdateDomain
+    {
+        try {
+            $this->ensureConnection();
+            
+            // Normalize domain name (remove trailing dot if present)
+            $domain = rtrim($domain, '.');
+            
+            // Filter out empty nameservers and normalize hostnames
+            $nameservers = array_filter(array_map(function ($ns) {
+                // Normalize nameserver hostname (remove trailing dot if present)
+                return rtrim(trim($ns), '.');
+            }, $nameservers), fn($ns) => !empty($ns));
+            
+            // Get current nameservers for the domain
+            $infoFrame = new InfoDomain;
+            $infoFrame->setDomain($domain);
+            $infoResponse = $this->client->request($infoFrame);
+            
+            // Create update domain frame
+            $frame = new UpdateDomain;
+            $frame->setDomain($domain);
+            
+            // First, check if the nameservers exist in the registry
+            // If they don't exist, we need to create them first
+            foreach ($nameservers as $ns) {
+                // Check if the nameserver exists
+                $checkFrame = new \AfriCC\EPP\Frame\Command\Check\Host();
+                $checkFrame->addHost($ns);
+                $checkResponse = $this->client->request($checkFrame);
+                
+                if ($checkResponse->code() === 1000) {
+                    // Parse the response to see if the host exists
+                    $responseXml = (string) $checkResponse;
+                    
+                    // If the host doesn't exist and contains the domain we're updating,
+                    // we need to create it as a subordinate host
+                    if (strpos($responseXml, '<host:name avail="1">') !== false && 
+                        strpos($ns, $domain) !== false) {
+                        
+                        Log::info("Creating subordinate host: {$ns}");
+                        
+                        // Create the host
+                        $createFrame = new \AfriCC\EPP\Frame\Command\Create\Host();
+                        $createFrame->setHost($ns);
+                        
+                        // Add a default IP address for the host
+                        // This is required by some EPP registries for subordinate hosts
+                        $createFrame->addAddr('127.0.0.1');
+                        
+                        $createResponse = $this->client->request($createFrame);
+                        
+                        if ($createResponse->code() !== 1000) {
+                            Log::warning("Failed to create host {$ns}: {$createResponse->message()}");
+                        } else {
+                            Log::info("Successfully created host {$ns}");
+                        }
+                    }
+                }
+            }
+            
+            // Now update the domain with the new nameservers
+            // Following the example from the PHP-EPP2 library
+            
+            // First, if we can get the current nameservers, remove them
+            if ($infoResponse->code() === 1000) {
+                $responseXml = (string) $infoResponse;
+                
+                // Extract current nameservers using regex
+                // This is a simple approach since we can't use XPath directly
+                preg_match_all('/<domain:hostObj>([^<]+)<\/domain:hostObj>/', $responseXml, $matches);
+                
+                if (!empty($matches[1])) {
+                    foreach ($matches[1] as $currentNs) {
+                        Log::info("Removing nameserver: {$currentNs}");
+                        $frame->removeHostObj($currentNs);
+                    }
+                }
+            }
+            
+            // Add the new nameservers
+            foreach ($nameservers as $ns) {
+                Log::info("Adding nameserver: {$ns}");
+                $frame->addHostObj($ns);
+            }
+            
+            // Change auth info (optional but recommended for security)
+            $authInfo = Str::random(12);
+            $frame->changeAuthInfo($authInfo);
+            
+            // Log the frame for debugging
+            Log::debug('EPP update domain nameservers frame created', [
+                'domain' => $domain,
+                'new_nameservers' => $nameservers,
+                'frame' => (string) $frame,
+            ]);
+            
+            return $frame;
+        } catch (Exception $e) {
+            Log::error('EPP update domain nameservers error', [
+                'domain' => $domain,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+            throw $e;
+        }
+    }
+    
     /**
      * Update domain
      *

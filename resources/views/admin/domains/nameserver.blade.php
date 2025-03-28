@@ -11,16 +11,28 @@
 
                 <div id="nameservers-container">
                     @php
-                        // Ensure nameservers are loaded
-                        $domain->load('nameservers');
-                        // Get nameservers as array from the domain model
-                        $nameservers = $domain->nameservers ?? [];
-                        // If nameservers is empty, create default entries
-                        if (empty($nameservers) || (is_countable($nameservers) && count($nameservers) === 0)) {
-                            $nameservers = [
-                                ['hostname' => ''],
-                                ['hostname' => '']
-                            ];
+                        // Explicitly fetch nameservers from the database using a fresh query
+                        // This ensures we get the latest data directly from the database
+                        $nameservers = \App\Models\Nameserver::where('domain_id', $domain->id)->get();
+                        
+                        // If no nameservers found, check if domain has nameservers as array property
+                        if ($nameservers->isEmpty()) {
+                            if (isset($domain->nameservers) && is_array($domain->nameservers) && !empty($domain->nameservers)) {
+                                // Convert array nameservers to collection of objects for consistent handling
+                                $tempNameservers = collect();
+                                foreach ($domain->nameservers as $ns) {
+                                    $tempObj = new \stdClass();
+                                    $tempObj->hostname = $ns;
+                                    $tempNameservers->push($tempObj);
+                                }
+                                $nameservers = $tempNameservers;
+                            } else {
+                                // Create default entries if no nameservers found anywhere
+                                $nameservers = collect([
+                                    (object)['hostname' => ''],
+                                    (object)['hostname' => '']
+                                ]);
+                            }
                         }
                     @endphp
 
@@ -30,13 +42,10 @@
                                 <span class="input-group-text">Nameserver {{ $index + 1 }}</span>
                             </div>
                             <input type="text" class="form-control" name="nameservers[]" 
-                                value="{{ old('nameservers.'.$index, 
-                                    is_object($nameserver) && isset($nameserver->hostname) ? $nameserver->hostname : 
-                                    (is_array($nameserver) && isset($nameserver['hostname']) ? $nameserver['hostname'] : 
-                                    (is_string($nameserver) ? $nameserver : ''))) }}" 
+                                value="{{ old('nameservers.'.$index, $nameserver->hostname) }}" 
                                 placeholder="ns{{ $index + 1 }}.example.com">
                             <div class="input-group-append">
-                                <button type="button" class="btn btn-danger remove-nameserver" {{ count($nameservers) <= 2 ? 'disabled' : '' }}>
+                                <button type="button" class="btn btn-danger remove-nameserver" {{ $nameservers->count() <= 2 ? 'disabled' : '' }}>
                                     <i class="fas fa-times"></i> Remove
                                 </button>
                             </div>
