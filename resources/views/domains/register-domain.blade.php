@@ -272,70 +272,70 @@
                     <div class="modal-body">
                         <div class="row">
                             <input type="hidden" name="contact_type" id="contactTypeInput">
-                            <div class="form-group mb-3">
+                            <div class="form-group col-md-6 mb-3">
                                 <label class="form-label">Name <span class="text-danger">*</span></label>
                                 <input type="text" name="name" class="form-control" required>
                                 @error('name')
                                 <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
                             </div>
-                            <div class="form-group mb-3">
+                            <div class="form-group col-md-6 mb-3">
                                 <label class="form-label">Email <span class="text-danger">*</span></label>
                                 <input type="email" name="email" class="form-control" required>
                                 @error('email')
                                 <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
                             </div>
-                            <div class="form-group mb-3">
+                            <div class="form-group col-md-6 mb-3">
                                 <label class="form-label">Organization</label>
                                 <input type="text" name="organization" class="form-control">
                             </div>
-                            <div class="form-group mb-3">
+                            <div class="form-group col-md-6 mb-3">
                                 <label class="form-label">Phone <span class="text-danger">*</span></label>
                                 <input type="tel" name="voice" class="form-control" required placeholder="+250xxxxxxxxx">
                                 @error('voice')
                                 <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
                             </div>
-                            
-                            <div class="form-group mb-3">
+
+                            <div class="form-group col-md-6 mb-3">
                                 <label class="form-label">Street Address 1 <span class="text-danger">*</span></label>
                                 <input type="text" name="street1" class="form-control" required>
                                 @error('street1')
                                 <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
                             </div>
-                            
-                            <div class="form-group mb-3">
+
+                            <div class="form-group col-md-6 mb-3">
                                 <label class="form-label">Street Address 2</label>
                                 <input type="text" name="street2" class="form-control">
                             </div>
-                            
-                            <div class="form-group mb-3">
+
+                            <div class="form-group col-md-6 mb-3">
                                 <label class="form-label">City <span class="text-danger">*</span></label>
                                 <input type="text" name="city" class="form-control" required>
                                 @error('city')
                                 <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
                             </div>
-                            
-                            <div class="form-group mb-3">
+
+                            <div class="form-group col-md-6 mb-3">
                                 <label class="form-label">Province/State <span class="text-danger">*</span></label>
                                 <input type="text" name="province" class="form-control" required>
                                 @error('province')
                                 <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
                             </div>
-                            
-                            <div class="form-group mb-3">
+
+                            <div class="form-group col-md-6 mb-3">
                                 <label class="form-label">Postal Code <span class="text-danger">*</span></label>
                                 <input type="text" name="postal_code" class="form-control" required>
                                 @error('postal_code')
                                 <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
                             </div>
-                            
-                            <div class="form-group mb-3">
+
+                            <div class="form-group col-md-6 mb-3">
                                 <label class="form-label">Country <span class="text-danger">*</span></label>
                                 <select name="country_code" class="form-control" required>
                                     <option value="">Select Country</option>
@@ -347,13 +347,13 @@
                                 <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
                             </div>
-                            
-                            <div class="form-group mb-3">
+
+                            <div class="form-group col-md-6 mb-3">
                                 <label class="form-label">Fax Number</label>
                                 <input type="text" name="fax_number" class="form-control">
                             </div>
-                            
-                            <div class="form-group mb-3">
+
+                            <div class="form-group col-md-6 mb-3">
                                 <label class="form-label">Fax Extension</label>
                                 <input type="text" name="fax_ext" class="form-control">
                             </div>
@@ -379,7 +379,7 @@ $(document).ready(function() {
     // Store all contacts data
     let existingContacts = {!! json_encode($existingContacts ?? []) !!};
     console.log('Existing contacts loaded:', existingContacts);
-    
+
     // Fetch all contacts from the server to ensure we have complete data
     $.ajax({
         url: window.location.origin + '/api/user/contacts',
@@ -391,40 +391,40 @@ $(document).ready(function() {
                 // Update our local contacts data
                 const contactsByType = {};
                 const contactTypes = ['registrant', 'admin', 'tech', 'billing'];
-                
+
                 // Initialize contact types
                 contactTypes.forEach(type => {
                     contactsByType[type] = data.contacts;
                 });
-                
+
                 existingContacts = contactsByType;
-                
+
                 // Update all contact dropdowns with the new data
                 updateContactDropdowns();
             }
         }
     });
-    
+
     // Function to update all contact dropdowns with the latest data
     function updateContactDropdowns() {
         const contactTypes = ['registrant', 'admin', 'tech', 'billing'];
-        
+
         contactTypes.forEach(type => {
             const dropdown = $('#' + type + '_contact_id');
             const selectedValue = dropdown.val();
-            
+
             // Clear existing options except the first one
             dropdown.find('option:not(:first)').remove();
-            
+
             // Add options from our contacts data
             if (existingContacts[type] && existingContacts[type].length > 0) {
                 existingContacts[type].forEach(contact => {
                     dropdown.append(new Option(
-                        contact.name + ' (' + contact.email + ')', 
+                        contact.name + ' (' + contact.email + ')',
                         contact.id
                     ));
                 });
-                
+
                 // Restore selected value if it exists
                 if (selectedValue) {
                     dropdown.val(selectedValue);
@@ -432,23 +432,23 @@ $(document).ready(function() {
             }
         });
     }
-    
+
     // Initialize contact details display
     function updateContactDetails(type) {
         const contactId = $('#' + type + '_contact_id').val();
         const detailsDiv = $('#' + type + '-contact-details');
-        
+
         if (contactId) {
             console.log('Selected contact ID for ' + type + ':', contactId);
-            
+
             // Find the contact in our local data
             const contacts = existingContacts[type] || [];
             const contact = contacts.find(c => parseInt(c.id) === parseInt(contactId));
-            
+
             if (contact) {
                 console.log('Found contact in local data:', contact);
                 displayContactDetails(detailsDiv, contact);
-                
+
                 // If we're missing some details, try to fetch them from the server
                 if (!contact.street1 || !contact.city) {
                     console.log('Fetching additional contact details from server');
@@ -475,27 +475,27 @@ $(document).ready(function() {
             detailsDiv.hide();
         }
     }
-    
+
     // Helper function to display contact details
     function displayContactDetails(detailsDiv, contact) {
         console.log('Displaying contact details:', contact);
-        
+
         // Basic info
         detailsDiv.find('.contact-name').text(contact.name || 'N/A');
         detailsDiv.find('.contact-email').text(contact.email || 'N/A');
         detailsDiv.find('.contact-phone').text(contact.voice || 'N/A');
         detailsDiv.find('.contact-org').text(contact.organization || 'N/A');
-        
+
         // Address info
         detailsDiv.find('.contact-street1').text(contact.street1 || 'N/A');
         detailsDiv.find('.contact-city').text(contact.city || 'N/A');
         detailsDiv.find('.contact-province').text(contact.province || 'N/A');
         detailsDiv.find('.contact-country').text(contact.country_code || 'N/A');
         detailsDiv.find('.contact-postal').text(contact.postal_code || 'N/A');
-        
+
         // Make sure the details are visible
         detailsDiv.show();
-        
+
         // Scroll to make sure the details are visible if needed
         if (!isElementInViewport(detailsDiv[0])) {
             $('html, body').animate({
@@ -503,7 +503,7 @@ $(document).ready(function() {
             }, 500);
         }
     }
-    
+
     // Helper function to check if an element is in the viewport
     function isElementInViewport(el) {
         const rect = el.getBoundingClientRect();
@@ -514,34 +514,34 @@ $(document).ready(function() {
             rect.right <= (window.innerWidth || document.documentElement.clientWidth)
         );
     }
-    
+
     // Handle contact selection change
     $('.contact-select').on('change', function() {
         const type = $(this).attr('id').replace('_contact_id', '');
         updateContactDetails(type);
     });
-    
+
     // Handle add new contact button click
     $('.add-contact-btn').on('click', function() {
         const contactType = $(this).data('type');
         $('#contactTypeInput').val(contactType);
         $('#contactTypeDisplay').text(contactType.charAt(0).toUpperCase() + contactType.slice(1));
     });
-    
+
     // Handle contact form submission
     $('#contactForm').on('submit', function(e) {
         e.preventDefault();
-        
+
         // Get form data
         const formData = new FormData(this);
         const contactType = $('#contactTypeInput').val();
-        
+
         // Show loading state
         const submitBtn = $(this).find('button[type="submit"]');
         const originalText = submitBtn.html();
         submitBtn.prop('disabled', true);
         submitBtn.html('<i class="bi bi-hourglass"></i> Creating...');
-        
+
         // Submit the form via AJAX
         $.ajax({
             url: $(this).attr('action'),
@@ -558,17 +558,17 @@ $(document).ready(function() {
                     const newContact = data.contact;
                     const option = new Option(newContact.name + ' (' + newContact.email + ')', newContact.id);
                     $('#' + contactType + '_contact_id').append(option).val(newContact.id).trigger('change');
-                    
+
                     // Show success message
                     const alertDiv = $('<div class="alert alert-success"></div>')
                         .text(data.message || 'Contact created successfully');
                     $('.content').prepend(alertDiv);
-                    
+
                     // Auto-remove the alert after 5 seconds
                     setTimeout(function() {
                         alertDiv.fadeOut('slow', function() { $(this).remove(); });
                     }, 5000);
-                    
+
                     // Close the modal and reset the form
                     $('#contactModal').modal('hide');
                     $('#contactForm')[0].reset();
@@ -577,7 +577,7 @@ $(document).ready(function() {
                     const errorDiv = $('<div class="alert alert-danger"></div>')
                         .text(data.message || 'Failed to create contact');
                     $('#contactForm').prepend(errorDiv);
-                    
+
                     // Auto-remove the error after 5 seconds
                     setTimeout(function() {
                         errorDiv.fadeOut('slow', function() { $(this).remove(); });
@@ -590,7 +590,7 @@ $(document).ready(function() {
                 const errorDiv = $('<div class="alert alert-danger"></div>')
                     .text('An error occurred while creating the contact');
                 $('#contactForm').prepend(errorDiv);
-                
+
                 // Auto-remove the error after 5 seconds
                 setTimeout(function() {
                     errorDiv.fadeOut('slow', function() { $(this).remove(); });
@@ -603,15 +603,15 @@ $(document).ready(function() {
             }
         });
     });
-    
+
     // Handle domain registration form submission
     $('#domainRegistrationForm').on('submit', function(e) {
         e.preventDefault();
-        
+
         // Validate contacts are selected
         let valid = true;
         const contactTypes = ['registrant', 'admin', 'tech', 'billing'];
-        
+
         contactTypes.forEach(function(type) {
             const select = $('#' + type + '_contact_id');
             if (!select.val()) {
@@ -621,14 +621,14 @@ $(document).ready(function() {
                 select.removeClass('is-invalid');
             }
         });
-        
+
         if (valid) {
             // Show loading state
             const submitBtn = $('#registerDomainBtn');
             const originalText = submitBtn.html();
             submitBtn.prop('disabled', true);
             submitBtn.html('<i class="bi bi-hourglass"></i> Registering Domain...');
-            
+
             // Submit the form
             this.submit();
         } else {
@@ -639,19 +639,19 @@ $(document).ready(function() {
                     scrollTop: firstError.offset().top - 100
                 }, 500);
             }
-            
+
             // Show error message
             const errorDiv = $('<div class="alert alert-danger"></div>')
                 .text('Please select all required contacts');
             $('.content-header').after(errorDiv);
-            
+
             // Auto-remove the error after 5 seconds
             setTimeout(function() {
                 errorDiv.fadeOut('slow', function() { $(this).remove(); });
             }, 5000);
         }
     });
-    
+
     // Initialize all contact details
     ['registrant', 'admin', 'tech', 'billing'].forEach(function(type) {
         updateContactDetails(type);
