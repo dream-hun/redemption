@@ -291,11 +291,21 @@ class RegisterDomainController extends Controller
                 $billingContact->contact_id
             );
 
+            // Send EPP request and get response
             $response = $this->eppService->getClient()->request($frame);
+            
+            // Log the EPP response
+            Log::info('EPP domain registration response', [
+                'domain' => $domainName,
+                'response_code' => $response->code(),
+                'response_message' => $response->message(),
+                'response_data' => $response->data()
+            ]);
 
             // Check if the EPP registration was successful
             if ($response->code() !== 1000) {
-                throw new Exception('EPP domain registration failed: ' . $response->message());
+                DB::rollBack();
+                throw new Exception('Domain registration failed: ' . $response->message());
             }
 
             // Create domain in local database
@@ -333,6 +343,14 @@ class RegisterDomainController extends Controller
             }
 
             DB::commit();
+
+            // Store EPP response in session for display
+            session()->flash('epp_response', [
+                'code' => $response->code(),
+                'message' => $response->message(),
+                'data' => $response->data(),
+                'domain' => $domainName
+            ]);
 
             return redirect()->route('domain.registration.success', $domain->uuid)
                 ->with('success', 'Domain registered successfully');

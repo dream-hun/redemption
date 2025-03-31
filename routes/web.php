@@ -23,6 +23,10 @@ Route::get('/', LandingController::class)->name('home');
 
 Route::get('/hosting', [HostingController::class, 'index'])->name('hosting.index');
 
+Route::middleware('auth')->group(function () {
+    Route::get('/contacts/{id}/details', [\App\Http\Controllers\Api\ContactController::class, 'details'])->name('contacts.details');
+});
+
 Route::get('/domains', [SearchDomainController::class, 'index'])->name('domains.index');
 Route::post('/check-domains', [SearchDomainController::class, 'search'])->name('domain.check');
 

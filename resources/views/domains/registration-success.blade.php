@@ -38,6 +38,29 @@
                             </div>
                         </div>
                     </div>
+
+                    @if(session('epp_response'))
+                    <div class="card mb-4">
+                        <div class="card-header bg-light">
+                            <h5 class="mb-0">Registry Response</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6 text-start">
+                                    <p><strong>Response Code:</strong> <span class="badge bg-success">{{ session('epp_response.code') }}</span></p>
+                                    <p><strong>Message:</strong> {{ session('epp_response.message') }}</p>
+                                </div>
+                                <div class="col-md-6 text-start">
+                                    <p><strong>Domain:</strong> {{ session('epp_response.domain') }}</p>
+                                    @if(session('epp_response.data'))
+                                        <p><strong>Additional Data:</strong></p>
+                                        <pre class="small">{{ json_encode(session('epp_response.data'), JSON_PRETTY_PRINT) }}</pre>
+                                    @endif
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    @endif
                     <div class="d-flex justify-content-center gap-3">
                         <a href="{{ route('domains.index') }}" class="btn btn-primary">
                             <i class="bi bi-plus-circle me-2"></i>Register Another Domain

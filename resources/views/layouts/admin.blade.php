@@ -18,6 +18,37 @@
     <link href="https://cdn.datatables.net/buttons/1.2.4/css/buttons.dataTables.min.css" rel="stylesheet" />
     <link href="https://cdnjs.cloudflare.com/ajax/libs/dropzone/5.5.1/min/dropzone.min.css" rel="stylesheet" />
     <link href="{{ asset('css/custom.css') }}" rel="stylesheet" />
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <script>
+        window.fetchContactDetails = async function(contactId) {
+            if (!contactId) {
+                return null;
+            }
+            try {
+                const response = await fetch(`/contacts/${contactId}/details`, {
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                    }
+                });
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const data = await response.json();
+                if (data.success) {
+                    return data.contact;
+                } else {
+                    console.error('Failed to fetch contact details:', data.message);
+                    return null;
+                }
+            } catch (error) {
+                console.error('Error fetching contact details:', error);
+                return null;
+            }
+        };
+    </script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     @yield('styles')
 
 </head>
