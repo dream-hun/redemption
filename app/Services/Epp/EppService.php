@@ -10,6 +10,7 @@ use AfriCC\EPP\Frame\Command\Create\Contact as CreateContact;
 use AfriCC\EPP\Frame\Command\Create\Domain as CreateDomain;
 use AfriCC\EPP\Frame\Command\Create\Host as CreateHost;
 use AfriCC\EPP\Frame\Command\Delete\Domain as DeleteDomain;
+use AfriCC\EPP\Frame\Command\Delete\Contact as DeleteContact;
 use AfriCC\EPP\Frame\Command\Info\Domain as InfoDomain;
 use AfriCC\EPP\Frame\Command\Info\Contact as InfoContact;
 use AfriCC\EPP\Frame\Command\Poll;
@@ -33,6 +34,50 @@ class EppService
     private int $maxRetries = 3;
 
     private int $retryDelay = 1; // seconds
+
+    /**
+     * Delete a contact from the EPP registry
+     *
+     * @param string $contactId The ID of the contact to delete
+     * @return array Response from EPP server
+     * @throws Exception
+     */
+    public function deleteContact(string $contactId): array
+    {
+        try {
+            $this->connect();
+
+            $frame = new DeleteContact();
+            $frame->setId($contactId);
+
+            $response = $this->client->request($frame);
+
+            // Handle response based on its type
+            if (method_exists($response, 'getMessage')) {
+                $message = $response->getMessage();
+            } elseif (method_exists($response, 'resultMessage')) {
+                $message = $response->resultMessage();
+            } else {
+                $message = 'Operation completed';
+            }
+
+            return [
+                'success' => $response->success(),
+                'message' => $message,
+                'code' => $response->code()
+            ];
+        } catch (Exception $e) {
+            Log::error('EPP delete contact failed', [
+                'contact_id' => $contactId,
+                'error' => $e->getMessage()
+            ]);
+            return [
+                'success' => false,
+                'message' => $e->getMessage(),
+                'code' => $e->getCode()
+            ];
+        }
+    }
 
     /**
      * @throws Exception

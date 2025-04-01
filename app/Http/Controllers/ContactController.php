@@ -180,7 +180,7 @@ class ContactController extends Controller
                 }
 
                 return response()->json(['results' => $results]);
-            } 
+            }
 
             $result = $response ? $response->results()[0] : null;
             return response()->json([

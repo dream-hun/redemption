@@ -325,8 +325,8 @@ class ContactController extends Controller
                 ]);
 
                 $deleteResult = $this->eppService->deleteContact($contact->contact_id);
-                if (!$deleteResult || !$deleteResult->success()) {
-                    throw new Exception('Failed to delete contact from registry: ' . $deleteResult->message());
+                if (!$deleteResult || !$deleteResult['success']) {
+                    throw new Exception('Failed to delete contact from registry: ' . ($deleteResult['message'] ?? 'Unknown error'));
                 }
 
                 // Verify deletion
