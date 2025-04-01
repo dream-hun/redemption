@@ -10,10 +10,12 @@ use App\Models\Country;
 use App\Services\Epp\EppService;
 use Exception;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Log;
 use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\Response;
+use Throwable;
 
 class ContactController extends Controller
 {
@@ -43,102 +45,135 @@ class ContactController extends Controller
     public function store(CreateContactRequest $request)
     {
         try {
+            DB::beginTransaction();
+
             $data = $request->validated();
-            $contactIds = Contact::generateContactIds();
-            $createdContacts = [];
+            $contactId = Contact::generateContactIds();
 
-            // Check if type exists in the data, default to 'all' if not present
-            $contactType = $data['type'] ?? 'all';
-
-            // Determine which contact types to create
-            $contactTypes = $contactType === 'all'
-                ? ['admin', 'billing', 'registrant', 'tech']
-                : [$contactType];
-
-            foreach ($contactTypes as $type) {
-                try {
-                    // Get the contact ID for this type
-                    $contactId = $contactIds[$type] ?? Contact::generateContactIds($type);
-
-                    // Prepare contact data for EPP service
-                    $contactData = [
-                        'id' => $contactId,
-                        'name' => $data['name'],
-                        'organization' => $data['organization'] ?? '',
-                        'streets' => array_filter([
-                            $data['street1'],
-                            $data['street2'] ?? null,
-                        ]),
-                        'city' => $data['city'],
-                        'province' => $data['province'],
-                        'postal_code' => $data['postal_code'],
-                        'country_code' => $data['country_code'],
-                        'voice' => $data['voice'],
-                        'fax' => [
-                            'number' => $data['fax'] ?? '',
-                            'ext' => $data['fax_ext'] ?? '',
-                        ],
-                        'email' => $data['email'],
-                        'disclose' => ['voice', 'email'], // Default disclosure settings
-                    ];
-
-                    // Create EPP contact
-                    $eppResult = $this->eppService->createContacts($contactData);
-
-                    // Store in database
-                    $contact = Contact::create([
-                        'contact_id' => $contactId,
-                        'contact_type' => $type,
-                        'name' => $data['name'],
-                        'organization' => $data['organization'] ?? null,
-                        'street1' => $data['street1'],
-                        'street2' => $data['street2'] ?? null,
-                        'city' => $data['city'],
-                        'province' => $data['province'],
-                        'postal_code' => $data['postal_code'],
-                        'country_code' => $data['country_code'],
-                        'voice' => $data['voice'],
-                        'fax_number' => $data['fax'] ?? null,
-                        'fax_ext' => $data['fax_ext'] ?? null,
-                        'email' => $data['email'],
-                        'auth_info' => $eppResult['auth'],
-                        'disclose' => ['voice', 'email'],
-                        'type' => $type,
-                        'user_id' => auth()->user()->id,
-                    ]);
-
-                    $createdContacts[$type] = $contact;
-
-                } catch (Exception $e) {
-                    // If any contact creation fails, delete all previously created contacts
-                    foreach ($createdContacts as $createdContact) {
-                        $createdContact->delete();
-                    }
-
-                    throw new Exception("Failed to create $type contact: ".$e->getMessage());
-                }
+            // First check if contact exists in EPP registry
+            $checkResult = $this->eppService->checkContacts([$contactId]);
+            if (!$checkResult || !isset($checkResult[$contactId])) {
+                throw new Exception('Failed to check contact availability in registry');
             }
 
-            return redirect()->route('admin.contacts.index')->with('session', 'Contacts created successfully');
+            if (!$checkResult[$contactId]->available) {
+                throw new Exception('Contact ID already exists in registry: ' . ($checkResult[$contactId]->reason ?? 'Unknown reason'));
+            }
 
-        } catch (Exception $e) {
-            Log::error('Failed to create contacts: '.$e->getMessage(), [
-                'timestamp' => now(),
-                'data' => $request->validated(),
+            Log::info('Contact ID available in EPP registry', ['contact_id' => $contactId]);
+
+            // Prepare contact data for EPP service
+            $contactData = [
+                'id' => $contactId,
+                'contact_id' => $contactId,
+                'name' => $data['name'],
+                'organization' => $data['organization'] ?? '',
+                'street1' => $data['street1'],  // Required by EPP
+                'street2' => $data['street2'] ?? '',  // Optional
+                'city' => $data['city'],
+                'province' => $data['province'] ?? '',
+                'postal_code' => $data['postal_code'] ?? '',
+                'country_code' => $data['country_code'],
+                'voice' => $data['voice'],
+                'fax' => [
+                    'number' => $data['fax'] ?? '',
+                    'ext' => $data['fax_ext'] ?? '',
+                ],
+                'email' => $data['email'],
+                'disclose' => ['voice', 'email'],
+            ];
+
+            Log::debug('Prepared contact data for EPP:', ['data' => $contactData]);
+
+            Log::info('Creating contact in EPP registry', [
+                'contact_id' => $contactId,
+                'data' => $contactData,
             ]);
 
-            return response()->json([
-                'message' => 'Failed to create contacts',
+            Log::info('Creating contact in EPP registry', [
+                'contact_id' => $contactId,
+                'data' => array_merge($contactData, ['id' => $contactId])
+            ]);
+
+            // Create EPP contact first to ensure registry is available
+            $eppResult = $this->eppService->createContacts(array_merge($contactData, ['id' => $contactId]));
+            if (!$eppResult || !isset($eppResult['id'])) {
+                throw new Exception('Failed to create contact in registry: ' . ($eppResult['error'] ?? 'Unknown error'));
+            }
+
+            // Add a small delay before verification to allow for EPP propagation
+            usleep(500000); // 500ms delay
+
+            // Verify contact was created in EPP registry
+            $eppContact = $this->eppService->infoContact($contactId);
+            if (!$eppContact) {
+                throw new Exception('Failed to get contact info from registry');
+            }
+
+            if (!isset($eppContact['contact'])) {
+                Log::error('Invalid contact info response', ['response' => $eppContact]);
+                throw new Exception('Invalid contact info response from registry');
+            }
+
+            Log::info('Contact verified in EPP registry', ['contact_id' => $contactId]);
+
+            Log::info('Contact created in EPP registry', [
+                'contact_id' => $contactId,
+                'epp_data' => $eppContact
+            ]);
+
+            // Store in database with the same contact_id as EPP registry
+            $contact = Contact::create([
+                'contact_id' => $contactId,
+                'name' => $data['name'],
+                'organization' => $data['organization'] ?? null,
+                'street1' => $data['street1'],
+                'street2' => $data['street2'] ?? null,
+                'city' => $data['city'],
+                'province' => $data['province'],
+                'postal_code' => $data['postal_code'],
+                'country_code' => $data['country_code'],
+                'voice' => $data['voice'],
+                'fax_number' => $data['fax'] ?? null,
+                'fax_ext' => $data['fax_ext'] ?? null,
+                'email' => $data['email'],
+                'auth_info' => $eppResult['auth'],
+                'disclose' => ['voice', 'email'],
+                'epp_status' => 'active',
+                'user_id' => auth()->id(),
+            ]);
+
+            Log::info('Contact created in database', [
+                'contact_id' => $contactId,
+                'contact' => $contact->toArray()
+            ]);
+
+            DB::commit();
+
+            return redirect()
+                ->route('admin.contacts.index')
+                ->with('success', 'Contact created successfully');
+
+        } catch (Exception|Throwable $e) {
+            DB::rollBack();
+
+            Log::error('Failed to create contact', [
                 'error' => $e->getMessage(),
-            ], 500);
+                'data' => $request->validated(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+
+            return redirect()
+                ->back()
+                ->withInput()
+                ->with('error', 'Failed to create contact: ' . $e->getMessage());
         } finally {
             $this->eppService->disconnect();
         }
     }
 
-    /**
-     * Show the form for editing a contact
-     */
+
+
     public function edit(Contact $contact): View
     {
         abort_if(Gate::denies('contact_edit'), Response::HTTP_FORBIDDEN, '403 Forbidden');
@@ -159,20 +194,24 @@ class ContactController extends Controller
     public function update(UpdateContactRequest $request, Contact $contact)
     {
         try {
+            DB::beginTransaction();
+
             $data = $request->validated();
 
-            // Always assume the contact exists in the EPP registry if it has a contact_id
-            // This prevents "Object exists" errors when trying to create a contact that already exists
-            $contactExists = ! empty($contact->contact_id);
+            if (empty($contact->contact_id)) {
+                throw new Exception('Contact ID is required for update');
+            }
 
-            Log::info('Contact update operation', [
-                'contact_id' => $contact->contact_id,
-                'assuming_exists' => $contactExists,
-            ]);
+            // First verify contact exists in EPP registry
+            $eppInfo = $this->eppService->infoContact($contact->contact_id);
+            if (!$eppInfo || !isset($eppInfo['contact'])) {
+                throw new Exception('Contact not found in EPP registry');
+            }
 
             // Prepare contact data for EPP service
             $contactData = [
                 'id' => $contact->contact_id,
+                'contact_id' => $contact->contact_id,
                 'name' => $data['name'],
                 'organization' => $data['organization'] ?? '',
                 'streets' => array_filter([
@@ -189,62 +228,49 @@ class ContactController extends Controller
                     'ext' => $data['fax_ext'] ?? '',
                 ],
                 'email' => $data['email'],
-                'disclose' => ['voice', 'email'], // Default disclosure settings
+                'disclose' => ['voice', 'email'],
             ];
 
-            $eppResult = null;
-            $newAuthInfo = null;
+            Log::info('Updating contact in EPP registry', [
+                'contact_id' => $contact->contact_id,
+                'data' => $contactData
+            ]);
 
-            // Update or create contact in EPP registry
-            if ($contactExists) {
-                Log::info('Updating existing contact in EPP registry', ['contact_id' => $contact->contact_id]);
-
-                // Update existing contact
+            try {
+                // Update contact in EPP registry
                 $updateResult = $this->eppService->updateContact($contact->contact_id, $contactData);
-                $eppResult = $updateResult['frame'];
-                $newAuthInfo = $updateResult['auth'];
-
-                // Send update request to EPP registry
-                $client = $this->eppService->getClient();
-                $response = $client->request($eppResult);
-
-                // Check response status
-                $result = $response->results()[0];
-                if ($result->code() < 1000 || $result->code() >= 2000) {
-                    throw new Exception("EPP registry error (code: {$result->code()}): {$result->message()}");
+                if (!$updateResult || !$updateResult->success()) {
+                    throw new Exception('Failed to update contact in registry: ' . $updateResult->message());
                 }
 
-                Log::info('Contact updated successfully in EPP registry', [
-                    'contact_id' => $contact->contact_id,
-                    'response_code' => $result->code(),
-                ]);
-
-            } else {
-                Log::info('Creating new contact in EPP registry', ['contact_id' => $contact->contact_id]);
-
-                // Create new contact
-                $createResult = $this->eppService->createContacts($contactData);
-                $eppResult = $createResult['frame'];
-                $newAuthInfo = $createResult['auth'];
-
-                // Send create request to EPP registry
-                $client = $this->eppService->getClient();
-                $response = $client->request($eppResult);
-
-                // Check response status
-                $result = $response->results()[0];
-                if ($result->code() < 1000 || $result->code() >= 2000) {
-                    throw new Exception("EPP registry error (code: {$result->code()}): {$result->message()}");
+                // Verify the update was successful
+                $updatedEppInfo = $this->eppService->infoContact($contact->contact_id);
+                if (!$updatedEppInfo || !isset($updatedEppInfo['contact'])) {
+                    throw new Exception('Failed to verify contact update in registry');
                 }
 
-                Log::info('Contact created successfully in EPP registry', [
+                Log::info('Contact updated in EPP registry', [
                     'contact_id' => $contact->contact_id,
-                    'response_code' => $result->code(),
+                    'epp_data' => $updatedEppInfo
                 ]);
+
+            } catch (Exception $e) {
+                Log::error('EPP operation failed', [
+                    'contact_id' => $contact->contact_id,
+                    'error' => $e->getMessage(),
+                    'trace' => $e->getTraceAsString()
+                ]);
+                throw $e;
             }
 
             // Update contact in database
+            Log::info('Updating contact in database', [
+                'contact_id' => $contact->contact_id,
+                'data' => $data
+            ]);
+
             $contact->update([
+                'contact_id' => $contact->contact_id,
                 'name' => $data['name'],
                 'organization' => $data['organization'] ?? null,
                 'street1' => $data['street1'],
@@ -257,13 +283,16 @@ class ContactController extends Controller
                 'fax_number' => $data['fax'] ?? null,
                 'fax_ext' => $data['fax_ext'] ?? null,
                 'email' => $data['email'],
-                'contact_type' => $data['type'] ?? $contact->contact_type, // Update contact type if provided
-                'auth_info' => $newAuthInfo ?? $contact->auth_info, // Update auth_info if a new one was generated
+                'epp_status' => 'active',
             ]);
 
-            return redirect()->route('admin.contacts.index')->with('success', 'Contact updated successfully');
+            DB::commit();
+
+            return redirect()->route('domain.register')->with('success', 'Contact updated successfully');
 
         } catch (Exception $e) {
+            DB::rollBack();
+
             Log::error('Failed to update contact: '.$e->getMessage(), [
                 'contact_id' => $contact->contact_id,
                 'error' => $e->getMessage(),
@@ -271,6 +300,70 @@ class ContactController extends Controller
             ]);
 
             return redirect()->route('admin.contacts.index')->with('error', 'Failed to update contact: '.$e->getMessage());
+        } finally {
+            $this->eppService->disconnect();
+        }
+    }
+
+    public function destroy(Contact $contact)
+    {
+        abort_if(Gate::denies('contact_delete'), Response::HTTP_FORBIDDEN, '403 Forbidden');
+
+        try {
+            DB::beginTransaction();
+
+            // First verify contact exists in EPP registry
+            $eppInfo = $this->eppService->infoContact($contact->contact_id);
+            if (!$eppInfo || !isset($eppInfo['contact'])) {
+                Log::warning('Contact not found in EPP registry, proceeding with local deletion', [
+                    'contact_id' => $contact->contact_id
+                ]);
+            } else {
+                // Delete contact from EPP registry
+                Log::info('Deleting contact from EPP registry', [
+                    'contact_id' => $contact->contact_id
+                ]);
+
+                $deleteResult = $this->eppService->deleteContact($contact->contact_id);
+                if (!$deleteResult || !$deleteResult->success()) {
+                    throw new Exception('Failed to delete contact from registry: ' . $deleteResult->message());
+                }
+
+                // Verify deletion
+                $verifyInfo = $this->eppService->infoContact($contact->contact_id);
+                if ($verifyInfo && isset($verifyInfo['contact'])) {
+                    throw new Exception('Contact still exists in registry after deletion');
+                }
+
+                Log::info('Contact deleted from EPP registry', [
+                    'contact_id' => $contact->contact_id
+                ]);
+            }
+
+            // Delete contact from database
+            Log::info('Deleting contact from database', [
+                'contact_id' => $contact->contact_id,
+                'contact' => $contact->toArray()
+            ]);
+
+            $contact->delete();
+
+            DB::commit();
+
+            return redirect()->route('admin.contacts.index')
+                ->with('success', 'Contact deleted successfully');
+
+        } catch (Exception $e) {
+            DB::rollBack();
+
+            Log::error('Failed to delete contact', [
+                'contact_id' => $contact->contact_id,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+
+            return redirect()->route('admin.contacts.index')
+                ->with('error', 'Failed to delete contact: ' . $e->getMessage());
         } finally {
             $this->eppService->disconnect();
         }

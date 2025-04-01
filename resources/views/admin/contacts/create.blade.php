@@ -51,8 +51,8 @@
 
                             <input type="text" name="street2"
                                    class="form-control @error('street2') is-invalid @enderror mt-2"
-                                   value="{{old('street2')}}" required>
-                            @error('street1')
+                                   value="{{old('street2')}}">
+                            @error('street2')
                             <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
 

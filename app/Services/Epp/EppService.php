@@ -11,6 +11,7 @@ use AfriCC\EPP\Frame\Command\Create\Domain as CreateDomain;
 use AfriCC\EPP\Frame\Command\Create\Host as CreateHost;
 use AfriCC\EPP\Frame\Command\Delete\Domain as DeleteDomain;
 use AfriCC\EPP\Frame\Command\Info\Domain as InfoDomain;
+use AfriCC\EPP\Frame\Command\Info\Contact as InfoContact;
 use AfriCC\EPP\Frame\Command\Poll;
 use AfriCC\EPP\Frame\Command\Renew\Domain as RenewDomain;
 use AfriCC\EPP\Frame\Command\Transfer\Domain as TransferDomain;
@@ -132,6 +133,88 @@ class EppService
 
         Log::error('EPP Connection failed after '.$this->maxRetries.' attempts');
         throw $lastException;
+    }
+
+    /**
+     * Get contact information from EPP registry
+     *
+     * @param string $contactId
+     * @return array|null
+     * @throws Exception
+     */
+    public function infoContact(string $contactId): ?array
+    {
+        try {
+            $this->connect();
+
+            $frame = new InfoContact();
+            $frame->setId($contactId);
+
+            Log::info('Sending contact info request to EPP', [
+                'contact_id' => $contactId
+            ]);
+
+            $response = $this->client->request($frame);
+
+            if (!$response) {
+                throw new Exception('No response received from EPP server');
+            }
+
+            $results = $response->results();
+            if (empty($results)) {
+                throw new Exception('Empty response from EPP server');
+            }
+
+            $result = $results[0];
+            if ($result->code() !== 1000) {
+                Log::error('Failed to get contact info from EPP', [
+                    'contact_id' => $contactId,
+                    'code' => $result->code(),
+                    'message' => $result->message()
+                ]);
+                return null;
+            }
+
+            $data = $response->data();
+            $contactData = $data['infData'] ?? null;
+            if (!$contactData) {
+                Log::error('Invalid contact info response from EPP', [
+                    'contact_id' => $contactId,
+                    'data' => $data
+                ]);
+                return null;
+            }
+
+            // Format contact data
+            return [
+                'contact' => [
+                    'id' => $contactData['id'] ?? '',
+                    'name' => $contactData['postalInfo']['name'] ?? '',
+                    'organization' => $contactData['postalInfo']['org'] ?? '',
+                    'streets' => $contactData['postalInfo']['addr']['street'] ?? [],
+                    'city' => $contactData['postalInfo']['addr']['city'] ?? '',
+                    'province' => $contactData['postalInfo']['addr']['sp'] ?? '',
+                    'postal_code' => $contactData['postalInfo']['addr']['pc'] ?? '',
+                    'country_code' => $contactData['postalInfo']['addr']['cc'] ?? '',
+                    'voice' => $contactData['voice'] ?? '',
+                    'fax' => [
+                        'number' => $contactData['fax'] ?? '',
+                        'ext' => $contactData['faxExt'] ?? ''
+                    ],
+                    'email' => $contactData['email'] ?? '',
+                    'status' => $contactData['status'] ?? [],
+                    'auth_info' => $contactData['authInfo']['pw'] ?? ''
+                ]
+            ];
+
+        } catch (Exception $e) {
+            Log::error('Exception while getting contact info from EPP', [
+                'contact_id' => $contactId,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            throw $e;
+        }
     }
 
     /**
@@ -260,7 +343,7 @@ class EppService
      *
      * @throws Exception
      */
-    public function checkContacts(array $contactIds): CheckContact
+    public function checkContacts(array $contactIds): array
     {
         try {
             $this->ensureConnection();
@@ -270,7 +353,48 @@ class EppService
                 $frame->addId($contactId);
             }
 
-            return $frame;
+            $response = $this->client->request($frame);
+            if (!$response) {
+                throw new Exception('No response received from EPP server');
+            }
+
+            $results = [];
+            $data = $response->data();
+
+            Log::debug('EPP Contact Check Response:', ['data' => $data]);
+
+            if (!empty($data) && isset($data['chkData'])) {
+                // Handle both single and multiple contact responses
+                $items = $data['chkData']['cd'] ?? [];
+                if (!is_array($items) || !isset($items[0])) {
+                    $items = [$items];
+                }
+
+                foreach ($items as $item) {
+                    // Extract contact ID and availability
+                    $contactId = null;
+                    $available = false;
+
+                    if (isset($item['id'])) {
+                        if (is_array($item['id']) && isset($item['id']['_text'])) {
+                            $contactId = $item['id']['_text'];
+                            $available = ($item['id']['@attributes']['avail'] ?? '') === '1';
+                        } else {
+                            $contactId = $item['id'];
+                            $available = true; // If no explicit availability, assume available
+                        }
+                    }
+
+                    if ($contactId) {
+                        $results[$contactId] = (object) [
+                            'available' => $available,
+                            'reason' => $item['reason'] ?? null,
+                        ];
+                    }
+                }
+            }
+
+            return $results;
 
         } catch (Exception $e) {
             Log::error('Contact check failed: '.$e->getMessage());
@@ -289,30 +413,92 @@ class EppService
     {
         try {
             $this->ensureConnection();
+            
+            Log::debug('Creating contact with data:', ['contacts' => $contacts]);
+            
             $frame = new CreateContact;
-            $frame->setId($contacts['id']);
+            $frame->setId($contacts['id'] ?? Str::random(12));
             $frame->setName($contacts['name']);
-            $frame->setOrganization($contacts['organization']);
+            
+            if (!empty($contacts['organization'])) {
+                $frame->setOrganization($contacts['organization']);
+            }
 
-            foreach ($contacts['streets'] as $street) {
-                $frame->addStreet($street);
+            // Handle street addresses - at least one street is required by EPP
+            $frame->addStreet($contacts['street1']);
+            
+            // Add second street if provided
+            if (!empty($contacts['street2'])) {
+                $frame->addStreet($contacts['street2']);
             }
 
             $frame->setCity($contacts['city']);
-            $frame->setProvince($contacts['province']);
-            $frame->setPostalCode($contacts['postal_code']);
+            
+            if (!empty($contacts['province'])) {
+                $frame->setProvince($contacts['province']);
+            }
+            
+            if (!empty($contacts['postal_code'])) {
+                $frame->setPostalCode($contacts['postal_code']);
+            }
+            
             $frame->setCountryCode($contacts['country_code']);
-            $frame->setVoice($contacts['voice']);
-            $frame->setFax($contacts['fax']['number'], $contacts['fax']['ext']);
+            
+            // Format phone number to EPP format (+CC.number)
+            if (!empty($contacts['voice'])) {
+                $phone = $contacts['voice'];
+                if (!str_starts_with($phone, '+')) {
+                    // Add country code for Rwanda if not present
+                    $phone = '+250.' . ltrim($phone, '0');
+                }
+                $frame->setVoice($phone);
+            }
+            
+            if (!empty($contacts['fax'])) {
+                $fax = $contacts['fax']['number'];
+                if (!str_starts_with($fax, '+')) {
+                    $fax = '+250.' . ltrim($fax, '0');
+                }
+                $frame->setFax($fax, $contacts['fax']['ext'] ?? '');
+            }
+            
             $frame->setEmail($contacts['email']);
 
             $auth = $frame->setAuthInfo();
 
-            foreach ($contacts['disclose'] as $item) {
-                $frame->addDisclose($item);
+            // Send the frame and get response
+            $response = $this->client->request($frame);
+            
+            if (!$response) {
+                throw new Exception('No response received from EPP server');
             }
 
-            return ['frame' => $frame, 'auth' => $auth];
+            $results = $response->results();
+            if (empty($results)) {
+                throw new Exception('Empty response from EPP server');
+            }
+
+            $result = $results[0];
+            if ($result->code() !== 1000) {
+                Log::error('Failed to create contact in EPP', [
+                    'code' => $result->code(),
+                    'message' => $result->message()
+                ]);
+                throw new Exception('Failed to create contact in EPP registry: ' . $result->message());
+            }
+
+            Log::info('Contact created successfully in EPP', [
+                'id' => $contacts['id'],
+                'code' => $result->code(),
+                'message' => $result->message()
+            ]);
+
+            return [
+                'id' => $contacts['id'],
+                'auth' => $auth,
+                'code' => $result->code(),
+                'message' => $result->message()
+            ];
 
         } catch (Exception $e) {
             Log::error('Contact creation failed: '.$e->getMessage());

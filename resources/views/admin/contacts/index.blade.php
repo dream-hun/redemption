@@ -82,8 +82,17 @@
                             <td>
                                 @can('contact_edit')
                                     <a class="btn btn-sm btn-primary" href="{{ route('admin.contacts.edit', $contact) }}">
-                                        <i class="fas fa-edit"></i> {{ trans('global.edit') }}
+                                        <i class="bi bi-pencil"></i> {{ trans('global.edit') }}
                                     </a>
+                                @endcan
+                                @can('contact_delete')
+                                    <form action="{{ route('admin.contacts.destroy', $contact->uuid) }}" method="POST" class="d-inline" onsubmit="return confirm('{{ trans('global.areYouSure') }}');">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="btn btn-sm btn-danger">
+                                            <i class="bi bi-trash"></i> {{ trans('global.delete') }}
+                                        </button>
+                                    </form>
                                 @endcan
                             </td>
 

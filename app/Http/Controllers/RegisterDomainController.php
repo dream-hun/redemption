@@ -45,7 +45,7 @@ class RegisterDomainController extends Controller
 
         // Get domain contacts to determine types
         $domainContacts = DomainContact::where('user_id', Auth::id())
-            ->select('contact_id', 'type')
+            ->select('id','contact_id', 'type')
             ->get()
             ->groupBy('contact_id');
 
@@ -83,109 +83,6 @@ class RegisterDomainController extends Controller
     }
 
     /**
-     * Create a new contact
-     *
-     * @return RedirectResponse
-     *
-     * @throws Throwable
-     */
-    public function createContact(CreateContactRequest $request)
-    {
-        try {
-            DB::beginTransaction();
-
-            // Generate a unique contact ID for EPP
-            $contactId = Contact::generateContactIds($request->contact_type);
-
-            // Create contact in local database
-            $contact = Contact::create([
-                'contact_id' => $contactId,
-                'contact_type' => $request->contact_type,
-                'name' => $request->name,
-                'organization' => $request->organization,
-                'email' => $request->email,
-                'voice' => $request->voice,
-                'street1' => $request->street1,
-                'street2' => $request->street2,
-                'city' => $request->city,
-                'province' => $request->province,
-                'postal_code' => $request->postal_code,
-                'country_code' => $request->country_code ?? 'RW',
-                'user_id' => Auth::id(),
-            ]);
-
-            // Prepare contact data for EPP
-            $eppContactData = [
-                'id' => $contactId,
-                'name' => $request->name,
-                'organization' => $request->organization ?: '',
-                'streets' => [$request->street1 ?? '', $request->street2 ?? ''],
-                'city' => $request->city ?? '',
-                'province' => $request->province ?? '',
-                'postal_code' => $request->postal_code ?? '',
-                'country_code' => $request->country_code ?? 'RW',
-                'voice' => $request->voice,
-                'fax' => [
-                    'number' => $request->fax_number ?? '',
-                    'ext' => $request->fax_ext ?? '',
-                ],
-                'email' => $request->email,
-                'disclose' => [],
-            ];
-
-            // Create contact in EPP registry
-            $eppContact = $this->eppService->createContacts($eppContactData);
-            $response = $this->eppService->getClient()->request($eppContact['frame']);
-
-            // Update local contact with auth info from EPP
-            $contact->update([
-                'auth_info' => $eppContact['auth'],
-                'epp_status' => 'active',
-            ]);
-
-            DB::commit();
-
-            // Format the contact for response
-            $formattedContact = [
-                'id' => $contact->id,
-                'name' => $contact->name,
-                'email' => $contact->email,
-                'voice' => $contact->voice,
-                'organization' => $contact->organization,
-            ];
-
-            // Check if request is AJAX
-            if ($request->ajax() || $request->wantsJson()) {
-                return response()->json([
-                    'success' => true,
-                    'message' => 'Contact created successfully',
-                    'contact' => $formattedContact,
-                ]);
-            }
-
-            return back()->with('success', 'Contact created successfully');
-
-        } catch (Exception $e) {
-            DB::rollBack();
-            Log::error('Contact creation failed: '.$e->getMessage(), [
-                'user_id' => Auth::id(),
-                'contact_data' => $request->except(['_token']),
-                'error' => $e->getMessage(),
-            ]);
-
-            // Check if request is AJAX
-            if ($request->ajax() || $request->wantsJson()) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Failed to create contact: '.$e->getMessage(),
-                ], 422);
-            }
-
-            return back()->with('error', 'Failed to create contact: '.$e->getMessage())->withInput();
-        }
-    }
-
-    /**
      * Register a domain with the selected contacts
      *
      * @throws Throwable
@@ -214,6 +111,12 @@ class RegisterDomainController extends Controller
                 throw new Exception('One or more contacts not found');
             }
 
+            // Verify that all contacts have EPP contact_ids
+            if (empty($registrantContact->contact_id) || empty($adminContact->contact_id) ||
+                empty($techContact->contact_id) || empty($billingContact->contact_id)) {
+                throw new Exception('One or more contacts do not have valid EPP IDs');
+            }
+
             // Ensure all contacts belong to the current user - log for debugging
             $contactIds = [
                 $registrantContact->id,
@@ -222,11 +125,19 @@ class RegisterDomainController extends Controller
                 $billingContact->id
             ];
 
+            $eppContactIds = [
+                'registrant' => $registrantContact->contact_id,
+                'admin' => $adminContact->contact_id,
+                'tech' => $techContact->contact_id,
+                'billing' => $billingContact->contact_id,
+            ];
+
             // Log the contacts being used
             \Log::info('Registering domain with contacts', [
                 'domain' => $domainName,
                 'user_id' => Auth::id(),
                 'contact_ids' => $contactIds,
+                'epp_contact_ids' => $eppContactIds,
                 'registrant_contact' => $registrantContact->toArray(),
                 'admin_contact' => $adminContact->toArray(),
                 'tech_contact' => $techContact->toArray(),
@@ -261,7 +172,7 @@ class RegisterDomainController extends Controller
                     'ns2.dns-parking.com',
                 ];
             }
-            
+
             // Log the nameservers being used
             Log::info('Nameservers for domain registration', [
                 'domain' => $domainName,
@@ -285,15 +196,15 @@ class RegisterDomainController extends Controller
                 $domainName,
                 $period,
                 $nameservers,
-                $registrantContact->contact_id,
-                $adminContact->contact_id,
-                $techContact->contact_id,
-                $billingContact->contact_id
+                $eppContactIds['registrant'],
+                $eppContactIds['admin'],
+                $eppContactIds['tech'],
+                $eppContactIds['billing']
             );
 
             // Send EPP request and get response
             $response = $this->eppService->getClient()->request($frame);
-            
+
             // Log the EPP response
             Log::info('EPP domain registration response', [
                 'domain' => $domainName,
@@ -313,16 +224,32 @@ class RegisterDomainController extends Controller
                 'uuid' => (string) Str::uuid(),
                 'name' => $domainName,
                 'owner_id' => Auth::id(),
-                'registrant_contact_id' => $registrantContact->id,
-                'admin_contact_id' => $adminContact->id,
-                'tech_contact_id' => $techContact->id,
-                'billing_contact_id' => $billingContact->id,
                 'registered_at' => now(),
                 'expires_at' => now()->addYear(),
                 'status' => 'active',
                 'auth_code' => Str::random(12),
                 'registration_period' => 1,
+                'auto_renew' => $request->auto_renew ?? false,
+                'whois_privacy' => $request->whois_privacy ?? false,
             ]);
+
+            // Create domain contacts
+            $contactTypes = ['registrant', 'admin', 'tech', 'billing'];
+            $contacts = [
+                'registrant' => $registrantContact,
+                'admin' => $adminContact,
+                'tech' => $techContact,
+                'billing' => $billingContact
+            ];
+
+            foreach ($contactTypes as $type) {
+                DomainContact::create([
+                    'domain_id' => $domain->id,
+                    'contact_id' => $contacts[$type]->id,
+                    'type' => $type,
+                    'user_id' => Auth::id(),
+                ]);
+            }
 
             // Create nameserver records
             foreach ($nameservers as $hostname) {

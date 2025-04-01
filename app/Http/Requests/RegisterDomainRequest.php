@@ -27,8 +27,8 @@ class RegisterDomainRequest extends FormRequest
             'admin_contact_id' => 'required|exists:contacts,id',
             'tech_contact_id' => 'required|exists:contacts,id',
             'billing_contact_id' => 'required|exists:contacts,id',
-            'nameservers' => 'nullable|array',
-            'nameservers.*' => 'nullable|string|regex:/^[a-zA-Z0-9][a-zA-Z0-9-]{0,61}[a-zA-Z0-9]\.[a-zA-Z]{2,}$/',
+            'nameservers' => 'nullable|array|min:2|max:4',
+            'nameservers.*' => 'nullable|string|regex:/^(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\.)+[a-zA-Z]{2,}$/',
         ];
     }
 
@@ -42,7 +42,9 @@ class RegisterDomainRequest extends FormRequest
             'admin_contact_id.required' => 'An administrative contact is required',
             'tech_contact_id.required' => 'A technical contact is required',
             'billing_contact_id.required' => 'A billing contact is required',
-            'nameservers.*.regex' => 'The nameserver must be a valid hostname',
+            'nameservers.min' => 'At least 2 nameservers are required',
+            'nameservers.max' => 'Maximum 4 nameservers are allowed',
+            'nameservers.*.regex' => 'The nameserver :input is not a valid hostname',
         ];
     }
 }

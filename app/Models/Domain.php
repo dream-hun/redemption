@@ -36,10 +36,6 @@ class Domain extends Model
         'whois_privacy',
         'registration_period',
         'last_renewal_at',
-        'registrant_contact_id',
-        'admin_contact_id',
-        'tech_contact_id',
-        'billing_contact_id',
     ];
 
     protected $casts = [
@@ -48,8 +44,7 @@ class Domain extends Model
         'ssl_expires_at' => 'datetime',
         'last_renewal_at' => 'datetime',
         'auto_renew' => 'boolean',
-        'whois_privacy' => 'boolean',
-        'nameservers' => 'array',
+        'whois_privacy' => 'boolean',   
     ];
 
     public function owner(): BelongsTo

@@ -44,8 +44,10 @@ Route::group(['middleware' => 'auth', 'prefix' => 'admin', 'as' => 'admin.'], fu
         Route::get('/', [ContactController::class, 'index'])->name('index');
         Route::get('/create', [ContactController::class, 'create'])->name('create');
         Route::post('/', [ContactController::class, 'store'])->name('store');
-        Route::get('/{contact}/edit', [ContactController::class, 'edit'])->name('edit');
-        Route::put('/{contact}', [ContactController::class, 'update'])->name('update');
+        Route::get('/{contact:uuid}/edit', [ContactController::class, 'edit'])->name('edit');
+        Route::get('/{contact:uuid}', [ContactController::class, 'show'])->name('show');
+        Route::put('/{contact:uuid}', [ContactController::class, 'update'])->name('update');
+        Route::delete('/{contact:uuid}', [ContactController::class, 'destroy'])->name('destroy');
     });
 
     // Domain management routes
@@ -100,7 +102,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
-    
+
     // API routes
     Route::prefix('api')->name('api.')->group(function () {
         Route::get('/user/contacts', [UserContactController::class, 'index'])->name('user.contacts');

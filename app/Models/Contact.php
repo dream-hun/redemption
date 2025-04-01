@@ -11,7 +11,6 @@ class Contact extends Model
 {
     protected $fillable = [
         'contact_id',
-        'contact_type',
         'name',
         'organization',
         'street1',
@@ -46,21 +45,14 @@ class Contact extends Model
             ->orWhere('billing_contact_id');
     }
 
-    public static function generateContactIds(?string $type = null): array|string
+    public static function generateContactIds(): string
     {
-        if ($type) {
-            return strtoupper($type).'-'.Str::random(8);
-        }
-
-        $contactTypes = ['admin', 'billing', 'registrant', 'tech'];
-        $contactIds = [];
-
-        foreach ($contactTypes as $contactType) {
-            $contactIds[$contactType] = strtoupper($contactType).'-'.Str::random(8);
-        }
-
-        return $contactIds;
+        // Format: RW-XXXX-YYYY where X is random letter and Y is random number
+        $letters = strtoupper(Str::random(4));
+        $numbers = str_pad(rand(1, 9999), 4, '0', STR_PAD_LEFT);
+        return "RW-{$letters}-{$numbers}";
     }
+
 
     public static function boot(): void
     {
