@@ -96,9 +96,9 @@ class ContactController extends Controller
             ]);
 
             // Create EPP contact first to ensure registry is available
-            $eppResult = $this->eppService->createContacts(array_merge($contactData, ['id' => $contactId]));
-            if (!$eppResult || !isset($eppResult['id'])) {
-                throw new Exception('Failed to create contact in registry: ' . ($eppResult['error'] ?? 'Unknown error'));
+            $eppResult = $this->eppService->createContacts([$contactId => array_merge($contactData, ['id' => $contactId])]);
+            if (!$eppResult || !isset($eppResult[$contactId])) {
+                throw new Exception('Failed to create contact in registry: ' . (is_array($eppResult) && isset($eppResult['error']) ? $eppResult['error'] : 'Unknown error'));
             }
 
             // Add a small delay before verification to allow for EPP propagation
@@ -137,7 +137,7 @@ class ContactController extends Controller
                 'fax_number' => $data['fax'] ?? null,
                 'fax_ext' => $data['fax_ext'] ?? null,
                 'email' => $data['email'],
-                'auth_info' => $eppResult['auth'],
+                'auth_info' => $eppResult[$contactId]['auth_info'] ?? null,
                 'disclose' => ['voice', 'email'],
                 'epp_status' => 'active',
                 'user_id' => auth()->id(),
@@ -239,8 +239,8 @@ class ContactController extends Controller
             try {
                 // Update contact in EPP registry
                 $updateResult = $this->eppService->updateContact($contact->contact_id, $contactData);
-                if (!$updateResult || !$updateResult->success()) {
-                    throw new Exception('Failed to update contact in registry: ' . $updateResult->message());
+                if (!$updateResult || !isset($updateResult['success']) || !$updateResult['success']) {
+                    throw new Exception('Failed to update contact in registry: ' . ($updateResult['message'] ?? 'Unknown error'));
                 }
 
                 // Verify the update was successful
