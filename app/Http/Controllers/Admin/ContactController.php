@@ -52,12 +52,12 @@ class ContactController extends Controller
 
             // First check if contact exists in EPP registry
             $checkResult = $this->eppService->checkContacts([$contactId]);
-            if (!$checkResult || !isset($checkResult[$contactId])) {
+            if (! $checkResult || ! isset($checkResult[$contactId])) {
                 throw new Exception('Failed to check contact availability in registry');
             }
 
-            if (!$checkResult[$contactId]->available) {
-                throw new Exception('Contact ID already exists in registry: ' . ($checkResult[$contactId]->reason ?? 'Unknown reason'));
+            if (! $checkResult[$contactId]->available) {
+                throw new Exception('Contact ID already exists in registry: '.($checkResult[$contactId]->reason ?? 'Unknown reason'));
             }
 
             Log::info('Contact ID available in EPP registry', ['contact_id' => $contactId]);
@@ -92,13 +92,13 @@ class ContactController extends Controller
 
             Log::info('Creating contact in EPP registry', [
                 'contact_id' => $contactId,
-                'data' => array_merge($contactData, ['id' => $contactId])
+                'data' => array_merge($contactData, ['id' => $contactId]),
             ]);
 
             // Create EPP contact first to ensure registry is available
             $eppResult = $this->eppService->createContacts([$contactId => array_merge($contactData, ['id' => $contactId])]);
-            if (!$eppResult || !isset($eppResult[$contactId])) {
-                throw new Exception('Failed to create contact in registry: ' . (is_array($eppResult) && isset($eppResult['error']) ? $eppResult['error'] : 'Unknown error'));
+            if (! $eppResult || ! isset($eppResult[$contactId])) {
+                throw new Exception('Failed to create contact in registry: '.(is_array($eppResult) && isset($eppResult['error']) ? $eppResult['error'] : 'Unknown error'));
             }
 
             // Add a small delay before verification to allow for EPP propagation
@@ -106,11 +106,11 @@ class ContactController extends Controller
 
             // Verify contact was created in EPP registry
             $eppContact = $this->eppService->infoContact($contactId);
-            if (!$eppContact) {
+            if (! $eppContact) {
                 throw new Exception('Failed to get contact info from registry');
             }
 
-            if (!isset($eppContact['contact'])) {
+            if (! isset($eppContact['contact'])) {
                 Log::error('Invalid contact info response', ['response' => $eppContact]);
                 throw new Exception('Invalid contact info response from registry');
             }
@@ -119,7 +119,7 @@ class ContactController extends Controller
 
             Log::info('Contact created in EPP registry', [
                 'contact_id' => $contactId,
-                'epp_data' => $eppContact
+                'epp_data' => $eppContact,
             ]);
 
             // Store in database with the same contact_id as EPP registry
@@ -145,7 +145,7 @@ class ContactController extends Controller
 
             Log::info('Contact created in database', [
                 'contact_id' => $contactId,
-                'contact' => $contact->toArray()
+                'contact' => $contact->toArray(),
             ]);
 
             DB::commit();
@@ -166,13 +166,11 @@ class ContactController extends Controller
             return redirect()
                 ->back()
                 ->withInput()
-                ->with('error', 'Failed to create contact: ' . $e->getMessage());
+                ->with('error', 'Failed to create contact: '.$e->getMessage());
         } finally {
             $this->eppService->disconnect();
         }
     }
-
-
 
     public function edit(Contact $contact): View
     {
@@ -204,7 +202,7 @@ class ContactController extends Controller
 
             // First verify contact exists in EPP registry
             $eppInfo = $this->eppService->infoContact($contact->contact_id);
-            if (!$eppInfo || !isset($eppInfo['contact'])) {
+            if (! $eppInfo || ! isset($eppInfo['contact'])) {
                 throw new Exception('Contact not found in EPP registry');
             }
 
@@ -233,32 +231,32 @@ class ContactController extends Controller
 
             Log::info('Updating contact in EPP registry', [
                 'contact_id' => $contact->contact_id,
-                'data' => $contactData
+                'data' => $contactData,
             ]);
 
             try {
                 // Update contact in EPP registry
                 $updateResult = $this->eppService->updateContact($contact->contact_id, $contactData);
-                if (!$updateResult || !isset($updateResult['success']) || !$updateResult['success']) {
-                    throw new Exception('Failed to update contact in registry: ' . ($updateResult['message'] ?? 'Unknown error'));
+                if (! $updateResult || ! isset($updateResult['success']) || ! $updateResult['success']) {
+                    throw new Exception('Failed to update contact in registry: '.($updateResult['message'] ?? 'Unknown error'));
                 }
 
                 // Verify the update was successful
                 $updatedEppInfo = $this->eppService->infoContact($contact->contact_id);
-                if (!$updatedEppInfo || !isset($updatedEppInfo['contact'])) {
+                if (! $updatedEppInfo || ! isset($updatedEppInfo['contact'])) {
                     throw new Exception('Failed to verify contact update in registry');
                 }
 
                 Log::info('Contact updated in EPP registry', [
                     'contact_id' => $contact->contact_id,
-                    'epp_data' => $updatedEppInfo
+                    'epp_data' => $updatedEppInfo,
                 ]);
 
             } catch (Exception $e) {
                 Log::error('EPP operation failed', [
                     'contact_id' => $contact->contact_id,
                     'error' => $e->getMessage(),
-                    'trace' => $e->getTraceAsString()
+                    'trace' => $e->getTraceAsString(),
                 ]);
                 throw $e;
             }
@@ -266,7 +264,7 @@ class ContactController extends Controller
             // Update contact in database
             Log::info('Updating contact in database', [
                 'contact_id' => $contact->contact_id,
-                'data' => $data
+                'data' => $data,
             ]);
 
             $contact->update([
@@ -314,19 +312,19 @@ class ContactController extends Controller
 
             // First verify contact exists in EPP registry
             $eppInfo = $this->eppService->infoContact($contact->contact_id);
-            if (!$eppInfo || !isset($eppInfo['contact'])) {
+            if (! $eppInfo || ! isset($eppInfo['contact'])) {
                 Log::warning('Contact not found in EPP registry, proceeding with local deletion', [
-                    'contact_id' => $contact->contact_id
+                    'contact_id' => $contact->contact_id,
                 ]);
             } else {
                 // Delete contact from EPP registry
                 Log::info('Deleting contact from EPP registry', [
-                    'contact_id' => $contact->contact_id
+                    'contact_id' => $contact->contact_id,
                 ]);
 
                 $deleteResult = $this->eppService->deleteContact($contact->contact_id);
-                if (!$deleteResult || !$deleteResult['success']) {
-                    throw new Exception('Failed to delete contact from registry: ' . ($deleteResult['message'] ?? 'Unknown error'));
+                if (! $deleteResult || ! $deleteResult['success']) {
+                    throw new Exception('Failed to delete contact from registry: '.($deleteResult['message'] ?? 'Unknown error'));
                 }
 
                 // Verify deletion
@@ -336,14 +334,14 @@ class ContactController extends Controller
                 }
 
                 Log::info('Contact deleted from EPP registry', [
-                    'contact_id' => $contact->contact_id
+                    'contact_id' => $contact->contact_id,
                 ]);
             }
 
             // Delete contact from database
             Log::info('Deleting contact from database', [
                 'contact_id' => $contact->contact_id,
-                'contact' => $contact->toArray()
+                'contact' => $contact->toArray(),
             ]);
 
             $contact->delete();
@@ -363,7 +361,7 @@ class ContactController extends Controller
             ]);
 
             return redirect()->route('admin.contacts.index')
-                ->with('error', 'Failed to delete contact: ' . $e->getMessage());
+                ->with('error', 'Failed to delete contact: '.$e->getMessage());
         } finally {
             $this->eppService->disconnect();
         }

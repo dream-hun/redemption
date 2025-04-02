@@ -44,7 +44,7 @@ class Domain extends Model
         'ssl_expires_at' => 'datetime',
         'last_renewal_at' => 'datetime',
         'auto_renew' => 'boolean',
-        'whois_privacy' => 'boolean',   
+        'whois_privacy' => 'boolean',
     ];
 
     public function owner(): BelongsTo

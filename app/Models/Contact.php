@@ -50,9 +50,9 @@ class Contact extends Model
         // Format: RW-XXXX-YYYY where X is random letter and Y is random number
         $letters = strtoupper(Str::random(4));
         $numbers = str_pad(rand(1, 9999), 4, '0', STR_PAD_LEFT);
+
         return "RW-{$letters}-{$numbers}";
     }
-
 
     public static function boot(): void
     {

@@ -248,7 +248,12 @@
                             <div class="card-body">
                                 <p class="text-muted mb-3">Specify up to 4 name servers for your domain. Leave empty to use our default name servers.</p>
 
-
+                                <div class="form-check mb-4">
+                                    <input class="form-check-input" type="checkbox" value="" id="flexCheckChecked">
+                                    <label class="form-check-label" for="flexCheckChecked">
+                                        Don't delegate this domain now
+                                    </label>
+                                </div>
 
                                 @for ($i = 0; $i < 4; $i++)
                                     <div class="form-group mb-{{ $i === 3 ? '4' : '2' }}">

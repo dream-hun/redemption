@@ -8,7 +8,6 @@ use App\Http\Requests\UpdateNameserversRequest;
 use App\Models\Contact;
 use App\Models\Country;
 use App\Models\Domain;
-use App\Models\DomainContact;
 use App\Models\Nameserver;
 use App\Services\Epp\EppService;
 use Exception;
@@ -42,13 +41,13 @@ class DomainController extends Controller
     public function edit(Domain $domain): View
     {
         abort_if(Gate::denies('domain_edit'), Response::HTTP_FORBIDDEN, '403 Forbidden');
-        
+
         $countries = Country::pluck('name', 'code');
         $domain->load('owner', 'contacts.contact', 'nameservers');
-        
+
         // Organize domain contacts by type
         $contactsByType = ['registrant' => null, 'admin' => null, 'tech' => null, 'billing' => null];
-        
+
         foreach ($domain->contacts as $domainContact) {
             if (in_array($domainContact->type, array_keys($contactsByType))) {
                 $contactsByType[$domainContact->type] = $domainContact->contact;
@@ -57,7 +56,7 @@ class DomainController extends Controller
                 }
             }
         }
-        
+
         return view('admin.domains.edit', compact('domain', 'countries', 'contactsByType'));
     }
 
@@ -67,7 +66,7 @@ class DomainController extends Controller
 
         // Load domain with all relationships
         $domain->load(['contacts.contact', 'nameservers', 'owner']);
-        
+
         // Organize contacts by type for easier access in the view
         $contactsByType = ['registrant' => null, 'admin' => null, 'tech' => null, 'billing' => null];
         foreach ($domain->contacts as $domainContact) {
@@ -106,9 +105,9 @@ class DomainController extends Controller
                     }
                 });
                 $eppInfo['nameservers'] = $flatNameservers;
-                
+
                 // If we have EPP nameservers but no local nameserver records, sync them
-                if ($domain->nameservers()->count() === 0 && !empty($flatNameservers)) {
+                if ($domain->nameservers()->count() === 0 && ! empty($flatNameservers)) {
                     $this->syncNameserversFromEpp($domain, $flatNameservers);
                 }
             }
@@ -120,7 +119,7 @@ class DomainController extends Controller
                         $eppInfo['contacts'][$contactType] = [$eppInfo['contacts'][$contactType]];
                     }
                 }
-                
+
                 // If we have EPP contacts but no local contact records, we could sync them here
                 // This would require additional implementation to create Contact records from EPP data
             }
@@ -144,7 +143,7 @@ class DomainController extends Controller
             return view('admin.domains.show', compact('domain', 'contactsByType'));
         }
     }
-    
+
     /**
      * Sync nameservers from EPP to local database
      */
@@ -156,10 +155,10 @@ class DomainController extends Controller
                 $domain->update([
                     'nameservers' => $nameservers,
                 ]);
-                
+
                 // Create nameserver records
                 foreach ($nameservers as $hostname) {
-                    if (!empty($hostname)) {
+                    if (! empty($hostname)) {
                         $domain->nameservers()->create([
                             'hostname' => $hostname,
                             'ipv4_addresses' => [],
@@ -168,10 +167,10 @@ class DomainController extends Controller
                     }
                 }
             });
-            
-            Log::info('Synchronized nameservers from EPP for domain: ' . $domain->name);
+
+            Log::info('Synchronized nameservers from EPP for domain: '.$domain->name);
         } catch (Exception $e) {
-            Log::error('Failed to sync nameservers from EPP: ' . $e->getMessage(), [
+            Log::error('Failed to sync nameservers from EPP: '.$e->getMessage(), [
                 'domain' => $domain->name,
                 'nameservers' => $nameservers,
                 'exception' => $e,
@@ -235,30 +234,30 @@ class DomainController extends Controller
             return back()->with('error', $errorMessage);
         }
     }
-    
+
     /**
      * Update domain nameservers
      */
     public function updateNameservers(UpdateNameserversRequest $request, Domain $domain): RedirectResponse
     {
         abort_if(Gate::denies('domain_edit'), Response::HTTP_FORBIDDEN, '403 Forbidden');
-        
+
         try {
             $nameservers = $request->validated('nameservers');
-            
+
             // Update nameservers via EPP
             $frame = $this->eppService->updateDomainNameservers($domain->name, $nameservers);
             $response = $this->eppService->getClient()->request($frame);
-            
+
             if ($response->code() === 1000) {
                 // Successfully updated in registry, now update in database
                 DB::transaction(function () use ($domain, $nameservers) {
                     // Delete existing nameservers
                     $domain->nameservers()->delete();
-                    
+
                     // Create new nameservers
                     foreach ($nameservers as $hostname) {
-                        if (!empty($hostname)) {
+                        if (! empty($hostname)) {
                             $domain->nameservers()->create([
                                 'hostname' => $hostname,
                                 'ipv4_addresses' => [],
@@ -266,67 +265,67 @@ class DomainController extends Controller
                             ]);
                         }
                     }
-                    
+
                     // Mark the domain as updated
                     $domain->touch();
                 });
-                
+
                 return redirect()->route('admin.domains.edit', $domain)
                     ->with('message', 'Nameservers updated successfully');
             } else {
-                $errorMessage = 'Failed to update nameservers: ' . $response->message();
-                Log::error('EPP nameserver update failed: ' . $response->message());
-                
+                $errorMessage = 'Failed to update nameservers: '.$response->message();
+                Log::error('EPP nameserver update failed: '.$response->message());
+
                 return back()->with('error', $errorMessage)
                     ->withInput();
             }
         } catch (Exception $e) {
             $errorMessage = 'An error occurred while updating nameservers';
-            Log::error('Nameserver update error: ' . $e->getMessage(), [
+            Log::error('Nameserver update error: '.$e->getMessage(), [
                 'exception' => $e,
                 'domain' => $domain->name,
             ]);
-            
+
             return back()->with('error', $errorMessage)
                 ->withInput();
         }
     }
-    
+
     /**
      * Update domain contacts
      */
     public function updateContacts(UpdateDomainRequest $request, Domain $domain): RedirectResponse
     {
         abort_if(Gate::denies('domain_edit'), Response::HTTP_FORBIDDEN, '403 Forbidden');
-        
+
         try {
             $validated = $request->validated();
             $contactTypes = ['registrant', 'admin', 'tech', 'billing'];
             $contactData = [];
-            
+
             foreach ($contactTypes as $type) {
-                if (isset($validated[$type . '_contact_id']) && !empty($validated[$type . '_contact_id'])) {
-                    $contactData[$type] = $validated[$type . '_contact_id'];
+                if (isset($validated[$type.'_contact_id']) && ! empty($validated[$type.'_contact_id'])) {
+                    $contactData[$type] = $validated[$type.'_contact_id'];
                 }
             }
-            
+
             // Update contacts via EPP
             $frame = $this->eppService->updateDomainContacts($domain->name, $contactData);
             $response = $this->eppService->getClient()->request($frame);
-            
+
             if ($response->code() === 1000) {
                 // Successfully updated in registry, now update in database
                 DB::transaction(function () use ($domain, $contactData) {
                     // Update domain contacts
                     foreach ($contactData as $type => $contactId) {
                         $contact = Contact::where('contact_id', $contactId)->first();
-                        
+
                         if ($contact) {
                             // Check if this contact is already associated with this domain
                             $existingContact = $domain->contacts()
                                 ->where('type', $type)
                                 ->first();
-                                
+
                             if ($existingContact) {
                                 // Update existing association
                                 $existingContact->update([
@@ -341,31 +340,31 @@ class DomainController extends Controller
                                     'user_id' => auth()->id(),
                                 ]);
                             }
-                            
+
                             // Update the domain's contact reference
                             $domain->update([
-                                $type . '_contact_id' => $contactId,
+                                $type.'_contact_id' => $contactId,
                             ]);
                         }
                     }
                 });
-                
+
                 return redirect()->route('admin.domains.edit', $domain)
                     ->with('message', 'Domain contacts updated successfully');
             } else {
-                $errorMessage = 'Failed to update domain contacts: ' . $response->message();
-                Log::error('EPP domain contact update failed: ' . $response->message());
-                
+                $errorMessage = 'Failed to update domain contacts: '.$response->message();
+                Log::error('EPP domain contact update failed: '.$response->message());
+
                 return back()->with('error', $errorMessage)
                     ->withInput();
             }
         } catch (Exception $e) {
             $errorMessage = 'An error occurred while updating domain contacts';
-            Log::error('Domain contact update error: ' . $e->getMessage(), [
+            Log::error('Domain contact update error: '.$e->getMessage(), [
                 'exception' => $e,
                 'domain' => $domain->name,
             ]);
-            
+
             return back()->with('error', $errorMessage)
                 ->withInput();
         }

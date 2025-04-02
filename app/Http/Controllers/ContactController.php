@@ -55,8 +55,8 @@ class ContactController extends Controller
                 auth()->user()
             );
 
-            if (!$eppResponse->success()) {
-                throw new Exception('Failed to create contact in registry: ' . $eppResponse->message());
+            if (! $eppResponse->success()) {
+                throw new Exception('Failed to create contact in registry: '.$eppResponse->message());
             }
 
             // Create contact in local database
@@ -86,12 +86,12 @@ class ContactController extends Controller
 
         } catch (Exception $e) {
             DB::rollBack();
-            Log::error('Contact creation failed: ' . $e->getMessage());
+            Log::error('Contact creation failed: '.$e->getMessage());
 
             return redirect()
                 ->back()
                 ->withInput()
-                ->with('error', 'Failed to create contact: ' . $e->getMessage());
+                ->with('error', 'Failed to create contact: '.$e->getMessage());
         }
     }
 
@@ -101,6 +101,7 @@ class ContactController extends Controller
     public function edit(Contact $contact): View
     {
         $this->authorize('update', $contact);
+
         return view('admin.contacts.edit', compact('contact'));
     }
 
@@ -119,8 +120,8 @@ class ContactController extends Controller
                 auth()->user()
             );
 
-            if (!$eppResponse->success()) {
-                throw new Exception('Failed to update contact in registry: ' . $eppResponse->message());
+            if (! $eppResponse->success()) {
+                throw new Exception('Failed to update contact in registry: '.$eppResponse->message());
             }
 
             // Update contact in local database
@@ -134,12 +135,12 @@ class ContactController extends Controller
 
         } catch (Exception $e) {
             DB::rollBack();
-            Log::error('Contact update failed: ' . $e->getMessage());
+            Log::error('Contact update failed: '.$e->getMessage());
 
             return redirect()
                 ->back()
                 ->withInput()
-                ->with('error', 'Failed to update contact: ' . $e->getMessage());
+                ->with('error', 'Failed to update contact: '.$e->getMessage());
         }
     }
 
@@ -183,6 +184,7 @@ class ContactController extends Controller
             }
 
             $result = $response ? $response->results()[0] : null;
+
             return response()->json([
                 'error' => 'Contact check failed',
                 'code' => $result ? $result->code() : 'unknown',
@@ -191,6 +193,7 @@ class ContactController extends Controller
 
         } catch (Exception $e) {
             Log::error('Contact availability check failed: '.$e->getMessage());
+
             return response()->json(['error' => 'Failed to check contact availability: '.$e->getMessage()], 500);
         }
     }

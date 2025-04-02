@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\CreateContactRequest;
 use App\Http\Requests\RegisterDomainRequest;
 use App\Models\Contact;
 use App\Models\Country;
@@ -45,12 +44,12 @@ class RegisterDomainController extends Controller
 
         // Get domain contacts to determine types
         $domainContacts = DomainContact::where('user_id', Auth::id())
-            ->select('id','contact_id', 'type')
+            ->select('id', 'contact_id', 'type')
             ->get()
             ->groupBy('contact_id');
 
         // Prepare contacts with their types
-        $contactsArray = $userContacts->map(function($contact) use ($domainContacts) {
+        $contactsArray = $userContacts->map(function ($contact) use ($domainContacts) {
             $contactData = $contact->toArray();
 
             // Add contact type if available from domain contacts
@@ -96,8 +95,8 @@ class RegisterDomainController extends Controller
             $domainName = $request->domain_name;
 
             // Validate that we have all required contacts
-            if (!$request->registrant_contact_id || !$request->admin_contact_id ||
-                !$request->tech_contact_id || !$request->billing_contact_id) {
+            if (! $request->registrant_contact_id || ! $request->admin_contact_id ||
+                ! $request->tech_contact_id || ! $request->billing_contact_id) {
                 throw new Exception('All contact types (registrant, admin, tech, and billing) are required');
             }
 
@@ -107,7 +106,7 @@ class RegisterDomainController extends Controller
             $techContact = Contact::find($request->tech_contact_id);
             $billingContact = Contact::find($request->billing_contact_id);
 
-            if (!$registrantContact || !$adminContact || !$techContact || !$billingContact) {
+            if (! $registrantContact || ! $adminContact || ! $techContact || ! $billingContact) {
                 throw new Exception('One or more contacts not found');
             }
 
@@ -122,7 +121,7 @@ class RegisterDomainController extends Controller
                 $registrantContact->id,
                 $adminContact->id,
                 $techContact->id,
-                $billingContact->id
+                $billingContact->id,
             ];
 
             $eppContactIds = [
@@ -152,17 +151,17 @@ class RegisterDomainController extends Controller
             $userContactIds = $userContacts->pluck('id')->toArray();
             $missingContacts = array_diff($contactIds, $userContactIds);
 
-            if (!empty($missingContacts)) {
+            if (! empty($missingContacts)) {
                 \Log::warning('User attempted to use contacts that do not belong to them', [
                     'user_id' => Auth::id(),
-                    'missing_contact_ids' => $missingContacts
+                    'missing_contact_ids' => $missingContacts,
                 ]);
                 throw new Exception('You can only use contacts that belong to your account');
             }
 
             // Filter out empty nameservers
             $nameservers = array_filter($request->nameservers ?? [], function ($ns) {
-                return !empty(trim($ns));
+                return ! empty(trim($ns));
             });
 
             // If no nameservers provided, use default ones
@@ -176,7 +175,7 @@ class RegisterDomainController extends Controller
             // Log the nameservers being used
             Log::info('Nameservers for domain registration', [
                 'domain' => $domainName,
-                'nameservers' => $nameservers
+                'nameservers' => $nameservers,
             ]);
 
             // Log the domain registration attempt
@@ -187,7 +186,7 @@ class RegisterDomainController extends Controller
                 'admin_contact_id' => $adminContact->contact_id,
                 'tech_contact_id' => $techContact->contact_id,
                 'billing_contact_id' => $billingContact->contact_id,
-                'nameservers' => $nameservers
+                'nameservers' => $nameservers,
             ]);
 
             // Create domain in EPP registry
@@ -210,13 +209,13 @@ class RegisterDomainController extends Controller
                 'domain' => $domainName,
                 'response_code' => $response->code(),
                 'response_message' => $response->message(),
-                'response_data' => $response->data()
+                'response_data' => $response->data(),
             ]);
 
             // Check if the EPP registration was successful
             if ($response->code() !== 1000) {
                 DB::rollBack();
-                throw new Exception('Domain registration failed: ' . $response->message());
+                throw new Exception('Domain registration failed: '.$response->message());
             }
 
             // Create domain in local database
@@ -239,7 +238,7 @@ class RegisterDomainController extends Controller
                 'registrant' => $registrantContact,
                 'admin' => $adminContact,
                 'tech' => $techContact,
-                'billing' => $billingContact
+                'billing' => $billingContact,
             ];
 
             foreach ($contactTypes as $type) {
@@ -253,7 +252,7 @@ class RegisterDomainController extends Controller
 
             // Create nameserver records
             foreach ($nameservers as $hostname) {
-                if (!empty($hostname)) {
+                if (! empty($hostname)) {
                     $domain->nameservers()->create([
                         'hostname' => $hostname,
                         'ipv4_addresses' => [],
@@ -276,7 +275,7 @@ class RegisterDomainController extends Controller
                 'code' => $response->code(),
                 'message' => $response->message(),
                 'data' => $response->data(),
-                'domain' => $domainName
+                'domain' => $domainName,
             ]);
 
             return redirect()->route('domain.registration.success', $domain->uuid)

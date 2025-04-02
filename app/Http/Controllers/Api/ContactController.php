@@ -11,10 +11,6 @@ class ContactController extends Controller
 {
     /**
      * Get contact details.
-     *
-     * @param Request $request
-     * @param string $id
-     * @return JsonResponse
      */
     public function details(Request $request, string $id): JsonResponse
     {

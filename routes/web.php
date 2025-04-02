@@ -74,6 +74,7 @@ Route::group(['middleware' => 'auth', 'prefix' => 'admin', 'as' => 'admin.'], fu
 
             // Domain renewal
             Route::post('renewal', [RenewDomainController::class, 'addToCart'])->name('renewal.addToCart');
+            Route::get('/domain/renewal',[RenewDomainController::class,'index'])->name('renewal.index');
             Route::put('renew', [RenewDomainController::class, 'renew'])->name('renew');
         });
 
@@ -98,7 +99,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
 Route::middleware('auth')->group(function () {
 
-        // Profile
+    // Profile
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');

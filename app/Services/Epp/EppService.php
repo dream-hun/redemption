@@ -9,10 +9,10 @@ use AfriCC\EPP\Frame\Command\Check\Host as CheckHost;
 use AfriCC\EPP\Frame\Command\Create\Contact as CreateContact;
 use AfriCC\EPP\Frame\Command\Create\Domain as CreateDomain;
 use AfriCC\EPP\Frame\Command\Create\Host as CreateHost;
-use AfriCC\EPP\Frame\Command\Delete\Domain as DeleteDomain;
 use AfriCC\EPP\Frame\Command\Delete\Contact as DeleteContact;
-use AfriCC\EPP\Frame\Command\Info\Domain as InfoDomain;
+use AfriCC\EPP\Frame\Command\Delete\Domain as DeleteDomain;
 use AfriCC\EPP\Frame\Command\Info\Contact as InfoContact;
+use AfriCC\EPP\Frame\Command\Info\Domain as InfoDomain;
 use AfriCC\EPP\Frame\Command\Poll;
 use AfriCC\EPP\Frame\Command\Renew\Domain as RenewDomain;
 use AfriCC\EPP\Frame\Command\Transfer\Domain as TransferDomain;
@@ -38,8 +38,9 @@ class EppService
     /**
      * Delete a contact from the EPP registry
      *
-     * @param string $contactId The ID of the contact to delete
+     * @param  string  $contactId  The ID of the contact to delete
      * @return array Response from EPP server
+     *
      * @throws Exception
      */
     public function deleteContact(string $contactId): array
@@ -47,7 +48,7 @@ class EppService
         try {
             $this->connect();
 
-            $frame = new DeleteContact();
+            $frame = new DeleteContact;
             $frame->setId($contactId);
 
             $response = $this->client->request($frame);
@@ -64,17 +65,18 @@ class EppService
             return [
                 'success' => $response->success(),
                 'message' => $message,
-                'code' => $response->code()
+                'code' => $response->code(),
             ];
         } catch (Exception $e) {
             Log::error('EPP delete contact failed', [
                 'contact_id' => $contactId,
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ]);
+
             return [
                 'success' => false,
                 'message' => $e->getMessage(),
-                'code' => $e->getCode()
+                'code' => $e->getCode(),
             ];
         }
     }
@@ -183,8 +185,6 @@ class EppService
     /**
      * Get contact information from EPP registry
      *
-     * @param string $contactId
-     * @return array|null
      * @throws Exception
      */
     public function infoContact(string $contactId): ?array
@@ -192,16 +192,16 @@ class EppService
         try {
             $this->connect();
 
-            $frame = new InfoContact();
+            $frame = new InfoContact;
             $frame->setId($contactId);
 
             Log::info('Sending contact info request to EPP', [
-                'contact_id' => $contactId
+                'contact_id' => $contactId,
             ]);
 
             $response = $this->client->request($frame);
 
-            if (!$response) {
+            if (! $response) {
                 throw new Exception('No response received from EPP server');
             }
 
@@ -215,18 +215,20 @@ class EppService
                 Log::error('Failed to get contact info from EPP', [
                     'contact_id' => $contactId,
                     'code' => $result->code(),
-                    'message' => $result->message()
+                    'message' => $result->message(),
                 ]);
+
                 return null;
             }
 
             $data = $response->data();
             $contactData = $data['infData'] ?? null;
-            if (!$contactData) {
+            if (! $contactData) {
                 Log::error('Invalid contact info response from EPP', [
                     'contact_id' => $contactId,
-                    'data' => $data
+                    'data' => $data,
                 ]);
+
                 return null;
             }
 
@@ -244,19 +246,19 @@ class EppService
                     'voice' => $contactData['voice'] ?? '',
                     'fax' => [
                         'number' => $contactData['fax'] ?? '',
-                        'ext' => $contactData['faxExt'] ?? ''
+                        'ext' => $contactData['faxExt'] ?? '',
                     ],
                     'email' => $contactData['email'] ?? '',
                     'status' => $contactData['status'] ?? [],
-                    'auth_info' => $contactData['authInfo']['pw'] ?? ''
-                ]
+                    'auth_info' => $contactData['authInfo']['pw'] ?? '',
+                ],
             ];
 
         } catch (Exception $e) {
             Log::error('Exception while getting contact info from EPP', [
                 'contact_id' => $contactId,
                 'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
+                'trace' => $e->getTraceAsString(),
             ]);
             throw $e;
         }
@@ -399,7 +401,7 @@ class EppService
             }
 
             $response = $this->client->request($frame);
-            if (!$response) {
+            if (! $response) {
                 throw new Exception('No response received from EPP server');
             }
 
@@ -408,10 +410,10 @@ class EppService
 
             Log::debug('EPP Contact Check Response:', ['data' => $data]);
 
-            if (!empty($data) && isset($data['chkData'])) {
+            if (! empty($data) && isset($data['chkData'])) {
                 // Handle both single and multiple contact responses
                 $items = $data['chkData']['cd'] ?? [];
-                if (!is_array($items) || !isset($items[0])) {
+                if (! is_array($items) || ! isset($items[0])) {
                     $items = [$items];
                 }
 
@@ -458,63 +460,63 @@ class EppService
     {
         try {
             $this->ensureConnection();
-            
+
             Log::debug('Creating contact with data:', ['contacts' => $contacts]);
-            
+
             $frame = new CreateContact;
             $frame->setId($contacts['id'] ?? Str::random(12));
             $frame->setName($contacts['name']);
-            
-            if (!empty($contacts['organization'])) {
+
+            if (! empty($contacts['organization'])) {
                 $frame->setOrganization($contacts['organization']);
             }
 
             // Handle street addresses - at least one street is required by EPP
             $frame->addStreet($contacts['street1']);
-            
+
             // Add second street if provided
-            if (!empty($contacts['street2'])) {
+            if (! empty($contacts['street2'])) {
                 $frame->addStreet($contacts['street2']);
             }
 
             $frame->setCity($contacts['city']);
-            
-            if (!empty($contacts['province'])) {
+
+            if (! empty($contacts['province'])) {
                 $frame->setProvince($contacts['province']);
             }
-            
-            if (!empty($contacts['postal_code'])) {
+
+            if (! empty($contacts['postal_code'])) {
                 $frame->setPostalCode($contacts['postal_code']);
             }
-            
+
             $frame->setCountryCode($contacts['country_code']);
-            
+
             // Format phone number to EPP format (+CC.number)
-            if (!empty($contacts['voice'])) {
+            if (! empty($contacts['voice'])) {
                 $phone = $contacts['voice'];
-                if (!str_starts_with($phone, '+')) {
+                if (! str_starts_with($phone, '+')) {
                     // Add country code for Rwanda if not present
-                    $phone = '+250.' . ltrim($phone, '0');
+                    $phone = '+250.'.ltrim($phone, '0');
                 }
                 $frame->setVoice($phone);
             }
-            
-            if (!empty($contacts['fax'])) {
+
+            if (! empty($contacts['fax'])) {
                 $fax = $contacts['fax']['number'];
-                if (!str_starts_with($fax, '+')) {
-                    $fax = '+250.' . ltrim($fax, '0');
+                if (! str_starts_with($fax, '+')) {
+                    $fax = '+250.'.ltrim($fax, '0');
                 }
                 $frame->setFax($fax, $contacts['fax']['ext'] ?? '');
             }
-            
+
             $frame->setEmail($contacts['email']);
 
             $auth = $frame->setAuthInfo();
 
             // Send the frame and get response
             $response = $this->client->request($frame);
-            
-            if (!$response) {
+
+            if (! $response) {
                 throw new Exception('No response received from EPP server');
             }
 
@@ -527,22 +529,22 @@ class EppService
             if ($result->code() !== 1000) {
                 Log::error('Failed to create contact in EPP', [
                     'code' => $result->code(),
-                    'message' => $result->message()
+                    'message' => $result->message(),
                 ]);
-                throw new Exception('Failed to create contact in EPP registry: ' . $result->message());
+                throw new Exception('Failed to create contact in EPP registry: '.$result->message());
             }
 
             Log::info('Contact created successfully in EPP', [
                 'id' => $contacts['id'],
                 'code' => $result->code(),
-                'message' => $result->message()
+                'message' => $result->message(),
             ]);
 
             return [
                 'id' => $contacts['id'],
                 'auth' => $auth,
                 'code' => $result->code(),
-                'message' => $result->message()
+                'message' => $result->message(),
             ];
 
         } catch (Exception $e) {
@@ -718,14 +720,14 @@ class EppService
 
             // Use hostObj instead of hostAttr as required by the EPP server
             foreach ($nameservers as $host) {
-                if (!empty($host)) {
+                if (! empty($host)) {
                     // Make sure the host is properly formatted
                     $host = trim($host);
-                    if (!empty($host)) {
+                    if (! empty($host)) {
                         // Log the nameserver being added
                         \Log::info('Adding nameserver to domain', [
                             'domain' => $domain,
-                            'nameserver' => $host
+                            'nameserver' => $host,
                         ]);
                         $frame->addHostObj($host);
                     }
@@ -860,63 +862,64 @@ class EppService
     /**
      * Update domain nameservers
      *
-     * @param string $domain Domain name
-     * @param array $nameservers Array of nameserver hostnames
+     * @param  string  $domain  Domain name
+     * @param  array  $nameservers  Array of nameserver hostnames
      * @return UpdateDomain EPP frame
+     *
      * @throws Exception
      */
     public function updateDomainNameservers(string $domain, array $nameservers): UpdateDomain
     {
         try {
             $this->ensureConnection();
-            
+
             // Normalize domain name (remove trailing dot if present)
             $domain = rtrim($domain, '.');
-            
+
             // Filter out empty nameservers and normalize hostnames
             $nameservers = array_filter(array_map(function ($ns) {
                 // Normalize nameserver hostname (remove trailing dot if present)
                 return rtrim(trim($ns), '.');
-            }, $nameservers), fn($ns) => !empty($ns));
-            
+            }, $nameservers), fn ($ns) => ! empty($ns));
+
             // Get current nameservers for the domain
             $infoFrame = new InfoDomain;
             $infoFrame->setDomain($domain);
             $infoResponse = $this->client->request($infoFrame);
-            
+
             // Create update domain frame
             $frame = new UpdateDomain;
             $frame->setDomain($domain);
-            
+
             // First, check if the nameservers exist in the registry
             // If they don't exist, we need to create them first
             foreach ($nameservers as $ns) {
                 // Check if the nameserver exists
-                $checkFrame = new \AfriCC\EPP\Frame\Command\Check\Host();
+                $checkFrame = new \AfriCC\EPP\Frame\Command\Check\Host;
                 $checkFrame->addHost($ns);
                 $checkResponse = $this->client->request($checkFrame);
-                
+
                 if ($checkResponse->code() === 1000) {
                     // Parse the response to see if the host exists
                     $responseXml = (string) $checkResponse;
-                    
+
                     // If the host doesn't exist and contains the domain we're updating,
                     // we need to create it as a subordinate host
-                    if (strpos($responseXml, '<host:name avail="1">') !== false && 
+                    if (strpos($responseXml, '<host:name avail="1">') !== false &&
                         strpos($ns, $domain) !== false) {
-                        
+
                         Log::info("Creating subordinate host: {$ns}");
-                        
+
                         // Create the host
-                        $createFrame = new \AfriCC\EPP\Frame\Command\Create\Host();
+                        $createFrame = new \AfriCC\EPP\Frame\Command\Create\Host;
                         $createFrame->setHost($ns);
-                        
+
                         // Add a default IP address for the host
                         // This is required by some EPP registries for subordinate hosts
                         $createFrame->addAddr('127.0.0.1');
-                        
+
                         $createResponse = $this->client->request($createFrame);
-                        
+
                         if ($createResponse->code() !== 1000) {
                             Log::warning("Failed to create host {$ns}: {$createResponse->message()}");
                         } else {
@@ -925,43 +928,43 @@ class EppService
                     }
                 }
             }
-            
+
             // Now update the domain with the new nameservers
             // Following the example from the PHP-EPP2 library
-            
+
             // First, if we can get the current nameservers, remove them
             if ($infoResponse->code() === 1000) {
                 $responseXml = (string) $infoResponse;
-                
+
                 // Extract current nameservers using regex
                 // This is a simple approach since we can't use XPath directly
                 preg_match_all('/<domain:hostObj>([^<]+)<\/domain:hostObj>/', $responseXml, $matches);
-                
-                if (!empty($matches[1])) {
+
+                if (! empty($matches[1])) {
                     foreach ($matches[1] as $currentNs) {
                         Log::info("Removing nameserver: {$currentNs}");
                         $frame->removeHostObj($currentNs);
                     }
                 }
             }
-            
+
             // Add the new nameservers
             foreach ($nameservers as $ns) {
                 Log::info("Adding nameserver: {$ns}");
                 $frame->addHostObj($ns);
             }
-            
+
             // Change auth info (optional but recommended for security)
             $authInfo = Str::random(12);
             $frame->changeAuthInfo($authInfo);
-            
+
             // Log the frame for debugging
             Log::debug('EPP update domain nameservers frame created', [
                 'domain' => $domain,
                 'new_nameservers' => $nameservers,
                 'frame' => (string) $frame,
             ]);
-            
+
             return $frame;
         } catch (Exception $e) {
             Log::error('EPP update domain nameservers error', [
@@ -972,7 +975,7 @@ class EppService
             throw $e;
         }
     }
-    
+
     /**
      * Update domain
      *

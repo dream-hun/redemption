@@ -5,12 +5,16 @@ namespace App\Http\Controllers\Admin;
 use AfriCC\EPP\Frame\Response;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\DomainRenewalRequest;
+use App\Models\Contact;
+use App\Models\Country;
 use App\Models\Domain;
+use App\Models\DomainContact;
 use App\Services\Epp\EppService;
 use Carbon\Carbon;
 use Darryldecode\Cart\Facades\CartFacade as Cart;
 use Exception;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Throwable;
@@ -22,6 +26,48 @@ class RenewDomainController extends Controller
     public function __construct(EppService $eppService)
     {
         $this->eppService = $eppService;
+    }
+
+    public function index()
+    {
+        $cartItems=Cart::getContent();
+        $total=Cart::getTotal();
+        $contacts=Domain::with(['contacts'])->get();
+        $countries=Country::all();
+        // Get all contacts for the current user
+        $userContacts = Contact::where('user_id', Auth::id())
+            ->select('id', 'uuid', 'contact_id', 'name', 'organization', 'email', 'voice')
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        // Get domain contacts to determine types
+        $domainContacts = DomainContact::where('user_id', Auth::id())
+            ->select('id', 'contact_id', 'type')
+            ->get()
+            ->groupBy('contact_id');
+
+        // Prepare contacts with their types
+        $contactsArray = $userContacts->map(function ($contact) use ($domainContacts) {
+            $contactData = $contact->toArray();
+
+            // Add contact type if available from domain contacts
+            if (isset($domainContacts[$contact->id])) {
+                $contactData['contact_type'] = $domainContacts[$contact->id][0]->type;
+            } else {
+                $contactData['contact_type'] = null; // No specific type
+            }
+
+            return $contactData;
+        })->toArray();
+
+        // Group contacts by type for easier access in the view
+        $existingContacts = [];
+        foreach ($contactTypes as $type) {
+            // For each contact type, include all contacts
+            // This allows any contact to be used for any role
+            $existingContacts[$type] = $contactsArray;
+        }
+        return view('admin.domains.renewal',['cartItems'=>$cartItems,'total'=>$total,'contacts'=>$contacts,'countries'=>$countries,'existingContacts'=>$existingContacts]);
     }
 
     /**
@@ -44,7 +90,7 @@ class RenewDomainController extends Controller
             $cartItemId = 'renew_'.$domain->name;
 
             if ($cartContent->has($cartItemId)) {
-                return redirect()->route('contacts.create', ['domain' => $domain])
+                return redirect()->route('admin.domains.renewal.index', ['domain' => $domain])
                     ->with('warning', 'Domain renewal is already in your cart.');
             }
 
@@ -77,7 +123,7 @@ class RenewDomainController extends Controller
                 'cart_id' => $cartItemId,
             ]);
 
-            return redirect()->route('contacts.create', ['domain' => $domain->name])
+            return redirect()->route('admin.domains.renewal.index', ['domain' => $domain->name])
                 ->with('success', 'Domain renewal added to cart successfully.');
 
         } catch (Exception $e) {
