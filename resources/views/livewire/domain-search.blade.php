@@ -250,12 +250,10 @@
                                                 @if ($primaryResult['available'])
                                                     <button
                                                         wire:click="{{ $primaryResult['in_cart'] ? 'removeFromCart(\'' . $primaryDomain . '\')' : 'addToCart(\'' . $primaryDomain . '\', ' . $primaryResult['register_price'] . ')' }}"
-                                                        wire:loading.attr="disabled"
+                                                        wire:loading.class="opacity-75"
                                                         wire:target="{{ $primaryResult['in_cart'] ? 'removeFromCart(\'' . $primaryDomain . '\')' : 'addToCart(\'' . $primaryDomain . '\', ' . $primaryResult['register_price'] . ')' }}"
-                                                        class="btn btn-lg text-white {{ $primaryResult['in_cart'] ? 'bg-danger' : 'bg-success' }} w-50"
-                                                    >
-                                                        <span wire:loading.remove wire:target="{{ $primaryResult['in_cart'] ? 'removeFromCart(\'' . $primaryDomain . '\')' : 'addToCart(\'' . $primaryDomain . '\', ' . $primaryResult['register_price'] . ')' }}">{{ $primaryResult['in_cart'] ? 'Remove from cart' : 'Add to Cart' }}</span>
-                                                        <span wire:loading wire:target="{{ $primaryResult['in_cart'] ? 'removeFromCart(\'' . $primaryDomain . '\')' : 'addToCart(\'' . $primaryDomain . '\', ' . $primaryResult['register_price'] . ')' }}">Loading...</span>
+                                                        class="btn btn-lg text-white {{ $primaryResult['in_cart'] ? 'bg-danger' : 'bg-success' }} w-50">
+                                                        {{ $primaryResult['in_cart'] ? 'Remove from cart' : 'Add to Cart' }}
                                                     </button>
                                                 @endif
                                             </div>
@@ -290,12 +288,11 @@
                                                         @if ($result['available'])
                                                             <button
                                                                 wire:click="{{ $result['in_cart'] ? 'removeFromCart(\'' . $domain . '\')' : 'addToCart(\'' . $domain . '\', ' . $result['register_price'] . ')' }}"
-                                                                wire:loading.attr="disabled"
+                                                                wire:loading.class="opacity-75"
                                                                 wire:target="{{ $result['in_cart'] ? 'removeFromCart(\'' . $domain . '\')' : 'addToCart(\'' . $domain . '\', ' . $result['register_price'] . ')' }}"
                                                                 class="btn btn-lg text-white {{ $result['in_cart'] ? 'bg-danger' : 'bg-success' }} w-50"
                                                             >
-                                                                <span wire:loading.remove wire:target="{{ $result['in_cart'] ? 'removeFromCart(\'' . $domain . '\')' : 'addToCart(\'' . $domain . '\', ' . $result['register_price'] . ')' }}">{{ $result['in_cart'] ? 'Remove from cart' : 'Add to Cart' }}</span>
-                                                                <span wire:loading wire:target="{{ $result['in_cart'] ? 'removeFromCart(\'' . $domain . '\')' : 'addToCart(\'' . $domain . '\', ' . $result['register_price'] . ')' }}">Loading...</span>
+                                                                {{ $result['in_cart'] ? 'Remove from cart' : 'Add to Cart' }}
                                                             </button>
                                                         @endif
                                                     </td>
