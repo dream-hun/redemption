@@ -24,14 +24,20 @@
                                     <div class="quantity-controls d-flex align-items-center">
                                         <button type="button" class="btn btn-outline-primary rounded-circle p-2" style="width: 45px; height: 45px; font-size:14px !important;"
                                             wire:click="updateQuantity('{{ $item->id }}', {{ $item->quantity - 1 }})"
+                                            wire:loading.attr="disabled"
+                                            wire:target="updateQuantity('{{ $item->id }}', {{ $item->quantity - 1 }})"
                                             {{ $item->quantity <= 1 ? 'disabled' : '' }}>
-                                            <i class="bi bi-dash fs-4"></i>
+                                            <i class="bi bi-dash fs-4" wire:loading.remove wire:target="updateQuantity('{{ $item->id }}', {{ $item->quantity - 1 }})"></i>
+                                            <i class="bi bi-hourglass-split" wire:loading wire:target="updateQuantity('{{ $item->id }}', {{ $item->quantity - 1 }})"></i>
                                         </button>
                                         <span class="mx-4 fs-5 fw-semibold" style="font-size: 18px !important;">{{ $item->quantity }} {{ Str::plural('Year', $item->quantity) }}</span>
                                         <button type="button" class="btn btn-outline-primary rounded-circle p-2" style="width: 45px; height: 45px;"
                                             wire:click="updateQuantity('{{ $item->id }}', {{ $item->quantity + 1 }})"
+                                            wire:loading.attr="disabled"
+                                            wire:target="updateQuantity('{{ $item->id }}', {{ $item->quantity + 1 }})"
                                             {{ $item->quantity >= 10 ? 'disabled' : '' }}>
-                                            <i class="bi bi-plus fs-4"></i>
+                                            <i class="bi bi-plus fs-4" wire:loading.remove wire:target="updateQuantity('{{ $item->id }}', {{ $item->quantity + 1 }})"></i>
+                                            <i class="bi bi-hourglass-split" wire:loading wire:target="updateQuantity('{{ $item->id }}', {{ $item->quantity + 1 }})"></i>
                                         </button>
                                     </div>
                                     <div class="price-display">
@@ -44,7 +50,8 @@
                             <div class="col-lg-3 d-flex justify-content-end">
                                 <button wire:click="removeItem('{{ $item->id }}')"
                                     wire:loading.attr="disabled"
-                                    class="btn__long btn-outline-danger  btn-danger text-white px-4 w-50 d-flex align-items-center gap-2">
+                                    wire:target="removeItem('{{ $item->id }}')"
+                                    class="btn__long btn-outline-danger btn-danger text-white px-4 w-50 d-flex align-items-center gap-2">
                                     <span wire:loading.remove wire:target="removeItem('{{ $item->id }}')">
                                         <i class="bi bi-trash3-fill"></i>
                                         Remove

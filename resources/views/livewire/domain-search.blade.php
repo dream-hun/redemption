@@ -252,7 +252,7 @@
                                                         wire:click="{{ $primaryResult['in_cart'] ? 'removeFromCart(\'' . $primaryDomain . '\')' : 'addToCart(\'' . $primaryDomain . '\', ' . $primaryResult['register_price'] . ')' }}"
                                                         wire:loading.attr="disabled"
                                                         wire:target="{{ $primaryResult['in_cart'] ? 'removeFromCart(\'' . $primaryDomain . '\')' : 'addToCart(\'' . $primaryDomain . '\', ' . $primaryResult['register_price'] . ')' }}"
-                                                        class="rts-btn btn__long {{ $primaryResult['in_cart'] ? 'btn-danger' : 'btn-success' }} m-auto"
+                                                        class="btn btn-lg text-white {{ $primaryResult['in_cart'] ? 'bg-danger' : 'bg-success' }} w-50"
                                                     >
                                                         <span wire:loading.remove wire:target="{{ $primaryResult['in_cart'] ? 'removeFromCart(\'' . $primaryDomain . '\')' : 'addToCart(\'' . $primaryDomain . '\', ' . $primaryResult['register_price'] . ')' }}">{{ $primaryResult['in_cart'] ? 'Remove from cart' : 'Add to Cart' }}</span>
                                                         <span wire:loading wire:target="{{ $primaryResult['in_cart'] ? 'removeFromCart(\'' . $primaryDomain . '\')' : 'addToCart(\'' . $primaryDomain . '\', ' . $primaryResult['register_price'] . ')' }}">Loading...</span>
@@ -292,7 +292,7 @@
                                                                 wire:click="{{ $result['in_cart'] ? 'removeFromCart(\'' . $domain . '\')' : 'addToCart(\'' . $domain . '\', ' . $result['register_price'] . ')' }}"
                                                                 wire:loading.attr="disabled"
                                                                 wire:target="{{ $result['in_cart'] ? 'removeFromCart(\'' . $domain . '\')' : 'addToCart(\'' . $domain . '\', ' . $result['register_price'] . ')' }}"
-                                                                class="rts-btn btn__long {{ $result['in_cart'] ? 'bg-danger' : 'bg-success' }} w-75"
+                                                                class="btn btn-lg text-white {{ $result['in_cart'] ? 'bg-danger' : 'bg-success' }} w-50"
                                                             >
                                                                 <span wire:loading.remove wire:target="{{ $result['in_cart'] ? 'removeFromCart(\'' . $domain . '\')' : 'addToCart(\'' . $domain . '\', ' . $result['register_price'] . ')' }}">{{ $result['in_cart'] ? 'Remove from cart' : 'Add to Cart' }}</span>
                                                                 <span wire:loading wire:target="{{ $result['in_cart'] ? 'removeFromCart(\'' . $domain . '\')' : 'addToCart(\'' . $domain . '\', ' . $result['register_price'] . ')' }}">Loading...</span>
