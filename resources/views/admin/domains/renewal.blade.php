@@ -25,7 +25,6 @@
         @endif
 
         <form action="{{ route('domain.register') }}" method="POST" id="domainRegistrationForm" class="needs-validation" novalidate>
-
             @csrf
             <input type="hidden" name="domain_name" value="{{ $cartItems->first()->name ?? '' }}" required>
             @error('domain_name')
@@ -40,185 +39,61 @@
                             </div>
                             <div class="card-body">
                                 <div class="row">
-                                    <div class="col-md-3">
-                                        <div class="form-group mb-3" x-data="{ contact: { id: '', details: null } }">
-                                            <label class="form-label font-weight-bold">Registrant Contact <span class="text-danger">*</span></label>
-                                            <div class="input-group">
-                                                <select name="registrant_contact_id" class="form-control @error('registrant_contact_id') is-invalid @enderror" x-model="contact.id" @change="fetchContactDetails($el.value).then(result => contact.details = result)" required>
-                                                    @error('registrant_contact_id')
-                                                    <div class="invalid-feedback">{{ $message }}</div>
-                                                    @enderror
-                                                    <option value="">Select Registrant Contact</option>
-                                                    @foreach($existingContacts['registrant'] ?? [] as $contact)
-                                                        <option value="{{ $contact['id'] }}">{{ $contact['name'] }} ({{ $contact['email'] }})</option>
-                                                    @endforeach
-                                                </select>
-                                                <div class="input-group-append">
-                                                    <a href="{{ route('admin.contacts.create') }}"  class="btn btn-primary add-contact-btn" >
-                                                        <i class="bi bi-plus-lg"></i> Add New
-                                                    </a>
-                                                </div>
-                                            </div>
-                                            <template x-if="contact.details">
-                                                <div class="contact-details mt-3">
-                                                    <div class="card">
-                                                        <div class="card-header bg-light">
-                                                            <h5 class="mb-0">Contact Details</h5>
-                                                        </div>
-                                                        <div class="card-body">
-                                                            <div class="row">
-                                                                <div class="col-md-6">
-                                                                    <p class="mb-1"><strong>Name:</strong> <span x-text="contact.details.name"></span></p>
-                                                                    <p class="mb-1"><strong>Email:</strong> <span x-text="contact.details.email"></span></p>
-                                                                    <p class="mb-1"><strong>Phone:</strong> <span x-text="contact.details.voice || 'N/A'"></span></p>
-                                                                    <p class="mb-1"><strong>Organization:</strong> <span x-text="contact.details.organization || 'N/A'"></span></p>
-                                                                </div>
-                                                                <div class="col-md-6">
-                                                                    <p class="mb-1"><strong>Address:</strong> <span x-text="contact.details.street1 || 'N/A'"></span></p>
-                                                                    <p class="mb-1"><strong>City:</strong> <span x-text="contact.details.city || 'N/A'"></span></p>
-                                                                    <p class="mb-1"><strong>Province:</strong> <span x-text="contact.details.province || 'N/A'"></span></p>
-                                                                    <p class="mb-1"><strong>Country:</strong> <span x-text="contact.details.country_code || 'N/A'"></span></p>
-                                                                    <p class="mb-1"><strong>Postal Code:</strong> <span x-text="contact.details.postal_code || 'N/A'"></span></p>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </template>
-                                            <div class="invalid-feedback">Please select a registrant contact</div>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-3">
-                                        <div class="form-group mb-3" x-data="{ contact: { id: '', details: null } }">
-                                            <label class="form-label font-weight-bold">Admin Contact <span class="text-danger">*</span></label>
-                                            <div class="input-group">
-                                                <select name="admin_contact_id" class="form-control @error('admin_contact_id') is-invalid @enderror" x-model="contact.id" @change="fetchContactDetails($el.value).then(result => contact.details = result)" required>
-                                                    @error('admin_contact_id')
-                                                    <div class="invalid-feedback">{{ $message }}</div>
-                                                    @enderror
-                                                    <option value="">Select Admin Contact</option>
-                                                    @foreach($existingContacts['admin'] ?? [] as $contact)
-                                                        <option value="{{ $contact['id'] }}">{{ $contact['name'] }} ({{ $contact['email'] }})</option>
-                                                    @endforeach
-                                                </select>
-                                                <div class="input-group-append">
-                                                    <a href="{{ route('admin.contacts.create') }}"  class="btn btn-primary add-contact-btn" >
-                                                        <i class="bi bi-plus-lg"></i> Add New
-                                                    </a>
-                                                </div>
-                                            </div>
-                                            <template x-if="contact.details">
-                                                <div class="contact-details mt-3">
-                                                    <div class="card">
-                                                        <div class="card-header bg-light">
-                                                            <h5 class="mb-0">Contact Details</h5>
-                                                        </div>
-                                                        <div class="card-body">
-                                                            <div class="row">
-                                                                <div class="col-md-6">
-                                                                    <p class="mb-1"><strong>Name:</strong> <span x-text="contact.details.name"></span></p>
-                                                                    <p class="mb-1"><strong>Email:</strong> <span x-text="contact.details.email"></span></p>
-                                                                    <p class="mb-1"><strong>Phone:</strong> <span x-text="contact.details.voice || 'N/A'"></span></p>
-                                                                    <p class="mb-1"><strong>Organization:</strong> <span x-text="contact.details.organization || 'N/A'"></span></p>
-                                                                </div>
-                                                                <div class="col-md-6">
-                                                                    <p class="mb-1"><strong>Address:</strong> <span x-text="contact.details.street1 || 'N/A'"></span></p>
-                                                                    <p class="mb-1"><strong>City:</strong> <span x-text="contact.details.city || 'N/A'"></span></p>
-                                                                    <p class="mb-1"><strong>Province:</strong> <span x-text="contact.details.province || 'N/A'"></span></p>
-                                                                    <p class="mb-1"><strong>Country:</strong> <span x-text="contact.details.country_code || 'N/A'"></span></p>
-                                                                    <p class="mb-1"><strong>Postal Code:</strong> <span x-text="contact.details.postal_code || 'N/A'"></span></p>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </template>
-                                        </div>
-                                        <div class="invalid-feedback">Please select an admin contact</div>
-                                    </div>
-                                    <div class="col-md-3">
-                                        <div class="form-group mb-3" x-data="{ contact: { id: '', details: null } }">
-                                            <label class="form-label font-weight-bold">Technical Contact <span class="text-danger">*</span></label>
-                                            <div class="input-group">
-                                                <select name="tech_contact_id" class="form-control @error('tech_contact_id') is-invalid @enderror" x-model="contact.id" @change="fetchContactDetails($el.value).then(result => contact.details = result)" required>
-                                                    @error('tech_contact_id')
-                                                    <div class="invalid-feedback">{{ $message }}</div>
-                                                    @enderror
-                                                    <option value="">Select Technical Contact</option>
-                                                    @foreach($existingContacts['tech'] ?? [] as $contact)
-                                                        <option value="{{ $contact['id'] }}">{{ $contact['name'] }} ({{ $contact['email'] }})</option>
-                                                    @endforeach
-                                                </select>
-                                                <div class="input-group-append">
-                                                    <button type="button" class="btn btn-primary add-contact-btn" data-type="tech" data-bs-toggle="modal" data-bs-target="#contactModal">
-                                                        <i class="bi bi-plus-lg"></i> Add New
-                                                    </button>
-                                                </div>
-                                            </div>
-                                            <template x-if="contact.details">
-                                                <div class="contact-details mt-3">
-                                                    <div class="card">
-                                                        <div class="card-header bg-light">
-                                                            <h5 class="mb-0">Contact Details</h5>
-                                                        </div>
-                                                        <div class="card-body">
-                                                            <div class="row">
-                                                                <div class="col-md-6">
-                                                                    <p class="mb-1"><strong>Name:</strong> <span x-text="contact.details.name"></span></p>
-                                                                    <p class="mb-1"><strong>Email:</strong> <span x-text="contact.details.email"></span></p>
-                                                                    <p class="mb-1"><strong>Phone:</strong> <span x-text="contact.details.voice || 'N/A'"></span></p>
-                                                                    <p class="mb-1"><strong>Organization:</strong> <span x-text="contact.details.organization || 'N/A'"></span></p>
-                                                                </div>
-                                                                <div class="col-md-6">
-                                                                    <p class="mb-1"><strong>Address:</strong> <span x-text="contact.details.street1 || 'N/A'"></span></p>
-                                                                    <p class="mb-1"><strong>City:</strong> <span x-text="contact.details.city || 'N/A'"></span></p>
-                                                                    <p class="mb-1"><strong>Province:</strong> <span x-text="contact.details.province || 'N/A'"></span></p>
-                                                                    <p class="mb-1"><strong>Country:</strong> <span x-text="contact.details.country_code || 'N/A'"></span></p>
-                                                                    <p class="mb-1"><strong>Postal Code:</strong> <span x-text="contact.details.postal_code || 'N/A'"></span></p>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </template>
-                                        </div>
-                                        <div class="invalid-feedback">Please select a technical contact</div>
-                                    </div>
+                                    @php
+                                        $contactTypes = [
+                                            'registrant' => 'Registrant Contact',
+                                            'admin' => 'Administrative Contact',
+                                            'tech' => 'Technical Contact',
+                                            'billing' => 'Billing Contact'
+                                        ];
+                                    @endphp
 
+                                    @foreach($contactTypes as $type => $label)
                                     <div class="col-md-3">
                                         <div class="form-group mb-3" x-data="{ contact: { id: '', details: null } }">
-                                            <label class="form-label font-weight-bold">Billing Contact <span class="text-danger">*</span></label>
+                                            <label class="form-label font-weight-bold">{{ $label }} <span class="text-danger">*</span></label>
                                             <div class="input-group">
-                                                <select name="billing_contact_id" class="form-control @error('billing_contact_id') is-invalid @enderror" x-model="contact.id" @change="fetchContactDetails($el.value).then(result => contact.details = result)" required>
-                                                    @error('billing_contact_id')
-                                                    <div class="invalid-feedback">{{ $message }}</div>
-                                                    @enderror
-                                                    <option value="">Select Billing Contact</option>
-                                                    @foreach($existingContacts['billing'] ?? [] as $contact)
-                                                        <option value="{{ $contact['id'] }}">{{ $contact['name'] }} ({{ $contact['email'] }})</option>
+                                                <select 
+                                                    name="{{ $type }}_contact_id" 
+                                                    class="form-control @error($type.'_contact_id') is-invalid @enderror" 
+                                                    x-model="contact.id" 
+                                                    @change="fetchContactDetails($el.value).then(result => contact.details = result)" 
+                                                    required
+                                                >
+                                                    <option value="">Select {{ $label }}</option>
+                                                    @foreach($contacts as $contact)
+                                                        <option value="{{ $contact->id }}">
+                                                            {{ $contact->name }} ({{ $contact->email }})
+                                                        </option>
                                                     @endforeach
                                                 </select>
                                                 <div class="input-group-append">
-                                                    <button type="button" class="btn btn-primary add-contact-btn" data-type="billing" data-bs-toggle="modal" data-bs-target="#contactModal">
-                                                        <i class="bi bi-plus-lg"></i> Add New
-                                                    </button>
+                                                    <a href="{{ route('admin.contacts.create') }}" class="btn btn-primary">
+                                                        <i class="bi bi-plus-lg"></i>
+                                                    </a>
                                                 </div>
                                             </div>
+                                            @error($type.'_contact_id')
+                                                <div class="invalid-feedback d-block">{{ $message }}</div>
+                                            @enderror
+
+                                            <!-- Contact Details Card -->
                                             <template x-if="contact.details">
                                                 <div class="contact-details mt-3">
                                                     <div class="card">
-                                                        <div class="card-header bg-light">
-                                                            <h5 class="mb-0">Contact Details</h5>
+                                                        <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                                                            <h6 class="mb-0">Contact Details</h6>
+                                                            <button type="button" class="btn btn-sm btn-outline-secondary" @click="contact.details = null">
+                                                                <i class="bi bi-x"></i>
+                                                            </button>
                                                         </div>
                                                         <div class="card-body">
                                                             <div class="row">
-                                                                <div class="col-md-6">
+                                                                <div class="col-12">
                                                                     <p class="mb-1"><strong>Name:</strong> <span x-text="contact.details.name"></span></p>
                                                                     <p class="mb-1"><strong>Email:</strong> <span x-text="contact.details.email"></span></p>
                                                                     <p class="mb-1"><strong>Phone:</strong> <span x-text="contact.details.voice || 'N/A'"></span></p>
                                                                     <p class="mb-1"><strong>Organization:</strong> <span x-text="contact.details.organization || 'N/A'"></span></p>
-                                                                </div>
-                                                                <div class="col-md-6">
                                                                     <p class="mb-1"><strong>Address:</strong> <span x-text="contact.details.street1 || 'N/A'"></span></p>
                                                                     <p class="mb-1"><strong>City:</strong> <span x-text="contact.details.city || 'N/A'"></span></p>
                                                                     <p class="mb-1"><strong>Province:</strong> <span x-text="contact.details.province || 'N/A'"></span></p>
@@ -231,84 +106,71 @@
                                                 </div>
                                             </template>
                                         </div>
-                                        <div class="invalid-feedback">Please select a billing contact</div>
                                     </div>
+                                    @endforeach
                                 </div>
                             </div>
                         </div>
-                        <div class="card">
+
+                        <div class="card mt-4">
                             <div class="card-header">
                                 <h3 class="card-title">Name Servers <small class="text-muted">(Minimum 2, Maximum 4)</small></h3>
                             </div>
-                            @error('nameservers')
-                            <div class="alert alert-danger mx-3 mt-3 mb-0">
-                                {{ $message }}
-                            </div>
-                            @enderror
                             <div class="card-body">
-                                <p class="text-muted mb-3">Specify up to 4 name servers for your domain. Leave empty to use our default name servers.</p>
-
-
-
-                                @for ($i = 0; $i < 4; $i++)
-                                    <div class="form-group mb-{{ $i === 3 ? '4' : '2' }}">
-                                        <label class="form-label">
-                                            Name Server {{ $i + 1 }}
-                                            @if ($i < 2)<span class="text-danger">*</span>@endif
-                                        </label>
-                                        <input type="text"
-                                               name="nameservers[{{ $i }}]"
-                                               class="form-control nameserver-input @error('nameservers.' . $i) is-invalid @enderror"
-                                               placeholder="ns{{ $i + 1 }}.example.com"
-                                               value="{{ old('nameservers[]')}}"
-                                            {{ $i < 2 ? 'required' : '' }}>
-                                        @error('nameservers.' . $i)
-                                        <div class="invalid-feedback">{{ $message }}</div>
-                                        @enderror
-                                    </div>
-                                @endfor
+                                <div class="row">
+                                    @for ($i = 1; $i <= 4; $i++)
+                                        <div class="col-md-6">
+                                            <div class="form-group mb-3">
+                                                <label class="form-label font-weight-bold">
+                                                    Name Server {{ $i }}
+                                                    @if ($i <= 2)
+                                                        <span class="text-danger">*</span>
+                                                    @endif
+                                                </label>
+                                                <input type="text" 
+                                                    name="nameservers[]" 
+                                                    class="form-control @error('nameservers.'.$i-1) is-invalid @enderror"
+                                                    placeholder="ns{{ $i }}.example.com"
+                                                    {{ $i <= 2 ? 'required' : '' }}
+                                                >
+                                                @error('nameservers.'.$i-1)
+                                                    <div class="invalid-feedback">{{ $message }}</div>
+                                                @enderror
+                                            </div>
+                                        </div>
+                                    @endfor
+                                </div>
                             </div>
                         </div>
                     </div>
+
                     <div class="col-md-3">
                         <div class="card">
                             <div class="card-body box-profile">
                                 <h3 class="profile-username text-center">Cart Summary</h3>
+                                <p class="text-muted text-center">Domain Registration</p>
 
                                 <ul class="list-group list-group-unbordered mb-3">
                                     @foreach ($cartItems as $item)
                                         <li class="list-group-item">
-                                            {{ $item->name }} <p class="float-right">
-                                                {{ Cknow\Money\Money::RWF($item->price * $item->quantity) }} /
-                                                {{$item->quantity}} {{ Str::plural('Year', $item->quantity) }}</p>
+                                            <b>{{ $item->name }}</b>
+                                            <span class="float-right">{{ $item->price_formatted }}</span>
                                         </li>
                                     @endforeach
-
-                                    <li class="list-group list-group-item"><b>Total</b><b>
-                                            <p class="float-right">
-                                                {{ Cknow\Money\Money::RWF($total) }}
-                                            </p>
-                                        </b>
+                                    <li class="list-group-item">
+                                        <b>Total</b>
+                                        <span class="float-right">{{ number_format($total, 2) }}</span>
                                     </li>
-
                                 </ul>
 
-                                <a href="{{ route('cart.index') }}" class="btn btn-secondary btn-block mb-3">
-                                    <i class="bi bi-arrow-left"></i> Back to Cart
-                                </a>
-
-                                <button type="submit" class="btn btn-primary btn-block" id="registerDomainBtn">
-                                    <i class="bi bi-check-circle"></i> Register Domain
+                                <button type="submit" class="btn btn-primary btn-block">
+                                    <i class="bi bi-check-circle"></i> Complete Registration
                                 </button>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
-
         </form>
     </div>
-
-
-
 @endsection
