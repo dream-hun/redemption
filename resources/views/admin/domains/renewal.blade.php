@@ -24,9 +24,11 @@
             </div>
         @endif
 
-        <form action="{{ route('domain.register') }}" method="POST" id="domainRegistrationForm" class="needs-validation" novalidate>
+        <form action="{{ route('admin.domains.renewal.renew', $domain->uuid) }}" method="POST" id="domainRenewalForm" class="needs-validation" novalidate>
+            @method('PUT')
             @csrf
-            <input type="hidden" name="domain_name" value="{{ $cartItems->first()->name ?? '' }}" required>
+            <input type="hidden" name="domain_name" value="{{ $domain->name }}" required>
+            <input type="hidden" name="period" value="1" required>
             @error('domain_name')
             <div class="alert alert-danger">{{ $message }}</div>
             @enderror
@@ -161,35 +163,38 @@
                     </div>
 
                     <div class="col-md-3">
-                    <div class="card">
+                        <div class="card">
                             <div class="card-body box-profile">
-                                <h3 class="profile-username text-center">Cart Summary</h3>
+                                <h3 class="profile-username text-center">Domain Information</h3>
+                                <p class="text-muted text-center">{{ $domain->name }}</p>
 
                                 <ul class="list-group list-group-unbordered mb-3">
-                                    @foreach ($cartItems as $item)
-                                        <li class="list-group-item">
-                                            {{ $item->name }} <p class="float-right">
-                                                {{ Cknow\Money\Money::RWF($item->price * $item->quantity) }} /
-                                                {{$item->quantity}} {{ Str::plural('Year', $item->quantity) }}</p>
-                                        </li>
-                                    @endforeach
-
-                                    <li class="list-group list-group-item"><b>Total</b><b>
-                                            <p class="float-right">
-                                                {{ Cknow\Money\Money::RWF($total) }}
-                                            </p>
-                                        </b>
+                                    <li class="list-group-item">
+                                        <b>Current Expiry</b>
+                                        <p class="float-right mb-0">
+                                            {{ $domain->expires_at ?? 'N/A' }}
+                                        </p>
                                     </li>
-
+                                    <li class="list-group-item">
+                                        <b>Renewal Period</b>
+                                        <p class="float-right mb-0">
+                                            {{ request('period', 1) }} {{ Str::plural('Year', request('period', 1)) }}
+                                        </p>
+                                    </li>
                                 </ul>
 
-                                <a href="{{ route('cart.index') }}" class="btn btn-secondary btn-block mb-3">
-                                    <i class="bi bi-arrow-left"></i> Back to Cart
-                                </a>
 
-                                <button type="submit" class="btn btn-primary btn-block" id="registerDomainBtn">
-                                    <i class="bi bi-check-circle"></i> Register Domain
-                                </button>
+
+                                    <button type="submit"  class="btn btn-primary btn-block" id="renewDomainBtn">
+                                        <i class="bi bi-check-circle"></i> Complete Renewal
+                                    </button>
+
+                                    <a href="{{ route('cart.index') }}" class="btn btn-secondary btn-block mt-2">
+                                        <i class="bi bi-cart"></i> View Cart
+                                    </a>
+
+
+
                             </div>
                         </div>
                     </div>

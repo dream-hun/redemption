@@ -13,6 +13,7 @@ use App\Services\Epp\EppService;
 use Carbon\Carbon;
 use Darryldecode\Cart\Facades\CartFacade as Cart;
 use Exception;
+use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -28,8 +29,15 @@ class RenewDomainController extends Controller
         $this->eppService = $eppService;
     }
 
-    public function index()
+    public function index(string $uuid): View|RedirectResponse
     {
+        $domain = Domain::where('uuid', $uuid)->firstOrFail();
+
+        // Check if user owns the domain
+        if ($domain->owner_id !== auth()->id()) {
+            return redirect()->back()->with('error', 'You do not have permission to renew this domain.');
+        }
+
         $cartItems = Cart::getContent();
         $total = Cart::getTotal();
 
@@ -41,22 +49,32 @@ class RenewDomainController extends Controller
 
         $countries = Country::all();
 
+        // Get domain information from EPP
+        $eppInfo = $this->eppService->getDomainInfo($domain->name);
+        if ($eppInfo && isset($eppInfo['infData'])) {
+            $eppInfo = $eppInfo['infData'];
+        }
+
         return view('admin.domains.renewal', [
+            'domain' => $domain,
             'cartItems' => $cartItems,
             'total' => $total,
             'contacts' => $contacts,
             'countries' => $countries,
+            'eppInfo' => $eppInfo ?? [],
         ]);
     }
 
     /**
      * Add a domain to the cart for renewal
      *
-     * @param  Domain  $domain  The domain to be renewed
+     * @param string $uuid
      * @return RedirectResponse
      */
-    public function addToCart(Domain $domain)
+    public function addToCart(string $uuid): RedirectResponse
     {
+        $domain = Domain::where('uuid', $uuid)->firstOrFail();
+
         // Check if user owns the domain
         if ($domain->owner_id !== auth()->id()) {
             return redirect()->route('admin.domains.index')
@@ -69,8 +87,8 @@ class RenewDomainController extends Controller
             $cartItemId = 'renew_'.$domain->name;
 
             if ($cartContent->has($cartItemId)) {
-                return redirect()->route('admin.domains.renewal.index', ['domain' => $domain])
-                    ->with('warning', 'Domain renewal is already in your cart.');
+                return redirect()->route('admin.domains.renewal.index', ['uuid' => $domain->uuid])
+                ->with('warning', 'Domain renewal is already in your cart.');
             }
 
             // Get renewal price from domain pricing
@@ -84,7 +102,7 @@ class RenewDomainController extends Controller
             // Add to cart with proper attributes
             Cart::add([
                 'id' => $cartItemId,
-                'name' => 'Renewal: '.$domain->name,
+                'name' => $domain->name,
                 'price' => $renewPrice,
                 'quantity' => 1,
                 'attributes' => [
@@ -102,7 +120,7 @@ class RenewDomainController extends Controller
                 'cart_id' => $cartItemId,
             ]);
 
-            return redirect()->route('admin.domains.renewal.index', ['domain' => $domain->name])
+            return redirect()->route('admin.domains.renewal.index', ['uuid' => $domain->uuid])
                 ->with('success', 'Domain renewal added to cart successfully.');
 
         } catch (Exception $e) {
@@ -120,8 +138,10 @@ class RenewDomainController extends Controller
     /**
      * @throws Throwable
      */
-    public function renew(DomainRenewalRequest $request, Domain $domain)
+    public function renew(DomainRenewalRequest $request, string $uuid): RedirectResponse
     {
+        $domain = Domain::where('uuid', $uuid)->firstOrFail();
+
         if ($domain->owner_id !== auth()->user()->id) {
             return redirect()->route('admin.domains.index')->with('error', 'You are not allowed to renew domains.');
         }
@@ -129,10 +149,20 @@ class RenewDomainController extends Controller
         try {
             DB::beginTransaction();
             try {
+                // Check if domain exists in cart
+                $cartItemId = 'renew_'.$domain->name;
+                if (!Cart::get($cartItemId)) {
+                    throw new Exception('Domain renewal not found in cart. Please add it to cart first.');
+                }
+
                 /**
                  * Get current domain information in the registry
                  */
-                $domainInformation = $this->eppService->getDomainInfo($domain);
+                $domainInformation = $this->eppService->getDomainInfo($domain->name);
+                if (!$domainInformation || !isset($domainInformation['infData']['exDate'])) {
+                    throw new Exception('Could not retrieve domain information from registry');
+                }
+
                 // Parse the registry expiry date
                 $registryExpiryDate = Carbon::parse($domainInformation['infData']['exDate']);
 
@@ -186,11 +216,17 @@ class RenewDomainController extends Controller
                 ]);
 
                 // Update domain expiry in our database
-                $domain->update(['expires_at' => $newExpiryDate, 'last_renewal_at' => now()]);
+                $domain->update([
+                    'expires_at' => $newExpiryDate,
+                    'last_renewal_at' => now()
+                ]);
+
+                // Remove domain from cart
+                Cart::remove($cartItemId);
 
                 DB::commit();
 
-                return redirect()->route('admin.domains.index', $domain)
+                return redirect()->route('admin.domains.index')
                     ->with('success', 'Domain renewed successfully!');
 
             } catch (Exception $e) {

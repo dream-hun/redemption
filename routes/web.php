@@ -72,10 +72,13 @@ Route::group(['middleware' => 'auth', 'prefix' => 'admin', 'as' => 'admin.'], fu
             // Nameserver management
             Route::put('nameservers', [DomainController::class, 'updateNameservers'])->name('nameservers.update');
 
-            // Domain renewal
-            Route::post('renewal', [RenewDomainController::class, 'addToCart'])->name('renewal.addToCart');
-            Route::get('renewal',[RenewDomainController::class,'index'])->name('renewal.index');
-            Route::put('renew', [RenewDomainController::class, 'renew'])->name('renew');
+        });
+
+        // Domain renewal
+        Route::prefix('renewal')->name('renewal.')->group(function () {
+            Route::get('/{uuid}', [RenewDomainController::class, 'index'])->name('index');
+            Route::post('/{uuid}', [RenewDomainController::class, 'addToCart'])->name('addToCart');
+            Route::put('/{uuid}', [RenewDomainController::class, 'renew'])->name('renew');
         });
 
         // Domain registration flow
