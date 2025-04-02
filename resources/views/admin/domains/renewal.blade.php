@@ -53,11 +53,11 @@
                                         <div class="form-group mb-3" x-data="{ contact: { id: '', details: null } }">
                                             <label class="form-label font-weight-bold">{{ $label }} <span class="text-danger">*</span></label>
                                             <div class="input-group">
-                                                <select 
-                                                    name="{{ $type }}_contact_id" 
-                                                    class="form-control @error($type.'_contact_id') is-invalid @enderror" 
-                                                    x-model="contact.id" 
-                                                    @change="fetchContactDetails($el.value).then(result => contact.details = result)" 
+                                                <select
+                                                    name="{{ $type }}_contact_id"
+                                                    class="form-control @error($type.'_contact_id') is-invalid @enderror"
+                                                    x-model="contact.id"
+                                                    @change="fetchContactDetails($el.value).then(result => contact.details = result)"
                                                     required
                                                 >
                                                     <option value="">Select {{ $label }}</option>
@@ -112,11 +112,20 @@
                             </div>
                         </div>
 
-                        <div class="card mt-4">
+                        <div class="card mt-4" x-data="{ disableDNS: false }">
                             <div class="card-header">
-                                <h3 class="card-title">Name Servers <small class="text-muted">(Minimum 2, Maximum 4)</small></h3>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <h3 class="card-title mb-0">Name Servers <small class="text-muted">(Minimum 2, Maximum 4)</small></h3>
+
+                                </div>
                             </div>
                             <div class="card-body">
+                                <div class="form-check form-check-inline">
+                                    <input type="checkbox" class="form-check-input" id="disable_dns" name="disable_dns" x-model="disableDNS">
+                                    <label class="form-check-label ms-2" for="disable_dns">
+                                    Don't delegate this domain now
+                                    </label>
+                                </div>
                                 <div class="row">
                                     @for ($i = 1; $i <= 4; $i++)
                                         <div class="col-md-6">
@@ -124,14 +133,16 @@
                                                 <label class="form-label font-weight-bold">
                                                     Name Server {{ $i }}
                                                     @if ($i <= 2)
-                                                        <span class="text-danger">*</span>
+                                                        <span class="text-danger" x-show="!disableDNS">*</span>
                                                     @endif
                                                 </label>
-                                                <input type="text" 
-                                                    name="nameservers[]" 
+                                                <input type="text"
+                                                    name="nameservers[]"
                                                     class="form-control @error('nameservers.'.$i-1) is-invalid @enderror"
                                                     placeholder="ns{{ $i }}.example.com"
-                                                    {{ $i <= 2 ? 'required' : '' }}
+                                                    :required="!disableDNS && {{ $i <= 2 ? 'true' : 'false' }}"
+                                                    :readonly="disableDNS"
+                                                    :disabled="disableDNS"
                                                 >
                                                 @error('nameservers.'.$i-1)
                                                     <div class="invalid-feedback">{{ $message }}</div>
@@ -139,32 +150,45 @@
                                             </div>
                                         </div>
                                     @endfor
+                                    <div class="col-12" x-show="disableDNS" x-cloak>
+                                        <div class="alert alert-info">
+                                            <i class="bi bi-info-circle"></i> The domain will use the registry's default name servers.
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
 
                     <div class="col-md-3">
-                        <div class="card">
+                    <div class="card">
                             <div class="card-body box-profile">
                                 <h3 class="profile-username text-center">Cart Summary</h3>
-                                <p class="text-muted text-center">Domain Registration</p>
 
                                 <ul class="list-group list-group-unbordered mb-3">
                                     @foreach ($cartItems as $item)
                                         <li class="list-group-item">
-                                            <b>{{ $item->name }}</b>
-                                            <span class="float-right">{{ $item->price_formatted }}</span>
+                                            {{ $item->name }} <p class="float-right">
+                                                {{ Cknow\Money\Money::RWF($item->price * $item->quantity) }} /
+                                                {{$item->quantity}} {{ Str::plural('Year', $item->quantity) }}</p>
                                         </li>
                                     @endforeach
-                                    <li class="list-group-item">
-                                        <b>Total</b>
-                                        <span class="float-right">{{ number_format($total, 2) }}</span>
+
+                                    <li class="list-group list-group-item"><b>Total</b><b>
+                                            <p class="float-right">
+                                                {{ Cknow\Money\Money::RWF($total) }}
+                                            </p>
+                                        </b>
                                     </li>
+
                                 </ul>
 
-                                <button type="submit" class="btn btn-primary btn-block">
-                                    <i class="bi bi-check-circle"></i> Complete Registration
+                                <a href="{{ route('cart.index') }}" class="btn btn-secondary btn-block mb-3">
+                                    <i class="bi bi-arrow-left"></i> Back to Cart
+                                </a>
+
+                                <button type="submit" class="btn btn-primary btn-block" id="registerDomainBtn">
+                                    <i class="bi bi-check-circle"></i> Register Domain
                                 </button>
                             </div>
                         </div>

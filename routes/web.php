@@ -74,7 +74,7 @@ Route::group(['middleware' => 'auth', 'prefix' => 'admin', 'as' => 'admin.'], fu
 
             // Domain renewal
             Route::post('renewal', [RenewDomainController::class, 'addToCart'])->name('renewal.addToCart');
-            Route::get('/domain/renewal',[RenewDomainController::class,'index'])->name('renewal.index');
+            Route::get('renewal',[RenewDomainController::class,'index'])->name('renewal.index');
             Route::put('renew', [RenewDomainController::class, 'renew'])->name('renew');
         });
 

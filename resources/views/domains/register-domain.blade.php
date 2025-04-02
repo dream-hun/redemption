@@ -236,9 +236,11 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="card">
+                        <div class="card" x-data="{ disableDNS: false }">
                             <div class="card-header">
-                                <h3 class="card-title">Name Servers <small class="text-muted">(Minimum 2, Maximum 4)</small></h3>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <h3 class="card-title mb-0">Name Servers <small class="text-muted">(Minimum 2, Maximum 4)</small></h3>
+                                </div>
                             </div>
                             @error('nameservers')
                                 <div class="alert alert-danger mx-3 mt-3 mb-0">
@@ -246,32 +248,45 @@
                                 </div>
                             @enderror
                             <div class="card-body">
-                                <p class="text-muted mb-3">Specify up to 4 name servers for your domain. Leave empty to use our default name servers.</p>
-
-                                <div class="form-check mb-4">
-                                    <input class="form-check-input" type="checkbox" value="" id="flexCheckChecked">
-                                    <label class="form-check-label" for="flexCheckChecked">
+                                <div class="form-check form-check-inline mb-3">
+                                    <input type="checkbox" class="form-check-input" id="disable_dns" name="disable_dns" x-model="disableDNS">
+                                    <label class="form-check-label ms-2" for="disable_dns">
                                         Don't delegate this domain now
                                     </label>
                                 </div>
 
-                                @for ($i = 0; $i < 4; $i++)
-                                    <div class="form-group mb-{{ $i === 3 ? '4' : '2' }}">
-                                        <label class="form-label">
-                                            Name Server {{ $i + 1 }}
-                                            @if ($i < 2)<span class="text-danger">*</span>@endif
-                                        </label>
-                                        <input type="text"
-                                            name="nameservers[{{ $i }}]"
-                                            class="form-control nameserver-input @error('nameservers.' . $i) is-invalid @enderror"
-                                            placeholder="ns{{ $i + 1 }}.example.com"
-                                            value="{{ old('nameservers[]')}}"
-                                            {{ $i < 2 ? 'required' : '' }}>
-                                        @error('nameservers.' . $i)
-                                            <div class="invalid-feedback">{{ $message }}</div>
-                                        @enderror
+                                <div class="row">
+                                    @for ($i = 0; $i < 4; $i++)
+                                        <div class="col-md-6">
+                                            <div class="form-group mb-3">
+                                                <label class="form-label font-weight-bold">
+                                                    Name Server {{ $i + 1 }}
+                                                    @if ($i < 2)
+                                                        <span class="text-danger" x-show="!disableDNS" x-cloak>*</span>
+                                                    @endif
+                                                </label>
+                                                <input type="text"
+                                                    name="nameservers[{{ $i }}]"
+                                                    class="form-control @error('nameservers.' . $i) is-invalid @enderror"
+                                                    placeholder="ns{{ $i + 1 }}.example.com"
+                                                    value="{{ old('nameservers[]')}}"
+                                                    :required="!disableDNS && {{ $i < 2 ? 'true' : 'false' }}"
+                                                    :readonly="disableDNS"
+                                                    :disabled="disableDNS"
+                                                >
+                                                @error('nameservers.' . $i)
+                                                    <div class="invalid-feedback">{{ $message }}</div>
+                                                @enderror
+                                            </div>
+                                        </div>
+                                    @endfor
+
+                                    <div class="col-12" x-show="disableDNS" x-cloak>
+                                        <div class="alert alert-info">
+                                            <i class="bi bi-info-circle"></i> The domain will use the registry's default name servers.
+                                        </div>
                                     </div>
-                                @endfor
+                                </div>
                             </div>
                         </div>
                     </div>

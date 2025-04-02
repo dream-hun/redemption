@@ -32,15 +32,15 @@ class RenewDomainController extends Controller
     {
         $cartItems = Cart::getContent();
         $total = Cart::getTotal();
-        
+
         // Get all contacts for the current user with essential fields
         $contacts = Contact::where('user_id', Auth::id())
             ->select('id', 'contact_id', 'name', 'organization', 'email', 'voice')
             ->orderBy('created_at', 'desc')
             ->get();
-            
+
         $countries = Country::all();
-        
+
         return view('admin.domains.renewal', [
             'cartItems' => $cartItems,
             'total' => $total,
