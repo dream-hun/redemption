@@ -784,9 +784,31 @@ class EppService
         try {
             $this->ensureConnection();
 
-            // Format the expiration date to EPP standard format (YYYY-MM-DD)
-            if ($currentExpirationDate instanceof DateTime) {
-                $currentExpirationDate = $currentExpirationDate->format('Y-m-d');
+            // CRITICAL: For EPP renewal, we MUST use EXACTLY the date format provided by the registry
+            // The registry expects the exact same string it provided, including full ISO format with timezone
+            // Example: "2027-02-28T06:32:27.850Z" - NOT just "2027-02-28"
+
+            // Only format if it's a DateTime object (should be avoided for renewals)
+            if ($currentExpirationDate instanceof \DateTime) {
+                // Use ISO 8601 format with timezone to match registry format
+                $currentExpirationDate = $currentExpirationDate->format(\DateTime::ISO8601);
+                Log::warning('Converting DateTime to string for EPP renewal - this may cause issues', [
+                    'domain' => $domain,
+                    'formatted_date' => $currentExpirationDate,
+                ]);
+            } elseif (! is_string($currentExpirationDate)) {
+                // If we received something unexpected (not string or DateTime), use current date
+                Log::error('Unexpected date type for renewal, using ISO format', [
+                    'domain' => $domain,
+                    'date_type' => gettype($currentExpirationDate),
+                ]);
+                $currentExpirationDate = (new \DateTime)->format(\DateTime::ISO8601);
+            } else {
+                // It's already a string - log but don't modify at all
+                Log::info('Using exact registry date string for EPP renewal', [
+                    'domain' => $domain,
+                    'raw_date' => $currentExpirationDate,
+                ]);
             }
 
             $frame = new RenewDomain;
@@ -1075,7 +1097,11 @@ class EppService
 
             // Create and send request
             $frame = new InfoDomain;
-            $frame->setDomain($domain, 'all');
+            $frame->setDomain($domain);
+
+            // Log request for debugging
+            Log::debug('Sending domain info request', ['domain' => $domain]);
+
             $response = $this->getClient()->request($frame);
 
             // Validate response
@@ -1085,6 +1111,11 @@ class EppService
 
             // Check response status
             if ($result->code() < 1000 || $result->code() >= 2000) {
+                Log::error('Registry error in getDomainInfo', [
+                    'domain' => $domain,
+                    'code' => $result->code(),
+                    'message' => $result->message(),
+                ]);
                 throw new Exception("Registry error (code: {$result->code()}): {$result->message()}");
             }
 

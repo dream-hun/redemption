@@ -251,10 +251,11 @@
                                                     <button
                                                         wire:click="{{ $primaryResult['in_cart'] ? 'removeFromCart(\'' . $primaryDomain . '\')' : 'addToCart(\'' . $primaryDomain . '\', ' . $primaryResult['register_price'] . ')' }}"
                                                         wire:loading.attr="disabled"
+                                                        wire:target="{{ $primaryResult['in_cart'] ? 'removeFromCart(\'' . $primaryDomain . '\')' : 'addToCart(\'' . $primaryDomain . '\', ' . $primaryResult['register_price'] . ')' }}"
                                                         class="rts-btn btn__long {{ $primaryResult['in_cart'] ? 'btn-danger' : 'btn-success' }} m-auto"
                                                     >
-                                                        <span wire:loading.remove>{{ $primaryResult['in_cart'] ? 'Remove from cart' : 'Add to Cart' }}</span>
-                                                        <span wire:loading>Loading...</span>
+                                                        <span wire:loading.remove wire:target="{{ $primaryResult['in_cart'] ? 'removeFromCart(\'' . $primaryDomain . '\')' : 'addToCart(\'' . $primaryDomain . '\', ' . $primaryResult['register_price'] . ')' }}">{{ $primaryResult['in_cart'] ? 'Remove from cart' : 'Add to Cart' }}</span>
+                                                        <span wire:loading wire:target="{{ $primaryResult['in_cart'] ? 'removeFromCart(\'' . $primaryDomain . '\')' : 'addToCart(\'' . $primaryDomain . '\', ' . $primaryResult['register_price'] . ')' }}">Loading...</span>
                                                     </button>
                                                 @endif
                                             </div>
@@ -290,10 +291,11 @@
                                                             <button
                                                                 wire:click="{{ $result['in_cart'] ? 'removeFromCart(\'' . $domain . '\')' : 'addToCart(\'' . $domain . '\', ' . $result['register_price'] . ')' }}"
                                                                 wire:loading.attr="disabled"
+                                                                wire:target="{{ $result['in_cart'] ? 'removeFromCart(\'' . $domain . '\')' : 'addToCart(\'' . $domain . '\', ' . $result['register_price'] . ')' }}"
                                                                 class="rts-btn btn__long {{ $result['in_cart'] ? 'bg-danger' : 'bg-success' }} w-75"
                                                             >
-                                                                <span wire:loading.remove>{{ $result['in_cart'] ? 'Remove from cart' : 'Add to Cart' }}</span>
-                                                                <span wire:loading>Loading...</span>
+                                                                <span wire:loading.remove wire:target="{{ $result['in_cart'] ? 'removeFromCart(\'' . $domain . '\')' : 'addToCart(\'' . $domain . '\', ' . $result['register_price'] . ')' }}">{{ $result['in_cart'] ? 'Remove from cart' : 'Add to Cart' }}</span>
+                                                                <span wire:loading wire:target="{{ $result['in_cart'] ? 'removeFromCart(\'' . $domain . '\')' : 'addToCart(\'' . $domain . '\', ' . $result['register_price'] . ')' }}">Loading...</span>
                                                             </button>
                                                         @endif
                                                     </td>

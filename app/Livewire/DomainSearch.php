@@ -186,7 +186,7 @@ class DomainSearch extends Component
                 'price' => $price,
             ]);
 
-            // Add to cart with proper attributes
+            // Add to cart with proper attributes including timestamp for ordering
             Cart::add([
                 'id' => $domain,
                 'name' => $domain,
@@ -195,6 +195,7 @@ class DomainSearch extends Component
                 'attributes' => [
                     'domain' => $domain,
                     'user_id' => auth()->id(),
+                    'added_at' => now()->timestamp, // Add timestamp to maintain order
                 ],
                 'associatedModel' => Domain::class,
             ]);
