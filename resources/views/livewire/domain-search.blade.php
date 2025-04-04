@@ -239,7 +239,7 @@
                                                 </span>
 
                                             </div>
-                                            <div class="col-md-3 text-center">
+                                            <div class="col-md-3 text-center">          
                                                 @if ($primaryResult['available'])
                                                     <div class="price-area">
                                                         <span class="now h4">{{ $primaryResult['formatted_price'] }}</span>

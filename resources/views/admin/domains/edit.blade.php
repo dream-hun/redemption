@@ -51,7 +51,7 @@
                                                 </div>
                                                 <div class="card-body">
                                                     @if($contact)
-                                                        <div class="contact-info">
+                                                        <div class="contact-info" id="{{ $type }}-info">
                                                             <p class="mb-1"><strong>{{ $contact->name }}</strong></p>
                                                             <p class="mb-1 text-muted">{{ $contact->organization }}</p>
                                                             <p class="mb-1">{{ $contact->street1 }}</p>
@@ -63,7 +63,12 @@
                                                             <p class="mb-1">{{ $contact->email }}</p>
                                                             <p class="mb-1">{{ $contact->voice }}</p>
 
-                                                            <input type="hidden" name="{{ $type }}_contact_id" value="{{ $contact->contact_id }}">
+                                                            <input type="hidden" name="{{ $type }}_contact_id" value="{{ (string) $contact->contact_id }}" data-contact-type="{{ $type }}">
+                                                            @if($errors->has($type.'_contact_id'))
+                                                                <div class="text-danger">
+                                                                    {{ $errors->first($type.'_contact_id') }}
+                                                                </div>
+                                                            @endif
 
                                                             <div class="mt-3">
                                                                 <a href="{{ route('admin.contacts.edit', $contact->uuid) }}" class="btn btn-sm btn-outline-primary">
@@ -72,30 +77,66 @@
                                                                 <button type="button" class="btn btn-sm btn-outline-secondary change-contact" data-type="{{ $type }}">
                                                                     <i class="fas fa-exchange-alt"></i> Change
                                                                 </button>
+                                                                @if($type !== 'registrant')
+                                                                <button type="button" class="btn btn-sm btn-outline-danger remove-contact" data-type="{{ $type }}">
+                                                                    <i class="fas fa-trash"></i> Remove
+                                                                </button>
+                                                                <a href="{{ route('admin.domains.contacts.remove', ['domain' => $domain->uuid, 'contactType' => $type]) }}" 
+                                                                   class="btn btn-sm btn-danger" 
+                                                                   onclick="return confirm('Are you sure you want to permanently remove this {{ $type }} contact from the domain?')">
+                                                                    <i class="fas fa-trash-alt"></i> Delete
+                                                                </a>
+                                                                @endif
                                                             </div>
                                                         </div>
 
                                                         <div class="contact-selector" style="display: none;" id="{{ $type }}-selector">
                                                             <div class="form-group">
                                                                 <label for="{{ $type }}_contact_select">Select {{ ucfirst($type) }} Contact</label>
-                                                                <select class="form-control" name="{{ $type }}_contact_id" id="{{ $type }}_contact_select">
+                                                                <select class="form-control contact-select" name="{{ $type }}_contact_id" id="{{ $type }}_contact_select" data-contact-type="{{ $type }}">
                                                                     <option value="">-- Select Contact --</option>
                                                                     <!-- This would be populated with AJAX -->
                                                                 </select>
+                                                                @if($errors->has($type.'_contact_id'))
+                                                                    <div class="text-danger">
+                                                                        {{ $errors->first($type.'_contact_id') }}
+                                                                    </div>
+                                                                @endif
                                                             </div>
                                                             <button type="button" class="btn btn-sm btn-secondary cancel-change" data-type="{{ $type }}">
                                                                 <i class="fas fa-times"></i> Cancel
                                                             </button>
                                                         </div>
+                                                        
+                                                        <!-- Hidden remove confirmation -->
+                                                        <div class="remove-confirmation" style="display: none;" id="{{ $type }}-remove-confirm">
+                                                            <div class="alert alert-warning">
+                                                                <p>Are you sure you want to remove this {{ $type }} contact?</p>
+                                                                <input type="hidden" name="remove_{{ $type }}" value="0" id="remove_{{ $type }}_input">
+                                                                <div class="mt-2">
+                                                                    <button type="button" class="btn btn-sm btn-danger confirm-remove" data-type="{{ $type }}">
+                                                                        <i class="fas fa-check"></i> Yes, Remove
+                                                                    </button>
+                                                                    <button type="button" class="btn btn-sm btn-secondary cancel-remove" data-type="{{ $type }}">
+                                                                        <i class="fas fa-times"></i> Cancel
+                                                                    </button>
+                                                                </div>
+                                                            </div>
+                                                        </div>
                                                     @else
-                                                        <div class="text-center py-3">
+                                                        <div class="text-center py-3" id="{{ $type }}-empty">
                                                             <p class="text-muted">No {{ ucfirst($type) }} contact assigned</p>
                                                             <div class="form-group">
                                                                 <label for="{{ $type }}_contact_select">Select {{ ucfirst($type) }} Contact</label>
-                                                                <select class="form-control" name="{{ $type }}_contact_id" id="{{ $type }}_contact_select">
+                                                                <select class="form-control contact-select" name="{{ $type }}_contact_id" id="{{ $type }}_contact_select" data-contact-type="{{ $type }}">
                                                                     <option value="">-- Select Contact --</option>
                                                                     <!-- This would be populated with AJAX -->
                                                                 </select>
+                                                                @if($errors->has($type.'_contact_id'))
+                                                                    <div class="text-danger">
+                                                                        {{ $errors->first($type.'_contact_id') }}
+                                                                    </div>
+                                                                @endif
                                                             </div>
                                                         </div>
                                                     @endif
@@ -130,7 +171,13 @@
             button.addEventListener('click', function() {
                 const type = this.getAttribute('data-type');
                 document.querySelector(`#${type}-selector`).style.display = 'block';
-                this.closest('.contact-info').style.display = 'none';
+                document.querySelector(`#${type}-info`).style.display = 'none';
+                
+                // Hide remove confirmation if it's visible
+                const removeConfirm = document.querySelector(`#${type}-remove-confirm`);
+                if (removeConfirm) {
+                    removeConfirm.style.display = 'none';
+                }
             });
         });
 
@@ -139,7 +186,50 @@
             button.addEventListener('click', function() {
                 const type = this.getAttribute('data-type');
                 document.querySelector(`#${type}-selector`).style.display = 'none';
-                document.querySelector(`#${type}-selector`).previousElementSibling.style.display = 'block';
+                document.querySelector(`#${type}-info`).style.display = 'block';
+            });
+        });
+        
+        // Handle remove contact buttons
+        document.querySelectorAll('.remove-contact').forEach(button => {
+            button.addEventListener('click', function() {
+                const type = this.getAttribute('data-type');
+                
+                // Don't allow removing registrant contact
+                if (type === 'registrant') {
+                    return;
+                }
+                
+                // Show confirmation
+                document.querySelector(`#${type}-info`).style.display = 'none';
+                document.querySelector(`#${type}-remove-confirm`).style.display = 'block';
+            });
+        });
+        
+        // Handle confirm remove buttons
+        document.querySelectorAll('.confirm-remove').forEach(button => {
+            button.addEventListener('click', function() {
+                const type = this.getAttribute('data-type');
+                
+                // Set the hidden input value to 1 to indicate removal
+                document.querySelector(`#remove_${type}_input`).value = '1';
+                
+                // Submit the form
+                this.closest('form').submit();
+            });
+        });
+        
+        // Handle cancel remove buttons
+        document.querySelectorAll('.cancel-remove').forEach(button => {
+            button.addEventListener('click', function() {
+                const type = this.getAttribute('data-type');
+                
+                // Hide confirmation and show contact info
+                document.querySelector(`#${type}-remove-confirm`).style.display = 'none';
+                document.querySelector(`#${type}-info`).style.display = 'block';
+                
+                // Reset the hidden input value
+                document.querySelector(`#remove_${type}_input`).value = '0';
             });
         });
     });
@@ -168,11 +258,25 @@
             // Add contact options
             contacts.forEach(contact => {
                 const option = document.createElement('option');
-                option.value = contact.contact_id;
+                // Ensure contact_id is treated as a string
+                option.value = String(contact.contact_id);
                 option.textContent = `${contact.name} (${contact.email})`;
                 select.appendChild(option);
             });
         });
     }
+
+    // Add form submit handler to ensure all contact IDs are strings
+    document.querySelector('form').addEventListener('submit', function(e) {
+        // Get all contact ID inputs (both hidden and selects)
+        const contactInputs = document.querySelectorAll('input[name$="_contact_id"], select[name$="_contact_id"]');
+        
+        // Ensure each value is a string
+        contactInputs.forEach(input => {
+            if (input.value) {
+                input.value = String(input.value);
+            }
+        });
+    });
 </script>
 @endsection

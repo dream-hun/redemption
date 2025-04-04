@@ -13,6 +13,7 @@ use App\Services\Epp\EppService;
 use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Log;
@@ -292,7 +293,89 @@ class DomainController extends Controller
     }
 
     /**
+     * Remove a contact from a domain
+     */
+    public function removeContact(Request $request, Domain $domain, string $contactType): RedirectResponse
+    {
+        abort_if(Gate::denies('domain_edit'), Response::HTTP_FORBIDDEN, '403 Forbidden');
+
+        // Prevent removal of registrant contacts
+        if ($contactType === 'registrant') {
+            return back()->with('error', 'Registrant contact cannot be removed');
+        }
+
+        // Validate contact type
+        if (!in_array($contactType, ['admin', 'tech', 'billing'])) {
+            return back()->with('error', 'Invalid contact type');
+        }
+
+        try {
+            // Get the domain contact to remove
+            $domainContact = $domain->contacts()->where('type', $contactType)->first();
+            
+            if (!$domainContact) {
+                return back()->with('error', 'Contact not found');
+            }
+
+            // Get the contact details for logging
+            $contact = $domainContact->contact;
+            if (!$contact) {
+                return back()->with('error', 'Contact details not found');
+            }
+
+            // Update the EPP registry to remove the contact
+            $contactData = [];
+            $contactsToRemove = [$contactType];
+
+            $frame = $this->eppService->updateDomainContacts($domain->name, $contactData, $contactsToRemove);
+            $response = $this->eppService->getClient()->request($frame);
+
+            if ($response->code() === 1000) {
+                // Successfully updated in registry, now update in database
+                DB::transaction(function () use ($domain, $contactType) {
+                    // Remove the association in the database
+                    $domain->contacts()->where('type', $contactType)->delete();
+                    
+                    // Update the domain's contact reference to null
+                    if ($domain->{$contactType.'_contact_id'}) {
+                        $domain->update([
+                            $contactType.'_contact_id' => null,
+                        ]);
+                    }
+                });
+
+                Log::info("Removed {$contactType} contact from domain {$domain->name}", [
+                    'domain_id' => $domain->id,
+                    'contact_id' => $contact->id,
+                    'contact_type' => $contactType,
+                ]);
+
+                return redirect()->route('admin.domains.edit', $domain)
+                    ->with('message', ucfirst($contactType) . ' contact removed successfully');
+            } else {
+                $errorMessage = 'Failed to remove contact from registry: '.$response->message();
+                Log::error('EPP contact removal failed: '.$response->message());
+
+                return back()->with('error', $errorMessage);
+            }
+        } catch (Exception $e) {
+            $errorMessage = 'An error occurred while removing the contact';
+            Log::error('Contact removal error: '.$e->getMessage(), [
+                'exception' => $e,
+                'domain' => $domain->name,
+                'contact_type' => $contactType,
+            ]);
+
+            return back()->with('error', $errorMessage);
+        }
+    }
+
+    /**
      * Update domain contacts
+     *
+     * @param  UpdateDomainRequest  $request
+     * @param  Domain  $domain
+     * @return RedirectResponse
      */
     public function updateContacts(UpdateDomainRequest $request, Domain $domain): RedirectResponse
     {
@@ -302,67 +385,145 @@ class DomainController extends Controller
             $validated = $request->validated();
             $contactTypes = ['registrant', 'admin', 'tech', 'billing'];
             $contactData = [];
-
+            $contactsToRemove = [];
+            $updatedContactIds = [];
+            
+            // Process contact updates and removals
             foreach ($contactTypes as $type) {
-                if (isset($validated[$type.'_contact_id']) && ! empty($validated[$type.'_contact_id'])) {
-                    $contactData[$type] = $validated[$type.'_contact_id'];
+                // Skip processing if it's registrant and trying to remove it
+                if ($type === 'registrant' && (!isset($validated[$type.'_contact_id']) || empty($validated[$type.'_contact_id']))) {
+                    // Registrant is required, so get the current one if not provided
+                    $existingRegistrant = $domain->contacts()->where('type', 'registrant')->first();
+                    if ($existingRegistrant && $existingRegistrant->contact) {
+                        $contactData[$type] = (string) $existingRegistrant->contact->contact_id;
+                        $updatedContactIds[$type] = $existingRegistrant->contact->id;
+                    }
+                    continue;
+                }
+                
+                // For other contact types
+                if (isset($validated[$type.'_contact_id']) && !empty($validated[$type.'_contact_id'])) {
+                    // Adding or updating a contact - ensure it's a string
+                    $contactId = (string) $validated[$type.'_contact_id'];
+                    $contactData[$type] = $contactId;
+                    
+                    // Find the contact by its contact_id and store the database ID
+                    $contact = Contact::where('contact_id', $contactId)->first();
+                    if ($contact) {
+                        $updatedContactIds[$type] = $contact->id;
+                    }
+                } elseif (isset($validated['remove_'.$type]) && $validated['remove_'.$type] && $type !== 'registrant') {
+                    // Removing a contact (except registrant)
+                    $contactsToRemove[] = $type;
                 }
             }
 
-            // Update contacts via EPP
-            $frame = $this->eppService->updateDomainContacts($domain->name, $contactData);
-            $response = $this->eppService->getClient()->request($frame);
+            // Update contacts via EPP only if we have contacts to update or remove
+            if (!empty($contactData) || !empty($contactsToRemove)) {
+                // Log what we're about to do
+                Log::info('Updating domain contacts', [
+                    'domain' => $domain->name,
+                    'contact_data' => $contactData,
+                    'contacts_to_remove' => $contactsToRemove
+                ]);
+                
+                // Create the EPP frame and send it to the registry
+                $frame = $this->eppService->updateDomainContacts($domain->name, $contactData, $contactsToRemove);
+                $response = $this->eppService->getClient()->request($frame);
 
-            if ($response->code() === 1000) {
-                // Successfully updated in registry, now update in database
-                DB::transaction(function () use ($domain, $contactData) {
-                    // Update domain contacts
-                    foreach ($contactData as $type => $contactId) {
-                        $contact = Contact::where('contact_id', $contactId)->first();
-
-                        if ($contact) {
+                if ($response->code() === 1000) {
+                    // Successfully updated in registry, now update in database
+                    DB::transaction(function () use ($domain, $contactData, $contactsToRemove, $updatedContactIds) {
+                        // Process contacts to remove first
+                        foreach ($contactsToRemove as $typeToRemove) {
+                            Log::info("Removing {$typeToRemove} contact from database for domain {$domain->name}");
+                            
+                            // Remove the association in the database
+                            $domain->contacts()->where('type', $typeToRemove)->delete();
+                            
+                            // Update the domain's contact reference to null
+                            if ($domain->{$typeToRemove.'_contact_id'}) {
+                                $domain->update([
+                                    $typeToRemove.'_contact_id' => null,
+                                ]);
+                            }
+                        }
+                        
+                        // Process contacts to add or update
+                        foreach ($contactData as $type => $contactId) {
+                            // Skip if we don't have a valid database ID for this contact
+                            if (!isset($updatedContactIds[$type])) {
+                                Log::warning("No valid database ID found for {$type} contact: {$contactId}");
+                                continue;
+                            }
+                            
+                            $dbContactId = $updatedContactIds[$type];
+                            Log::info("Updating {$type} contact in database for domain {$domain->name}", [
+                                'contact_id' => $contactId,
+                                'db_contact_id' => $dbContactId
+                            ]);
+                            
                             // Check if this contact is already associated with this domain
                             $existingContact = $domain->contacts()
                                 ->where('type', $type)
                                 ->first();
 
                             if ($existingContact) {
-                                // Update existing association
-                                $existingContact->update([
-                                    'contact_id' => $contact->id,
-                                    'user_id' => auth()->id(),
-                                ]);
+                                // If the existing contact is different from the new one, update it
+                                if ($existingContact->contact_id != $dbContactId) {
+                                    Log::info("Updating existing {$type} contact association", [
+                                        'old_contact_id' => $existingContact->contact_id,
+                                        'new_contact_id' => $dbContactId
+                                    ]);
+                                    
+                                    // Update existing association using the contact's database ID
+                                    $existingContact->update([
+                                        'contact_id' => $dbContactId,
+                                        'user_id' => auth()->id(),
+                                    ]);
+                                }
                             } else {
-                                // Create new association
+                                // Create new association using the contact's database ID
+                                Log::info("Creating new {$type} contact association");
                                 $domain->contacts()->create([
-                                    'contact_id' => $contact->id,
+                                    'contact_id' => $dbContactId,
                                     'type' => $type,
                                     'user_id' => auth()->id(),
                                 ]);
                             }
 
-                            // Update the domain's contact reference
+                            // Update the domain's contact reference with the EPP contact_id
+                            // Explicitly cast to string to ensure validation passes
                             $domain->update([
-                                $type.'_contact_id' => $contactId,
+                                $type.'_contact_id' => (string) $contactId,
                             ]);
                         }
-                    }
-                });
+                    });
 
-                return redirect()->route('admin.domains.edit', $domain)
-                    ->with('message', 'Domain contacts updated successfully');
+                    return redirect()->route('admin.domains.edit', $domain)
+                        ->with('message', 'Domain contacts updated successfully');
+                } else {
+                    $errorMessage = 'Failed to update domain contacts: '.$response->message();
+                    Log::error('EPP domain contact update failed: '.$response->message(), [
+                        'domain' => $domain->name,
+                        'response_code' => $response->code(),
+                        'response_message' => $response->message(),
+                    ]);
+
+                    return back()->with('error', $errorMessage)
+                        ->withInput();
+                }
             } else {
-                $errorMessage = 'Failed to update domain contacts: '.$response->message();
-                Log::error('EPP domain contact update failed: '.$response->message());
-
-                return back()->with('error', $errorMessage)
-                    ->withInput();
+                // No changes to make
+                return redirect()->route('admin.domains.edit', $domain)
+                    ->with('message', 'No contact changes were made');
             }
         } catch (Exception $e) {
             $errorMessage = 'An error occurred while updating domain contacts';
             Log::error('Domain contact update error: '.$e->getMessage(), [
                 'exception' => $e,
                 'domain' => $domain->name,
+                'trace' => $e->getTraceAsString(),
             ]);
 
             return back()->with('error', $errorMessage)

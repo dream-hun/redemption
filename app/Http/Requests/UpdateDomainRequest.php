@@ -27,6 +27,9 @@ class UpdateDomainRequest extends FormRequest
             'admin_contact_id' => ['sometimes', 'string'],
             'tech_contact_id' => ['sometimes', 'string'],
             'billing_contact_id' => ['sometimes', 'string'],
+            'remove_admin' => ['sometimes', 'boolean'],
+            'remove_tech' => ['sometimes', 'boolean'],
+            'remove_billing' => ['sometimes', 'boolean'],
             'auto_renew' => ['sometimes', 'boolean'],
             'whois_privacy' => ['sometimes', 'boolean'],
         ];

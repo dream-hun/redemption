@@ -999,6 +999,110 @@ class EppService
     }
 
     /**
+     * Update domain contacts
+     *
+     * @param  string  $domain  Domain name
+     * @param  array  $contactData  Array of contacts by type (registrant, admin, tech, billing)
+     * @param  array  $contactsToRemove  Array of contact types to remove
+     * @return UpdateDomain EPP frame
+     *
+     * @throws Exception
+     */
+    public function updateDomainContacts(string $domain, array $contactData, array $contactsToRemove = []): UpdateDomain
+    {
+        try {
+            $this->ensureConnection();
+
+            // Normalize domain name (remove trailing dot if present)
+            $domain = rtrim($domain, '.');
+
+            // Create update domain frame
+            $frame = new UpdateDomain;
+            $frame->setDomain($domain);
+
+            // Get current domain info to identify existing contacts
+            $infoFrame = new InfoDomain;
+            $infoFrame->setDomain($domain);
+            $infoResponse = $this->client->request($infoFrame);
+            $currentContacts = [];
+            
+            if ($infoResponse->code() === 1000) {
+                $responseXml = (string) $infoResponse;
+                
+                // Extract current contacts using regex
+                preg_match_all('/<domain:contact type="([^"]+)">([^<]+)<\/domain:contact>/', $responseXml, $matches, PREG_SET_ORDER);
+                
+                foreach ($matches as $match) {
+                    $contactType = strtolower($match[1]);
+                    $contactId = $match[2];
+                    $currentContacts[$contactType] = $contactId;
+                }
+                
+                // Extract registrant
+                preg_match('/<domain:registrant>([^<]+)<\/domain:registrant>/', $responseXml, $registrantMatch);
+                if (!empty($registrantMatch[1])) {
+                    $currentContacts['registrant'] = $registrantMatch[1];
+                }
+            }
+            
+            // Process contacts to add, update, or remove
+            // First, handle the registrant contact if provided
+            if (isset($contactData['registrant'])) {
+                Log::info("Setting registrant contact: {$contactData['registrant']}");
+                $frame->changeRegistrant($contactData['registrant']);
+            }
+            
+            // Handle admin contacts
+            if (isset($contactData['admin'])) {
+                Log::info("Adding admin contact: {$contactData['admin']}");
+                $frame->addAdminContact($contactData['admin']);
+            } elseif (in_array('admin', $contactsToRemove) && isset($currentContacts['admin'])) {
+                Log::info("Removing admin contact: {$currentContacts['admin']}");
+                $frame->removeAdminContact($currentContacts['admin']);
+            }
+            
+            // Handle tech contacts
+            if (isset($contactData['tech'])) {
+                Log::info("Adding tech contact: {$contactData['tech']}");
+                $frame->addTechContact($contactData['tech']);
+            } elseif (in_array('tech', $contactsToRemove) && isset($currentContacts['tech'])) {
+                Log::info("Removing tech contact: {$currentContacts['tech']}");
+                $frame->removeTechContact($currentContacts['tech']);
+            }
+            
+            // Handle billing contacts
+            if (isset($contactData['billing'])) {
+                Log::info("Adding billing contact: {$contactData['billing']}");
+                $frame->addBillingContact($contactData['billing']);
+            } elseif (in_array('billing', $contactsToRemove) && isset($currentContacts['billing'])) {
+                Log::info("Removing billing contact: {$currentContacts['billing']}");
+                $frame->removeBillingContact($currentContacts['billing']);
+            }
+            
+            // Change auth info (optional but recommended for security)
+            $authInfo = Str::random(12);
+            $frame->changeAuthInfo($authInfo);
+
+            // Log the frame for debugging
+            Log::debug('EPP update domain contacts frame created', [
+                'domain' => $domain,
+                'contact_data' => $contactData,
+                'contacts_to_remove' => $contactsToRemove,
+                'frame' => (string) $frame,
+            ]);
+
+            return $frame;
+        } catch (Exception $e) {
+            Log::error('EPP update domain contacts error', [
+                'domain' => $domain,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+            throw $e;
+        }
+    }
+    
+    /**
      * Update domain
      *
      * @throws Exception
