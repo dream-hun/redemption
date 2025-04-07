@@ -42,13 +42,7 @@ class Contact extends Model
         return $this->hasMany(DomainContact::class, 'contact_id');
     }
 
-    public function domains(): HasMany
-    {
-        return $this->hasMany(Domain::class, 'registrant_contact_id')
-            ->orWhere('admin_contact_id', $this->id)
-            ->orWhere('tech_contact_id', $this->id)
-            ->orWhere('billing_contact_id', $this->id);
-    }
+    
 
     public static function generateContactIds(): string
     {

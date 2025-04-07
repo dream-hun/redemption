@@ -69,7 +69,7 @@ Route::group(['middleware' => 'auth', 'prefix' => 'admin', 'as' => 'admin.'], fu
             Route::prefix('contacts')->name('contacts.')->group(function () {
                 Route::get('{type}/edit', [ContactController::class, 'edit'])->name('edit');
                 Route::put('/', [DomainController::class, 'updateContacts'])->name('update');
-                Route::get('remove/{contactType}', [DomainController::class, 'removeContact'])->name('remove');
+                Route::delete('remove/{contactType}', [DomainController::class, 'removeContact'])->name('remove');
             });
 
             // Nameserver management
