@@ -25,6 +25,7 @@ Route::get('/hosting', [HostingController::class, 'index'])->name('hosting.index
 
 Route::middleware('auth')->group(function () {
     Route::get('/contacts/{id}/details', [\App\Http\Controllers\Api\ContactController::class, 'details'])->name('contacts.details');
+    Route::get('/api/contacts/{id}', [\App\Http\Controllers\Api\ContactController::class, 'details'])->name('api.contacts.details');
 });
 
 Route::get('/domains', [SearchDomainController::class, 'index'])->name('domains.index');
@@ -59,6 +60,7 @@ Route::group(['middleware' => 'auth', 'prefix' => 'admin', 'as' => 'admin.'], fu
         Route::post('/', [DomainController::class, 'store'])->name('store');
         Route::get('/{domain:uuid}', [DomainController::class, 'show'])->name('show');
         Route::get('/{domain:uuid}/edit', [DomainController::class, 'edit'])->name('edit');
+        Route::put('/{domain:uuid}', [DomainController::class, 'update'])->name('update');
         Route::delete('/{domain:uuid}', [DomainController::class, 'destroy'])->name('destroy');
 
         // Domain operations

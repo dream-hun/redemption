@@ -13,6 +13,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\Response;
 use Throwable;
@@ -62,43 +63,45 @@ class ContactController extends Controller
 
             Log::info('Contact ID available in EPP registry', ['contact_id' => $contactId]);
 
-            // Prepare contact data for EPP service
+            // Format phone numbers according to EPP format (+CC.number)
+            $voice = $data['voice'];
+            if (!str_starts_with($voice, '+')) {
+                $voice = '+250.' . ltrim($voice, '0'); // Using Rwanda country code
+            }
+
+            $fax = !empty($data['fax']) ? $data['fax'] : '';
+            if ($fax && !str_starts_with($fax, '+')) {
+                $fax = '+250.' . ltrim($fax, '0');
+            }
+
+            // Prepare contact data for EPP service - following EPP protocol format
             $contactData = [
-                'id' => $contactId,
                 'contact_id' => $contactId,
                 'name' => $data['name'],
                 'organization' => $data['organization'] ?? '',
-                'street1' => $data['street1'],  // Required by EPP
-                'street2' => $data['street2'] ?? '',  // Optional
+                'street1' => $data['street1'],
+                'street2' => $data['street2'] ?? '',
                 'city' => $data['city'],
-                'province' => $data['province'] ?? '',
-                'postal_code' => $data['postal_code'] ?? '',
+                'province' => $data['province'],
+                'postal_code' => $data['postal_code'],
                 'country_code' => $data['country_code'],
-                'voice' => $data['voice'],
-                'fax' => [
-                    'number' => $data['fax'] ?? '',
-                    'ext' => $data['fax_ext'] ?? '',
-                ],
+                'voice' => $voice,
+                'fax' => $fax,
+                'fax_ext' => $data['fax_ext'] ?? '',
                 'email' => $data['email'],
-                'disclose' => ['voice', 'email'],
+                'auth_info' => Str::random(16), // Generate random auth info
+                'disclose' => ['voice', 'email']
             ];
+
+            Log::debug('Contact data:', ['data' => $data]);
+            Log::debug('Prepared EPP data:', ['data' => $contactData]);
 
             Log::debug('Prepared contact data for EPP:', ['data' => $contactData]);
 
-            Log::info('Creating contact in EPP registry', [
-                'contact_id' => $contactId,
-                'data' => $contactData,
-            ]);
-
-            Log::info('Creating contact in EPP registry', [
-                'contact_id' => $contactId,
-                'data' => array_merge($contactData, ['id' => $contactId]),
-            ]);
-
-            // Create EPP contact first to ensure registry is available
-            $eppResult = $this->eppService->createContacts([$contactId => array_merge($contactData, ['id' => $contactId])]);
-            if (! $eppResult || ! isset($eppResult[$contactId])) {
-                throw new Exception('Failed to create contact in registry: '.(is_array($eppResult) && isset($eppResult['error']) ? $eppResult['error'] : 'Unknown error'));
+            // Create EPP contact
+            $eppResult = $this->eppService->createContacts($contactData);
+            if (!$eppResult || !isset($eppResult['contact_id'])) {
+                throw new Exception('Failed to create contact in registry: ' . ($eppResult['message'] ?? 'Unknown error'));
             }
 
             // Add a small delay before verification to allow for EPP propagation
@@ -206,9 +209,19 @@ class ContactController extends Controller
                 throw new Exception('Contact not found in EPP registry');
             }
 
-            // Prepare contact data for EPP service
+            // Format phone numbers according to EPP format (+CC.number)
+            $voice = $data['voice'];
+            if (!str_starts_with($voice, '+')) {
+                $voice = '+250.' . ltrim($voice, '0'); // Using Rwanda country code
+            }
+
+            $fax = !empty($data['fax']) ? $data['fax'] : '';
+            if ($fax && !str_starts_with($fax, '+')) {
+                $fax = '+250.' . ltrim($fax, '0');
+            }
+
+            // Prepare contact data for EPP service - following EPP protocol format
             $contactData = [
-                'id' => $contact->contact_id,
                 'contact_id' => $contact->contact_id,
                 'name' => $data['name'],
                 'organization' => $data['organization'] ?? '',
@@ -217,16 +230,14 @@ class ContactController extends Controller
                     $data['street2'] ?? null,
                 ]),
                 'city' => $data['city'],
-                'province' => $data['province'],
-                'postal_code' => $data['postal_code'],
+                'province' => $data['province'] ?? '',
+                'postal_code' => $data['postal_code'] ?? '',
                 'country_code' => $data['country_code'],
-                'voice' => $data['voice'],
-                'fax' => [
-                    'number' => $data['fax'] ?? '',
-                    'ext' => $data['fax_ext'] ?? '',
-                ],
+                'voice' => $voice,
+                'fax' => $fax,
+                'fax_ext' => $data['fax_ext'] ?? '',
                 'email' => $data['email'],
-                'disclose' => ['voice', 'email'],
+                'disclose' => ['voice', 'email']
             ];
 
             Log::info('Updating contact in EPP registry', [
@@ -237,8 +248,8 @@ class ContactController extends Controller
             try {
                 // Update contact in EPP registry
                 $updateResult = $this->eppService->updateContact($contact->contact_id, $contactData);
-                if (! $updateResult || ! isset($updateResult['success']) || ! $updateResult['success']) {
-                    throw new Exception('Failed to update contact in registry: '.($updateResult['message'] ?? 'Unknown error'));
+                if (!$updateResult || !isset($updateResult['success']) || !$updateResult['success']) {
+                    throw new Exception('Failed to update contact in registry: ' . ($updateResult['message'] ?? 'Unknown error'));
                 }
 
                 // Verify the update was successful
@@ -286,7 +297,7 @@ class ContactController extends Controller
 
             DB::commit();
 
-            return redirect()->route('domain.register')->with('success', 'Contact updated successfully');
+            return redirect()->route('admin.contacts.index')->with('success', 'Contact updated successfully');
 
         } catch (Exception $e) {
             DB::rollBack();

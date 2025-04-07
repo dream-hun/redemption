@@ -464,7 +464,7 @@ class EppService
             Log::debug('Creating contact with data:', ['contacts' => $contacts]);
 
             $frame = new CreateContact;
-            $frame->setId($contacts['id'] ?? Str::random(12));
+            $frame->setId($contacts['contact_id']);
             $frame->setName($contacts['name']);
 
             if (! empty($contacts['organization'])) {
@@ -501,12 +501,12 @@ class EppService
                 $frame->setVoice($phone);
             }
 
-            if (! empty($contacts['fax'])) {
-                $fax = $contacts['fax']['number'];
-                if (! str_starts_with($fax, '+')) {
-                    $fax = '+250.'.ltrim($fax, '0');
+            if (!empty($contacts['fax'])) {
+                $fax = $contacts['fax'];
+                if (!str_starts_with($fax, '+')) {
+                    $fax = '+250.' . ltrim($fax, '0');
                 }
-                $frame->setFax($fax, $contacts['fax']['ext'] ?? '');
+                $frame->setFax($fax, $contacts['fax_ext'] ?? '');
             }
 
             $frame->setEmail($contacts['email']);
@@ -535,13 +535,13 @@ class EppService
             }
 
             Log::info('Contact created successfully in EPP', [
-                'id' => $contacts['id'],
+                'contact_id' => $contacts['contact_id'],
                 'code' => $result->code(),
                 'message' => $result->message(),
             ]);
 
             return [
-                'id' => $contacts['id'],
+                'contact_id' => $contacts['contact_id'],
                 'auth' => $auth,
                 'code' => $result->code(),
                 'message' => $result->message(),
@@ -556,105 +556,136 @@ class EppService
     }
 
     /**
-     * Update Domain Contact in EPP registry
-     *
-     * @throws Exception
-     */
-    public function updateContact(string $contactId, array $contactData): array
-    {
-        try {
-            $this->ensureConnection();
+ * Update Domain Contact in EPP registry
+ *
+ * @param string $contactId The ID of the contact to update
+ * @param array $contactData Contact data to update
+ * @return array Response from EPP server
+ * @throws Exception
+ */
+public function updateContact(string $contactId, array $contactData): array
+{
+    try {
+        $this->ensureConnection();
 
-            // Import the UpdateContact class
-            $updateContactClass = 'AfriCC\EPP\Frame\Command\Update\Contact';
-            if (! class_exists($updateContactClass)) {
-                throw new Exception('UpdateContact class not found in EPP library');
-            }
+        // Create update frame
+        $frame = new \AfriCC\EPP\Frame\Command\Update\Contact();
+        $frame->setId($contactId);
 
-            // Create update frame
-            $frame = new $updateContactClass;
-            $frame->setId($contactId);
-
-            // Set contact information to update
-            if (isset($contactData['name'])) {
-                $frame->setChgName($contactData['name']);
-            }
-
-            if (isset($contactData['organization'])) {
-                $frame->setChgOrganization($contactData['organization']);
-            }
-
-            // Handle address changes
-            if (! empty($contactData['streets']) ||
-                isset($contactData['city']) ||
-                isset($contactData['province']) ||
-                isset($contactData['postal_code']) ||
-                isset($contactData['country_code'])) {
-
-                // Add streets
-                if (! empty($contactData['streets'])) {
-                    foreach ($contactData['streets'] as $street) {
-                        $frame->addChgStreet($street);
-                    }
-                }
-
-                // Set other address fields
-                if (isset($contactData['city'])) {
-                    $frame->setChgCity($contactData['city']);
-                }
-
-                if (isset($contactData['province'])) {
-                    $frame->setChgProvince($contactData['province']);
-                }
-
-                if (isset($contactData['postal_code'])) {
-                    $frame->setChgPostalCode($contactData['postal_code']);
-                }
-
-                if (isset($contactData['country_code'])) {
-                    $frame->setChgCountryCode($contactData['country_code']);
-                }
-            }
-
-            // Set contact details
-            if (isset($contactData['voice'])) {
-                $frame->setChgVoice($contactData['voice']);
-            }
-
-            if (isset($contactData['fax'])) {
-                $frame->setChgFax($contactData['fax']['number'], $contactData['fax']['ext'] ?? '');
-            }
-
-            if (isset($contactData['email'])) {
-                $frame->setChgEmail($contactData['email']);
-            }
-
-            // Update disclosure preferences if provided
-            if (! empty($contactData['disclose'])) {
-                foreach ($contactData['disclose'] as $item) {
-                    $frame->addChgDisclose($item);
-                }
-            }
-
-            // Generate new auth info if requested
-            $auth = null;
-            if (! empty($contactData['generate_new_auth'])) {
-                $auth = $frame->setChgAuthInfo();
-            }
-
-            return ['frame' => $frame, 'auth' => $auth];
-
-        } catch (Exception $e) {
-            Log::error('Contact update failed: '.$e->getMessage(), [
-                'contact_id' => $contactId,
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString(),
-            ]);
-            // Try to reconnect on next request
-            $this->connected = false;
-            throw $e;
+        // Set contact information to update
+        if (isset($contactData['name'])) {
+            $frame->setChgName($contactData['name']);
         }
+
+        if (isset($contactData['organization'])) {
+            $frame->setChgOrganization($contactData['organization']);
+        }
+
+        // Handle address changes
+        if (!empty($contactData['streets']) ||
+            isset($contactData['city']) ||
+            isset($contactData['province']) ||
+            isset($contactData['postal_code']) ||
+            isset($contactData['country_code'])) {
+
+            // Add streets
+            if (!empty($contactData['streets'])) {
+                foreach ($contactData['streets'] as $street) {
+                    $frame->addChgStreet($street);
+                }
+            }
+
+            // Set other address fields
+            if (isset($contactData['city'])) {
+                $frame->setChgCity($contactData['city']);
+            }
+
+            if (isset($contactData['province'])) {
+                $frame->setChgProvince($contactData['province']);
+            }
+
+            if (isset($contactData['postal_code'])) {
+                $frame->setChgPostalCode($contactData['postal_code']);
+            }
+
+            if (isset($contactData['country_code'])) {
+                $frame->setChgCountryCode($contactData['country_code']);
+            }
+        }
+
+        // Set contact details
+        if (isset($contactData['voice'])) {
+            $frame->setChgVoice($contactData['voice']);
+        }
+
+        if (isset($contactData['fax'])) {
+            $frame->setChgFax($contactData['fax']['number'], $contactData['fax']['ext'] ?? '');
+        }
+
+        if (isset($contactData['email'])) {
+            $frame->setChgEmail($contactData['email']);
+        }
+
+        // Update disclosure preferences if provided
+        if (!empty($contactData['disclose'])) {
+            foreach ($contactData['disclose'] as $item) {
+                $frame->addChgDisclose($item);
+            }
+        }
+
+        // Generate new auth info if requested
+        $auth = null;
+        if (!empty($contactData['generate_new_auth'])) {
+            $auth = $frame->setChgAuthInfo();
+        }
+
+        // Send the request and get the response
+        $response = $this->client->request($frame);
+
+        if (!$response) {
+            throw new Exception('No response received from EPP server');
+        }
+
+        $results = $response->results();
+        if (empty($results)) {
+            throw new Exception('Empty response from EPP server');
+        }
+
+        $result = $results[0];
+
+        // Handle response based on its type
+        if (method_exists($response, 'getMessage')) {
+            $message = $response->getMessage();
+        } elseif (method_exists($result, 'message')) {
+            $message = $result->message();
+        } else {
+            $message = 'Operation completed';
+        }
+
+        Log::info('Contact updated successfully in EPP', [
+            'id' => $contactId,
+            'code' => $result->code(),
+            'message' => $message,
+        ]);
+
+        return [
+            'success' => $result->code() === 1000,
+            'message' => $message,
+            'code' => $result->code(),
+            'auth' => $auth,
+        ];
+
+    } catch (Exception $e) {
+        Log::error('Contact update failed: ' . $e->getMessage(), [
+            'contact_id' => $contactId,
+            'error' => $e->getMessage(),
+            'trace' => $e->getTraceAsString(),
+        ]);
+        // Try to reconnect on next request
+        $this->connected = false;
+        throw $e;
     }
+}
 
     /**
      * Check available hosts
@@ -725,7 +756,7 @@ class EppService
                     $host = trim($host);
                     if (! empty($host)) {
                         // Log the nameserver being added
-                        \Log::info('Adding nameserver to domain', [
+                        Log::info('Adding nameserver to domain', [
                             'domain' => $domain,
                             'nameserver' => $host,
                         ]);
@@ -1025,33 +1056,33 @@ class EppService
             $infoFrame->setDomain($domain);
             $infoResponse = $this->client->request($infoFrame);
             $currentContacts = [];
-            
+
             if ($infoResponse->code() === 1000) {
                 $responseXml = (string) $infoResponse;
-                
+
                 // Extract current contacts using regex
                 preg_match_all('/<domain:contact type="([^"]+)">([^<]+)<\/domain:contact>/', $responseXml, $matches, PREG_SET_ORDER);
-                
+
                 foreach ($matches as $match) {
                     $contactType = strtolower($match[1]);
                     $contactId = $match[2];
                     $currentContacts[$contactType] = $contactId;
                 }
-                
+
                 // Extract registrant
                 preg_match('/<domain:registrant>([^<]+)<\/domain:registrant>/', $responseXml, $registrantMatch);
                 if (!empty($registrantMatch[1])) {
                     $currentContacts['registrant'] = $registrantMatch[1];
                 }
             }
-            
+
             // Process contacts to add, update, or remove
             // First, handle the registrant contact if provided
             if (isset($contactData['registrant'])) {
                 Log::info("Setting registrant contact: {$contactData['registrant']}");
                 $frame->changeRegistrant($contactData['registrant']);
             }
-            
+
             // Handle admin contacts
             if (isset($contactData['admin'])) {
                 Log::info("Adding admin contact: {$contactData['admin']}");
@@ -1060,7 +1091,7 @@ class EppService
                 Log::info("Removing admin contact: {$currentContacts['admin']}");
                 $frame->removeAdminContact($currentContacts['admin']);
             }
-            
+
             // Handle tech contacts
             if (isset($contactData['tech'])) {
                 Log::info("Adding tech contact: {$contactData['tech']}");
@@ -1069,7 +1100,7 @@ class EppService
                 Log::info("Removing tech contact: {$currentContacts['tech']}");
                 $frame->removeTechContact($currentContacts['tech']);
             }
-            
+
             // Handle billing contacts
             if (isset($contactData['billing'])) {
                 Log::info("Adding billing contact: {$contactData['billing']}");
@@ -1078,7 +1109,7 @@ class EppService
                 Log::info("Removing billing contact: {$currentContacts['billing']}");
                 $frame->removeBillingContact($currentContacts['billing']);
             }
-            
+
             // Change auth info (optional but recommended for security)
             $authInfo = Str::random(12);
             $frame->changeAuthInfo($authInfo);
@@ -1101,7 +1132,7 @@ class EppService
             throw $e;
         }
     }
-    
+
     /**
      * Update domain
      *

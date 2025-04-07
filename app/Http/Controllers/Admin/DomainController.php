@@ -46,6 +46,21 @@ class DomainController extends Controller
         $countries = Country::pluck('name', 'code');
         $domain->load('owner', 'contacts.contact', 'nameservers');
 
+        // Get contacts already attached to this domain and the registrant
+        $domainContactIds = $domain->contacts()->pluck('contact_id')->toArray();
+        $availableContacts = Contact::where('user_id', auth()->id())
+            ->where(function ($query) use ($domainContactIds) {
+                // Include contacts that are either:
+                // 1. Already attached to this domain
+                // 2. Have been used as registrant in any domain
+                $query->whereIn('id', $domainContactIds)
+                    ->orWhereHas('domainContacts', function ($q) {
+                        $q->where('type', 'registrant');
+                    });
+            })
+            ->select('id', 'name', 'email', 'contact_id')
+            ->get();
+
         // Organize domain contacts by type
         $contactsByType = ['registrant' => null, 'admin' => null, 'tech' => null, 'billing' => null];
 
@@ -58,7 +73,7 @@ class DomainController extends Controller
             }
         }
 
-        return view('admin.domains.edit', compact('domain', 'countries', 'contactsByType'));
+        return view('admin.domains.edit', compact('domain', 'countries', 'contactsByType', 'availableContacts'));
     }
 
     public function show(Domain $domain): View
@@ -377,6 +392,19 @@ class DomainController extends Controller
      * @param  Domain  $domain
      * @return RedirectResponse
      */
+    public function update(UpdateDomainRequest $request, Domain $domain): RedirectResponse
+    {
+        abort_if(Gate::denies('domain_edit'), Response::HTTP_FORBIDDEN, '403 Forbidden');
+
+        // Check if this is a contact update request
+        if ($request->input('action') === 'update_contacts') {
+            return $this->updateContacts($request, $domain);
+        }
+
+        // Handle other domain updates here...
+        return back()->with('error', 'Invalid update action');
+    }
+
     public function updateContacts(UpdateDomainRequest $request, Domain $domain): RedirectResponse
     {
         abort_if(Gate::denies('domain_edit'), Response::HTTP_FORBIDDEN, '403 Forbidden');
@@ -403,13 +431,12 @@ class DomainController extends Controller
                 
                 // For other contact types
                 if (isset($validated[$type.'_contact_id']) && !empty($validated[$type.'_contact_id'])) {
-                    // Adding or updating a contact - ensure it's a string
-                    $contactId = (string) $validated[$type.'_contact_id'];
-                    $contactData[$type] = $contactId;
-                    
-                    // Find the contact by its contact_id and store the database ID
-                    $contact = Contact::where('contact_id', $contactId)->first();
+                    // Get the contact from database first
+                    $contact = Contact::find($validated[$type.'_contact_id']);
                     if ($contact) {
+                        // Use the EPP contact_id for the registry
+                        $contactData[$type] = $contact->contact_id;
+                        // Store the database ID for our local updates
                         $updatedContactIds[$type] = $contact->id;
                     }
                 } elseif (isset($validated['remove_'.$type]) && $validated['remove_'.$type] && $type !== 'registrant') {
@@ -500,6 +527,13 @@ class DomainController extends Controller
                         }
                     });
 
+                    if ($request->wantsJson()) {
+                        return response()->json([
+                            'success' => true,
+                            'message' => 'Domain contacts updated successfully'
+                        ]);
+                    }
+                    
                     return redirect()->route('admin.domains.edit', $domain)
                         ->with('message', 'Domain contacts updated successfully');
                 } else {
@@ -510,6 +544,13 @@ class DomainController extends Controller
                         'response_message' => $response->message(),
                     ]);
 
+                    if ($request->wantsJson()) {
+                        return response()->json([
+                            'success' => false,
+                            'message' => $errorMessage
+                        ], 400);
+                    }
+                    
                     return back()->with('error', $errorMessage)
                         ->withInput();
                 }
