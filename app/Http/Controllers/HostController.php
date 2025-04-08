@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\Validator;
 
 class HostController extends Controller
 {
-    protected $eppService;
+    protected EppService $eppService;
 
     public function __construct(EppService $eppService)
     {
@@ -20,7 +20,7 @@ class HostController extends Controller
     /**
      * Check host availability
      */
-    public function checkAvailability(Request $request)
+    public function checkAvailability(Request $request): \Illuminate\Http\JsonResponse
     {
         $validator = Validator::make($request->all(), [
             'hosts' => 'required|array|min:1',

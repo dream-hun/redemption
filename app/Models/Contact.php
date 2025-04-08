@@ -42,8 +42,6 @@ class Contact extends Model
         return $this->hasMany(DomainContact::class, 'contact_id');
     }
 
-    
-
     public static function generateContactIds(): string
     {
         // Format: RW-XXXX-YYYY where X is random letter and Y is random number

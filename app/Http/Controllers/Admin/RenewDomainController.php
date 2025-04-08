@@ -8,11 +8,9 @@ use App\Http\Requests\Admin\DomainRenewalRequest;
 use App\Models\Contact;
 use App\Models\Country;
 use App\Models\Domain;
-use App\Models\DomainContact;
 use App\Services\Epp\EppService;
 use Carbon\Carbon;
 use Darryldecode\Cart\Facades\CartFacade as Cart;
-use DateTime;
 use Exception;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
@@ -53,33 +51,33 @@ class RenewDomainController extends Controller
         // Try to get domain information from EPP
         try {
             $eppInfo = $this->eppService->getDomainInfo($domain->name);
-            
+
             // Log the raw response for debugging
             Log::debug('Registry response for domain info', [
                 'domain' => $domain->name,
-                'response' => $eppInfo
+                'response' => $eppInfo,
             ]);
-            
+
             if ($eppInfo && isset($eppInfo['infData'])) {
                 $eppInfo = $eppInfo['infData'];
-                
+
                 // Update domain with registry data if available
                 if (isset($eppInfo['exDate'])) {
                     $expiryDate = Carbon::parse($eppInfo['exDate']);
                     $domain->update(['expires_at' => $expiryDate]);
                     $domain->refresh();
-                    
+
                     Log::info('Updated domain with registry data', [
                         'domain' => $domain->name,
                         'registry_expiry' => $eppInfo['exDate'],
-                        'db_expiry' => $domain->expires_at
+                        'db_expiry' => $domain->expires_at,
                     ]);
                 }
             }
         } catch (Exception $e) {
             Log::warning('EPP service warning - continuing with renewal process', [
                 'domain' => $domain->name,
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ]);
             $eppInfo = [];
         }
@@ -96,9 +94,6 @@ class RenewDomainController extends Controller
 
     /**
      * Add a domain to the cart for renewal
-     *
-     * @param string $uuid
-     * @return RedirectResponse
      */
     public function addToCart(string $uuid): RedirectResponse
     {
@@ -117,7 +112,7 @@ class RenewDomainController extends Controller
 
             if ($cartContent->has($cartItemId)) {
                 return redirect()->route('admin.domains.renewal.index', ['uuid' => $domain->uuid])
-                ->with('warning', 'Domain renewal is already in your cart.');
+                    ->with('warning', 'Domain renewal is already in your cart.');
             }
 
             // Get renewal price from domain pricing
@@ -180,7 +175,7 @@ class RenewDomainController extends Controller
             try {
                 // Check if domain exists in cart
                 $cartItemId = 'renew_'.$domain->name;
-                if (!Cart::get($cartItemId)) {
+                if (! Cart::get($cartItemId)) {
                     throw new Exception('Domain renewal not found in cart. Please add it to cart first.');
                 }
 
@@ -191,105 +186,105 @@ class RenewDomainController extends Controller
                 try {
                     // Get domain info from registry
                     $domainInfo = $this->eppService->getDomainInfo($domain->name);
-                    
+
                     // Log the raw response for debugging
                     Log::debug('Registry response for renewal', [
                         'domain' => $domain->name,
-                        'response' => $domainInfo
+                        'response' => $domainInfo,
                     ]);
-                    
-                    if (!$domainInfo || !isset($domainInfo['infData']['exDate'])) {
+
+                    if (! $domainInfo || ! isset($domainInfo['infData']['exDate'])) {
                         throw new Exception('Could not retrieve domain expiry date from registry');
                     }
-                    
+
                     // Get the exact expiry date from registry - DO NOT MODIFY THIS STRING
                     $rawExpiryDate = $domainInfo['infData']['exDate'];
-                    
+
                     // Parse for our database and display
                     $registryExpiryDate = Carbon::parse($rawExpiryDate);
-                    
+
                     // Update domain with registry data
                     $domain->update([
-                        'expires_at' => $registryExpiryDate
+                        'expires_at' => $registryExpiryDate,
                     ]);
-                    
+
                     // Reload domain
                     $domain->refresh();
-                    
+
                     // Log the domain info
                     Log::info('Retrieved domain info from registry', [
                         'domain' => $domain->name,
                         'registry_expiry_raw' => $rawExpiryDate,
                         'registry_expiry_parsed' => $registryExpiryDate->format('Y-m-d'),
-                        'db_expiry' => $domain->expires_at->format('Y-m-d')
+                        'db_expiry' => $domain->expires_at->format('Y-m-d'),
                     ]);
                 } catch (Exception $e) {
                     Log::error('Failed to get domain info from registry', [
                         'domain' => $domain->name,
                         'error' => $e->getMessage(),
-                        'trace' => $e->getTraceAsString()
+                        'trace' => $e->getTraceAsString(),
                     ]);
 
-                    throw new Exception('Registry error: ' . $e->getMessage());
+                    throw new Exception('Registry error: '.$e->getMessage());
                 }
 
                 // Create EPP frame for domain renewal using the EXACT registry expiry date
                 // Convert period to integer to avoid Carbon::rawAddUnit error
                 $periodYears = (int) $request->period;
                 $frame = $this->eppService->renewDomain(
-                    $domain->name, 
-                    $rawExpiryDate, 
-                    $periodYears . 'y'
+                    $domain->name,
+                    $rawExpiryDate,
+                    $periodYears.'y'
                 );
-                
+
                 // Log the renewal request
                 Log::info('Sending domain renewal request', [
                     'domain' => $domain->name,
-                    'period' => $periodYears . 'y',
-                    'registry_expiry' => $rawExpiryDate
+                    'period' => $periodYears.'y',
+                    'registry_expiry' => $rawExpiryDate,
                 ]);
-                
+
                 // Send the request to registry
                 $client = $this->eppService->getClient();
                 $response = $client->request($frame);
-                
-                if (!($response instanceof Response)) {
+
+                if (! ($response instanceof Response)) {
                     throw new Exception('Invalid response received from registry');
                 }
-                
+
                 // Get the result details
                 $result = $response->results()[0];
-                if (!$result) {
+                if (! $result) {
                     throw new Exception('No result in registry response');
                 }
-                
+
                 // Log the response
                 Log::debug('Registry response received', [
                     'domain' => $domain->name,
                     'code' => $result->code(),
                     'message' => $result->message(),
-                    'data' => $response->data()
+                    'data' => $response->data(),
                 ]);
-                
+
                 // Check if the response indicates success (1000-series codes are success)
                 if ($result->code() < 1000 || $result->code() >= 2000) {
                     throw new Exception("Registry error (code: {$result->code()}): {$result->message()}");
                 }
-                
+
                 // Calculate new expiry date
                 $newExpiryDate = $registryExpiryDate->copy()->addYears($periodYears);
-                
+
                 // Log successful renewal
                 Log::info('Domain renewal successful', [
                     'domain' => $domain->name,
                     'old_expiry' => $registryExpiryDate->format('Y-m-d'),
-                    'new_expiry' => $newExpiryDate->format('Y-m-d')
+                    'new_expiry' => $newExpiryDate->format('Y-m-d'),
                 ]);
 
                 // Update domain expiry in our database
                 $domain->update([
                     'expires_at' => $newExpiryDate,
-                    'last_renewal_at' => now()
+                    'last_renewal_at' => now(),
                 ]);
 
                 // Remove domain from cart

@@ -11,15 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('hostings', function (Blueprint $table) {
+        Schema::create('features', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('category_id')->constrained();
             $table->string('name');
-            $table->string('slug');
-            $table->string('icon')->nullable();
-            $table->string('status')->default('active');
-            $table->integer('price');
-            $table->integer('period')->default(1);
             $table->timestamps();
         });
     }
@@ -29,6 +23,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('hostings');
+        Schema::dropIfExists('features');
     }
 };

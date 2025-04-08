@@ -39,6 +39,7 @@ Route::group(['middleware' => 'auth', 'prefix' => 'admin', 'as' => 'admin.'], fu
     Route::resource('roles', RolesController::class);
     Route::resource('permissions', PermissionsController::class);
     Route::resource('domain-pricings', DomainPricingController::class)->except('show');
+    Route::resource('hostings',\App\Http\Controllers\Admin\HostingController::class)->except(['show']);
 
     // Contact management (global)
     Route::group(['prefix' => 'contacts', 'as' => 'contacts.'], function () {

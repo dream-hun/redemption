@@ -2,6 +2,8 @@
 
 namespace App\Providers;
 
+use App\Enums\HostingStatus;
+use App\Models\Category;
 use App\Models\DomainPricing;
 use App\Models\Setting;
 use Illuminate\Support\Facades\Cache;
@@ -25,6 +27,9 @@ class AppServiceProvider extends ServiceProvider
             return DomainPricing::where('status', 'active')
                 ->select('tld', 'register_price')
                 ->get();
+        }));
+        View::share('categories',Cache::remember('categories', 3600, function () {
+            return Category::where('status', HostingStatus::Active)->get();
         }));
 
         View::share('settings', Setting::first());

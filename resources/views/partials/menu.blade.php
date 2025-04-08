@@ -79,6 +79,19 @@
                         </a>
                     </li>
                 @endcan
+                @can('hosting_access')
+                    <li class="nav-item">
+                        <a href="{{ route('admin.hostings.index') }}"
+                           class="nav-link {{ request()->is('admin/hostings*') ? 'active' : '' }}">
+                            <i class="bi bi-hdd"></i>
+                            <p>
+                                Hosting Plans
+                            </p>
+                        </a>
+                    </li>
+                @endcan
+
+
                 @can('setting_access')
                     <li class="nav-item">
                         <a href="{{ route('admin.settings.index') }}"

@@ -501,10 +501,10 @@ class EppService
                 $frame->setVoice($phone);
             }
 
-            if (!empty($contacts['fax'])) {
+            if (! empty($contacts['fax'])) {
                 $fax = $contacts['fax'];
-                if (!str_starts_with($fax, '+')) {
-                    $fax = '+250.' . ltrim($fax, '0');
+                if (! str_starts_with($fax, '+')) {
+                    $fax = '+250.'.ltrim($fax, '0');
                 }
                 $frame->setFax($fax, $contacts['fax_ext'] ?? '');
             }
@@ -556,136 +556,137 @@ class EppService
     }
 
     /**
- * Update Domain Contact in EPP registry
- *
- * @param string $contactId The ID of the contact to update
- * @param array $contactData Contact data to update
- * @return array Response from EPP server
- * @throws Exception
- */
-public function updateContact(string $contactId, array $contactData): array
-{
-    try {
-        $this->ensureConnection();
+     * Update Domain Contact in EPP registry
+     *
+     * @param  string  $contactId  The ID of the contact to update
+     * @param  array  $contactData  Contact data to update
+     * @return array Response from EPP server
+     *
+     * @throws Exception
+     */
+    public function updateContact(string $contactId, array $contactData): array
+    {
+        try {
+            $this->ensureConnection();
 
-        // Create update frame
-        $frame = new \AfriCC\EPP\Frame\Command\Update\Contact();
-        $frame->setId($contactId);
+            // Create update frame
+            $frame = new \AfriCC\EPP\Frame\Command\Update\Contact;
+            $frame->setId($contactId);
 
-        // Set contact information to update
-        if (isset($contactData['name'])) {
-            $frame->setChgName($contactData['name']);
-        }
+            // Set contact information to update
+            if (isset($contactData['name'])) {
+                $frame->setChgName($contactData['name']);
+            }
 
-        if (isset($contactData['organization'])) {
-            $frame->setChgOrganization($contactData['organization']);
-        }
+            if (isset($contactData['organization'])) {
+                $frame->setChgOrganization($contactData['organization']);
+            }
 
-        // Handle address changes
-        if (!empty($contactData['streets']) ||
-            isset($contactData['city']) ||
-            isset($contactData['province']) ||
-            isset($contactData['postal_code']) ||
-            isset($contactData['country_code'])) {
+            // Handle address changes
+            if (! empty($contactData['streets']) ||
+                isset($contactData['city']) ||
+                isset($contactData['province']) ||
+                isset($contactData['postal_code']) ||
+                isset($contactData['country_code'])) {
 
-            // Add streets
-            if (!empty($contactData['streets'])) {
-                foreach ($contactData['streets'] as $street) {
-                    $frame->addChgStreet($street);
+                // Add streets
+                if (! empty($contactData['streets'])) {
+                    foreach ($contactData['streets'] as $street) {
+                        $frame->addChgStreet($street);
+                    }
+                }
+
+                // Set other address fields
+                if (isset($contactData['city'])) {
+                    $frame->setChgCity($contactData['city']);
+                }
+
+                if (isset($contactData['province'])) {
+                    $frame->setChgProvince($contactData['province']);
+                }
+
+                if (isset($contactData['postal_code'])) {
+                    $frame->setChgPostalCode($contactData['postal_code']);
+                }
+
+                if (isset($contactData['country_code'])) {
+                    $frame->setChgCountryCode($contactData['country_code']);
                 }
             }
 
-            // Set other address fields
-            if (isset($contactData['city'])) {
-                $frame->setChgCity($contactData['city']);
+            // Set contact details
+            if (isset($contactData['voice'])) {
+                $frame->setChgVoice($contactData['voice']);
             }
 
-            if (isset($contactData['province'])) {
-                $frame->setChgProvince($contactData['province']);
+            if (isset($contactData['fax'])) {
+                $frame->setChgFax($contactData['fax']['number'], $contactData['fax']['ext'] ?? '');
             }
 
-            if (isset($contactData['postal_code'])) {
-                $frame->setChgPostalCode($contactData['postal_code']);
+            if (isset($contactData['email'])) {
+                $frame->setChgEmail($contactData['email']);
             }
 
-            if (isset($contactData['country_code'])) {
-                $frame->setChgCountryCode($contactData['country_code']);
+            // Update disclosure preferences if provided
+            if (! empty($contactData['disclose'])) {
+                foreach ($contactData['disclose'] as $item) {
+                    $frame->addChgDisclose($item);
+                }
             }
-        }
 
-        // Set contact details
-        if (isset($contactData['voice'])) {
-            $frame->setChgVoice($contactData['voice']);
-        }
-
-        if (isset($contactData['fax'])) {
-            $frame->setChgFax($contactData['fax']['number'], $contactData['fax']['ext'] ?? '');
-        }
-
-        if (isset($contactData['email'])) {
-            $frame->setChgEmail($contactData['email']);
-        }
-
-        // Update disclosure preferences if provided
-        if (!empty($contactData['disclose'])) {
-            foreach ($contactData['disclose'] as $item) {
-                $frame->addChgDisclose($item);
+            // Generate new auth info if requested
+            $auth = null;
+            if (! empty($contactData['generate_new_auth'])) {
+                $auth = $frame->setChgAuthInfo();
             }
+
+            // Send the request and get the response
+            $response = $this->client->request($frame);
+
+            if (! $response) {
+                throw new Exception('No response received from EPP server');
+            }
+
+            $results = $response->results();
+            if (empty($results)) {
+                throw new Exception('Empty response from EPP server');
+            }
+
+            $result = $results[0];
+
+            // Handle response based on its type
+            if (method_exists($response, 'getMessage')) {
+                $message = $response->getMessage();
+            } elseif (method_exists($result, 'message')) {
+                $message = $result->message();
+            } else {
+                $message = 'Operation completed';
+            }
+
+            Log::info('Contact updated successfully in EPP', [
+                'id' => $contactId,
+                'code' => $result->code(),
+                'message' => $message,
+            ]);
+
+            return [
+                'success' => $result->code() === 1000,
+                'message' => $message,
+                'code' => $result->code(),
+                'auth' => $auth,
+            ];
+
+        } catch (Exception $e) {
+            Log::error('Contact update failed: '.$e->getMessage(), [
+                'contact_id' => $contactId,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+            // Try to reconnect on next request
+            $this->connected = false;
+            throw $e;
         }
-
-        // Generate new auth info if requested
-        $auth = null;
-        if (!empty($contactData['generate_new_auth'])) {
-            $auth = $frame->setChgAuthInfo();
-        }
-
-        // Send the request and get the response
-        $response = $this->client->request($frame);
-
-        if (!$response) {
-            throw new Exception('No response received from EPP server');
-        }
-
-        $results = $response->results();
-        if (empty($results)) {
-            throw new Exception('Empty response from EPP server');
-        }
-
-        $result = $results[0];
-
-        // Handle response based on its type
-        if (method_exists($response, 'getMessage')) {
-            $message = $response->getMessage();
-        } elseif (method_exists($result, 'message')) {
-            $message = $result->message();
-        } else {
-            $message = 'Operation completed';
-        }
-
-        Log::info('Contact updated successfully in EPP', [
-            'id' => $contactId,
-            'code' => $result->code(),
-            'message' => $message,
-        ]);
-
-        return [
-            'success' => $result->code() === 1000,
-            'message' => $message,
-            'code' => $result->code(),
-            'auth' => $auth,
-        ];
-
-    } catch (Exception $e) {
-        Log::error('Contact update failed: ' . $e->getMessage(), [
-            'contact_id' => $contactId,
-            'error' => $e->getMessage(),
-            'trace' => $e->getTraceAsString(),
-        ]);
-        // Try to reconnect on next request
-        $this->connected = false;
-        throw $e;
     }
-}
 
     /**
      * Check available hosts
@@ -1071,7 +1072,7 @@ public function updateContact(string $contactId, array $contactData): array
 
                 // Extract registrant
                 preg_match('/<domain:registrant>([^<]+)<\/domain:registrant>/', $responseXml, $registrantMatch);
-                if (!empty($registrantMatch[1])) {
+                if (! empty($registrantMatch[1])) {
                     $currentContacts['registrant'] = $registrantMatch[1];
                 }
             }

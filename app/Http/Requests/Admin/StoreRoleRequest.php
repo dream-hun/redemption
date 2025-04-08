@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\Gate;
 
 class StoreRoleRequest extends FormRequest
 {
-    public function authorize()
+    public function authorize(): bool
     {
         return Gate::allows('role_create');
     }

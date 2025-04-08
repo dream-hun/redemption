@@ -7,12 +7,12 @@ use Illuminate\Foundation\Http\FormRequest;
 
 class UpdateDomainPricingRequest extends FormRequest
 {
-    public function authorize()
+    public function authorize(): bool
     {
         return Gate::allows('domain_pricing_edit');
     }
 
-    public function rules()
+    public function rules(): array
     {
         return [
             'tld' => [

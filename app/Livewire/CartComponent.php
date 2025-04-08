@@ -29,13 +29,13 @@ class CartComponent extends Component
     {
         // Get cart content and maintain original order
         $cartContent = Cart::getContent();
-        
+
         // Sort by creation timestamp to maintain consistent order
         // This ensures items stay in the same order regardless of updates
         $this->items = $cartContent->sortBy(function ($item) {
             return $item->attributes->get('added_at', 0);
         });
-        
+
         $this->subtotalAmount = Cart::getSubTotal();
         $this->totalAmount = Cart::getTotal();
     }
@@ -56,7 +56,7 @@ class CartComponent extends Component
             if ($quantity > 0 && $quantity <= 10) {
                 // Get current item to preserve its attributes
                 $currentItem = Cart::get($id);
-                
+
                 // Update quantity while preserving attributes
                 Cart::update($id, [
                     'quantity' => [
@@ -64,10 +64,10 @@ class CartComponent extends Component
                         'value' => (int) $quantity,
                     ],
                 ]);
-                
+
                 // Make sure we preserve the original added_at timestamp
                 // This ensures the item maintains its position in the list
-                if (!$currentItem->attributes->has('added_at')) {
+                if (! $currentItem->attributes->has('added_at')) {
                     Cart::update($id, [
                         'attributes' => [
                             'added_at' => now()->timestamp,

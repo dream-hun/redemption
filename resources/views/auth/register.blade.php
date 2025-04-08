@@ -1,60 +1,85 @@
 <x-guest-layout>
-    <form method="POST" action="{{ route('register') }}">
-        @csrf
+    <div class="rts-sign-up-section">
+        <div class="section-inner">
+            <div class="logo-area">
+                <a href="{{ route('home') }}"><img src="{{ asset('logo.webp') }}" alt="{{ config('app.name') }} Logo"></a>
+            </div>
 
-        <!-- Name -->
-        <div>
-            <x-input-label for="name" :value="__('Name *')" />
-            <x-text-input id="name" class="block mt-1 w-full" type="text" name="name" :value="old('name')" autofocus
-                autocomplete="name" />
-            <x-input-error :messages="$errors->get('name')" class="mt-2" />
+            <form method="POST" action="{{ route('register') }}">
+                @csrf
+                <h2 class="form-title">Create Account</h2>
+                <div class="form-inner">
+                    <div class="single-wrapper">
+                        <input type="text"
+                               placeholder="Full name"
+                               name="name"
+                               value="{{ old('name') }}"
+                               class="@error('name') is-invalid @enderror"
+                               required
+                               autofocus>
+                        @error('name')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                    </div>
+
+                    <div class="single-wrapper">
+                        <input type="email"
+                               placeholder="Email address"
+                               name="email"
+                               value="{{ old('email') }}"
+                               class="@error('email') is-invalid @enderror"
+                               required>
+                        @error('email')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                    </div>
+
+                    <div class="single-wrapper">
+                        <input type="password"
+                               name="password"
+                               placeholder="Password"
+                               class="@error('password') is-invalid @enderror"
+                               required>
+                        @error('password')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                    </div>
+
+                    <div class="single-wrapper">
+                        <input type="password"
+                               name="password_confirmation"
+                               placeholder="Confirm Password"
+                               required>
+                    </div>
+
+                    {{--<div class="check">
+                        <div class="check-box-area">
+                            <input type="checkbox"
+                                   id="terms"
+                                   name="terms"
+                                   class="@error('terms') is-invalid @enderror"
+                                   required>
+                            <label for="terms">I agree to the <a href="{{ route('terms') }}" target="_blank">Terms of Service</a></label>
+                            @error('terms')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+                    </div>--}}
+
+                    <div class="form-btn">
+                        <button type="submit" class="primary__btn">
+                            <i class="fas fa-user-plus"></i> Register
+                        </button>
+                    </div>
+                </div>
+                <p class="sign-in-option">Already have an account? <a href="{{ route('login') }}">Sign In</a></p>
+            </form>
         </div>
-
-        <!-- Email Address -->
-        <div class="mt-4">
-            <x-input-label for="email" :value="__('Email *')" />
-            <x-text-input id="email" class="block mt-1 w-full" type="email" name="email" :value="old('email')"
-                autocomplete="off" />
-            <x-input-error :messages="$errors->get('email')" class="mt-2" />
+        <div class="copyright-area">
+            <p>&copy;{{ date('Y') }} {{ config('app.name') }}. All Rights Reserved.</p>
         </div>
-
-        <!-- Email Address -->
-        <div class="mt-4">
-            <x-input-label for="mobile" :value="__('Mobile *')" />
-            <x-text-input id="mobile" class="block mt-1 w-full" type="tel" name="mobile" :value="old('mobile')"
-                autocomplete="off" />
-            <x-input-error :messages="$errors->get('mobile')" class="mt-2" />
-        </div>
-
-        <!-- Password -->
-        <div class="mt-4">
-            <x-input-label for="password" :value="__('Password *')" />
-
-            <x-text-input id="password" class="block mt-1 w-full" type="password" name="password"
-                autocomplete="new-password" />
-
-            <x-input-error :messages="$errors->get('password')" class="mt-2" />
-        </div>
-
-        <!-- Confirm Password -->
-        <div class="mt-4">
-            <x-input-label for="password_confirmation" :value="__('Confirm Password *')" />
-
-            <x-text-input id="password_confirmation" class="block mt-1 w-full" type="password"
-                name="password_confirmation" autocomplete="new-password" />
-
-            <x-input-error :messages="$errors->get('password_confirmation')" class="mt-2" />
-        </div>
-
-        <div class="flex items-center justify-end mt-4">
-            <a class="underline text-sm text-gray-600 hover:text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                href="{{ route('login') }}">
-                {{ __('Already registered?') }}
-            </a>
-
-            <x-primary-button class="ms-4">
-                {{ __('Register') }}
-            </x-primary-button>
-        </div>
-    </form>
+    </div>
 </x-guest-layout>
+
+
+

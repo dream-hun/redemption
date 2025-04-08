@@ -26,11 +26,11 @@
                             {{ $domain->expires_at }}
                         </td>
                         <td>
-                            Manage|Renew
+                           <a href="{{ route('admin.domains.edit',$domain->uuid) }}" class="btn btn-info">Manage Domain</a>
                         </td>
                     </tr>
                 @endforeach
-             @else
+            @else
                 <tr>
                     <td colspan="5" class="bg-info">You No domains registered yet.</td>
                 </tr>
