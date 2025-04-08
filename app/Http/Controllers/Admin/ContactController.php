@@ -100,8 +100,14 @@ class ContactController extends Controller
 
             // Create EPP contact
             $eppResult = $this->eppService->createContacts($contactData);
-            if (! $eppResult || ! isset($eppResult['contact_id'])) {
+            if (! $eppResult || ! is_array($eppResult) || empty($eppResult)) {
                 throw new Exception('Failed to create contact in registry: '.($eppResult['message'] ?? 'Unknown error'));
+            }
+
+            // Get the first result since we're only creating one contact
+            $contactResult = is_array($eppResult) ? reset($eppResult) : null;
+            if (! $contactResult || ! isset($contactResult['contact_id'])) {
+                throw new Exception('Invalid contact creation response from registry');
             }
 
             // Add a small delay before verification to allow for EPP propagation
@@ -140,7 +146,7 @@ class ContactController extends Controller
                 'fax_number' => $data['fax'] ?? null,
                 'fax_ext' => $data['fax_ext'] ?? null,
                 'email' => $data['email'],
-                'auth_info' => $eppResult[$contactId]['auth_info'] ?? null,
+                'auth_info' => $contactResult['auth_info'] ?? null,
                 'disclose' => ['voice', 'email'],
                 'epp_status' => 'active',
                 'user_id' => auth()->id(),
