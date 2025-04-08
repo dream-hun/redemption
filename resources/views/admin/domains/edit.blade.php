@@ -39,13 +39,7 @@
                         </div>
                         <div class="card-body">
                             <div x-data="domainContacts">
-                                <form @submit.prevent="submitForm($event)"
-                                    action="{{ route('admin.domains.contacts.update', $domain->uuid) }}" method="POST">
-                                    @csrf
-                                    @method('PUT')
-                                    <input type="hidden" name="action" value="update_contacts">
-
-                                    <div class="row">
+                                <div class="row">
                                         @foreach ($contactsByType as $type => $contact)
                                             <div class="col-md-3 mb-4">
                                                 <div class="card">
@@ -55,12 +49,6 @@
                                                                 <span class="text-danger">*</span>
                                                             @endif
                                                         </h5>
-                                                        @if ($contact)
-                                                            <a href="{{ route('admin.contacts.edit', $contact->uuid) }}"
-                                                                class="btn btn-sm btn-primary">
-                                                                <i class="fas fa-edit"></i> Edit
-                                                            </a>
-                                                        @endif
                                                     </div>
                                                     <div class="card-body">
                                                         @if ($contact)
@@ -104,17 +92,19 @@
                                                         @endif
 
                                                     </div>
+                                                    <div class="card-footer">
+                                                        @if ($contact)
+                                                            <a href="{{ route('admin.contacts.edit', $contact->uuid) }}"
+                                                                class="btn w-100 btn-primary">
+                                                                <i class="bi bi-pencil"></i> Edit
+                                                            </a>
+                                                        @endif
+                                                    </div>
                                                 </div>
                                             </div>
                                         @endforeach
                                     </div>
-
-                                    <div class="mt-4">
-                                        <button type="submit" class="btn btn-primary">
-                                            <i class="fas fa-save"></i> Update Contacts
-                                        </button>
-                                    </div>
-                                </form>
+                                </div>
                             </div>
                         </div>
                     </div>
