@@ -463,52 +463,100 @@ class EppService
 
             Log::debug('Creating contact with data:', ['contacts' => $contacts]);
 
+            // Validate required contact data
+            if (! is_array($contacts)) {
+                throw new Exception('Invalid contact data: must be an array');
+            }
+
+            $requiredFields = ['contact_id', 'name', 'street1', 'city', 'country_code', 'voice', 'email'];
+            foreach ($requiredFields as $field) {
+                if (empty($contacts[$field])) {
+                    throw new Exception("Invalid contact data: {$field} is required");
+                }
+                if (! is_string($contacts[$field])) {
+                    throw new Exception("Invalid contact data: {$field} must be a string");
+                }
+            }
+
             $frame = new CreateContact;
             $frame->setId($contacts['contact_id']);
             $frame->setName($contacts['name']);
 
             if (! empty($contacts['organization'])) {
+                if (! is_string($contacts['organization'])) {
+                    throw new Exception('Invalid contact data: organization must be a string');
+                }
                 $frame->setOrganization($contacts['organization']);
             }
 
-            // Handle street addresses - at least one street is required by EPP
+            // Handle street addresses
             $frame->addStreet($contacts['street1']);
 
-            // Add second street if provided
             if (! empty($contacts['street2'])) {
+                if (! is_string($contacts['street2'])) {
+                    throw new Exception('Invalid contact data: street2 must be a string');
+                }
                 $frame->addStreet($contacts['street2']);
             }
 
+            // Validate and set required city
+            if (empty($contacts['city'])) {
+                throw new Exception('Invalid contact data: city is required');
+            }
             $frame->setCity($contacts['city']);
 
+            // Optional province
             if (! empty($contacts['province'])) {
                 $frame->setProvince($contacts['province']);
             }
 
+            // Optional postal code
             if (! empty($contacts['postal_code'])) {
                 $frame->setPostalCode($contacts['postal_code']);
             }
 
+            // Validate and set required country code
+            if (empty($contacts['country_code'])) {
+                throw new Exception('Invalid contact data: country_code is required');
+            }
             $frame->setCountryCode($contacts['country_code']);
 
             // Format phone number to EPP format (+CC.number)
-            if (! empty($contacts['voice'])) {
-                $phone = $contacts['voice'];
-                if (! str_starts_with($phone, '+')) {
-                    // Add country code for Rwanda if not present
-                    $phone = '+250.'.ltrim($phone, '0');
-                }
-                $frame->setVoice($phone);
+            if (empty($contacts['voice'])) {
+                throw new Exception('Invalid contact data: voice (phone) is required');
             }
 
+            $phone = $contacts['voice'];
+            if (! is_string($phone)) {
+                throw new Exception('Invalid contact data: voice (phone) must be a string');
+            }
+
+            if (! str_starts_with($phone, '+')) {
+                // Add country code for Rwanda if not present
+                $phone = '+250.'.ltrim($phone, '0');
+            }
+            $frame->setVoice($phone);
+
+            // Handle optional fax
             if (! empty($contacts['fax'])) {
                 $fax = $contacts['fax'];
+                if (! is_string($fax)) {
+                    throw new Exception('Invalid contact data: fax must be a string');
+                }
+
                 if (! str_starts_with($fax, '+')) {
                     $fax = '+250.'.ltrim($fax, '0');
                 }
                 $frame->setFax($fax, $contacts['fax_ext'] ?? '');
             }
 
+            // Validate and set required email
+            if (empty($contacts['email'])) {
+                throw new Exception('Invalid contact data: email is required');
+            }
+            if (! is_string($contacts['email'])) {
+                throw new Exception('Invalid contact data: email must be a string');
+            }
             $frame->setEmail($contacts['email']);
 
             $auth = $frame->setAuthInfo();
