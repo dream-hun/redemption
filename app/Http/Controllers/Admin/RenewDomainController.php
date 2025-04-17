@@ -22,7 +22,10 @@ use Throwable;
 class RenewDomainController extends Controller
 {
     protected EppService $eppService;
-
+    public $cartPeriodCount = 1;
+    public $cartTotal = 1;
+    public $periode = 1;
+    public $domainId = '';
     public function __construct(EppService $eppService)
     {
         $this->eppService = $eppService;
@@ -31,7 +34,7 @@ class RenewDomainController extends Controller
     public function index(string $uuid): View|RedirectResponse
     {
         $domain = Domain::where('uuid', $uuid)->firstOrFail();
-
+        $this->domainId = 'renew_' . $domain->name;
         // Check if user owns the domain
         if ($domain->owner_id !== auth()->id()) {
             return redirect()->back()->with('error', 'You do not have permission to renew this domain.');
@@ -39,7 +42,12 @@ class RenewDomainController extends Controller
 
         $cartItems = Cart::getContent();
         $total = Cart::getTotal();
-
+        $this->cartTotal = $total;
+        if (Cart::get($this->domainId)) {
+            $cartitm=Cart::get($this->domainId);
+           // dd($cartitm);
+            $this->periode = $cartitm['quantity'];
+        }
         // Get all contacts for the current user with essential fields
         $contacts = Contact::where('user_id', Auth::id())
             ->select('id', 'contact_id', 'name', 'organization', 'email', 'voice')
@@ -51,7 +59,15 @@ class RenewDomainController extends Controller
         // Try to get domain information from EPP
         try {
             $eppInfo = $this->eppService->getDomainInfo($domain->name);
-
+            //dd($eppInfo);
+            // dd($eppInfo['registrant']);
+            // foreach ($contacts as $contact) {
+            //     if ($contact->contact_id === $eppInfo['registrant']) {
+            //         echo $contact->contact_id . ' = ' . $eppInfo['registrant'].'<br>';
+            //     }else{
+            //         echo $contact->contact_id . ' != ' . $eppInfo['registrant'].'<br>';
+            //     }
+            // }
             // Log the raw response for debugging
             Log::debug('Registry response for domain info', [
                 'domain' => $domain->name,
@@ -108,7 +124,7 @@ class RenewDomainController extends Controller
         try {
             // Check if domain is already in cart
             $cartContent = Cart::getContent();
-            $cartItemId = 'renew_'.$domain->name;
+            $cartItemId = 'renew_' . $domain->name;
 
             if ($cartContent->has($cartItemId)) {
                 return redirect()->route('admin.domains.renewal.index', ['uuid' => $domain->uuid])
@@ -146,7 +162,6 @@ class RenewDomainController extends Controller
 
             return redirect()->route('admin.domains.renewal.index', ['uuid' => $domain->uuid])
                 ->with('success', 'Domain renewal added to cart successfully.');
-
         } catch (Exception $e) {
             Log::error('Failed to add domain renewal to cart:', [
                 'domain' => $domain->name,
@@ -155,7 +170,7 @@ class RenewDomainController extends Controller
             ]);
 
             return redirect()->route('admin.domains.index')
-                ->with('error', 'Failed to add domain renewal to cart. '.$e->getMessage());
+                ->with('error', 'Failed to add domain renewal to cart. ' . $e->getMessage());
         }
     }
 
@@ -167,14 +182,14 @@ class RenewDomainController extends Controller
         $domain = Domain::where('uuid', $uuid)->firstOrFail();
 
         if ($domain->owner_id !== auth()->user()->id) {
-            return redirect()->route('admin.domains.index')->with('error', 'You are not allowed to renew domains.');
+            return redirect()->route('admin.domains.index')->with('error', 'You are not allowed to renew this domain.');
         }
 
         try {
             DB::beginTransaction();
             try {
                 // Check if domain exists in cart
-                $cartItemId = 'renew_'.$domain->name;
+                $cartItemId = 'renew_' . $domain->name;
                 if (! Cart::get($cartItemId)) {
                     throw new Exception('Domain renewal not found in cart. Please add it to cart first.');
                 }
@@ -214,7 +229,7 @@ class RenewDomainController extends Controller
 
                     // Parse for our database and display (ensure it's not null/empty first)
                     if (empty($rawExpiryDate)) {
-                         throw new Exception('Received an empty expiry date from the registry.');
+                        throw new Exception('Received an empty expiry date from the registry.');
                     }
                     $registryExpiryDate = Carbon::parse($rawExpiryDate);
 
@@ -230,8 +245,8 @@ class RenewDomainController extends Controller
                     Log::info('Retrieved domain info from registry', [
                         'domain' => $domain->name,
                         'registry_expiry_raw' => $rawExpiryDate,
-                        'registry_expiry_parsed' => $registryExpiryDate->format('Y-m-d'),
-                        'db_expiry' => $domain->expires_at->format('Y-m-d'),
+                        'registry_expiry_parsed' => $registryExpiryDate,
+                        'db_expiry' => $domain->expires_at,
                     ]);
                 } catch (Exception $e) {
                     // Log the specific error from getDomainInfo during renewal attempt
@@ -244,7 +259,7 @@ class RenewDomainController extends Controller
                     ]);
 
                     // Provide a more user-friendly message, potentially including the original error for support
-                    throw new Exception('Failed to retrieve required domain information from the registry before renewal. Please try again later or contact support. (Details: '.$e->getMessage().')');
+                    throw new Exception('Failed to retrieve required domain information from the registry before renewal. Please try again later or contact support. (Details: ' . $e->getMessage() . ')');
                 }
 
                 // Create EPP frame for domain renewal using the EXACT registry expiry date
@@ -253,13 +268,13 @@ class RenewDomainController extends Controller
                 $frame = $this->eppService->renewDomain(
                     $domain->name,
                     $rawExpiryDate,
-                    $periodYears.'y'
+                    $periodYears . 'y'
                 );
 
                 // Log the renewal request
                 Log::info('Sending domain renewal request', [
                     'domain' => $domain->name,
-                    'period' => $periodYears.'y',
+                    'period' => $periodYears . 'y',
                     'registry_expiry' => $rawExpiryDate,
                 ]);
 
@@ -332,7 +347,7 @@ class RenewDomainController extends Controller
                         'parsing_error' => $parseError->getMessage(),
                     ]);
                     // Throw a new exception indicating the parsing failed
-                    throw new Exception('Registry returned an unparseable new expiry date: '.$newExpiryDateString);
+                    throw new Exception('Registry returned an unparseable new expiry date: ' . $newExpiryDateString);
                 }
 
                 // Log the successful parsing
@@ -351,14 +366,14 @@ class RenewDomainController extends Controller
                 // Log the successful update
                 Log::info('Domain expiry date updated locally', [
                     'domain' => $domain->name,
-                    'new_expiry' => $newExpiryDate->format('Y-m-d H:i:s'),
+                    'new_expiry' => $newExpiryDate,
                 ]);
 
                 // Create invoice - wrap in try-catch to isolate any errors
                 try {
                     // If Invoice::createInvoice exists and should be called, ensure it's properly type-hinted
                     // and that the date is properly formatted/passed
-                    
+
                     // Example of safe invoice creation (uncomment and adapt if needed):
                     /*
                     // Ensure $newExpiryDate is a Carbon instance before passing to createInvoice
@@ -379,14 +394,13 @@ class RenewDomainController extends Controller
                         'amount' => $invoice->amount,
                     ]);
                     */
-                    
+
                     // For now, just log that we would create an invoice here
                     Log::info('Invoice creation step reached', [
                         'domain' => $domain->name,
                         'expiry_date_type' => get_class($newExpiryDate),
                         'period_years' => $periodYears,
                     ]);
-                    
                 } catch (Throwable $invoiceError) {
                     // Log the specific invoice creation error but continue the process
                     Log::error('Failed to create invoice but continuing renewal process', [
@@ -403,8 +417,7 @@ class RenewDomainController extends Controller
                 DB::commit();
 
                 return redirect()->route('admin.domains.index')
-                    ->with('success', 'Domain renewed successfully!');
-
+                    ->with('success', 'Domain renewed successfully, ' . $domain->name . ' renewed for ' . $periodYears . 'y !');
             } catch (Exception $e) {
                 DB::rollBack();
 
@@ -418,7 +431,7 @@ class RenewDomainController extends Controller
                 }
 
                 // Log the failure details
-                Log::error('Domain renewal process failed: '.$e->getMessage(), [
+                Log::error('Domain renewal process failed: ' . $e->getMessage(), [
                     'domain' => $domain->name ?? 'N/A', // Use null coalesce for safety
                     'user_id' => auth()->user()->id ?? 'N/A',
                     'requested_period' => $request->period ?? 'N/A',
@@ -428,12 +441,11 @@ class RenewDomainController extends Controller
                 ]);
 
                 return redirect()->back()
-                    ->with('error', 'Failed to renew domain. Please try again or contact support. Error: '.$e->getMessage());
+                    ->with('error', 'Failed to renew domain ' . $domain->name . ' for ' . $periodYears . 'y. Please try again or contact support. Error: ' . $e->getMessage());
             }
-
         } catch (Exception $e) {
             DB::rollBack();
-            Log::error('Domain renewal failed: '.$e->getMessage(), [
+            Log::error('Domain renewal failed: ' . $e->getMessage(), [
                 'domain' => $domain->name,
                 'period' => $request->period,
                 'user_id' => auth()->user()->id,
@@ -442,28 +454,38 @@ class RenewDomainController extends Controller
             ]);
 
             return redirect()->back()
-                ->with('error', 'Failed to renew domain. Please try again or contact support. Error: '.$e->getMessage());
+                ->with('error', 'Failed to renew domain. Please try again or contact support. Error: ' . $e->getMessage());
         } catch (Throwable $e) {
             DB::rollBack();
 
             // Safely get domain name and error message as strings
             $domainNameForLog = 'N/A';
             if (isset($domain) && $domain instanceof \App\Models\Domain && isset($domain->name)) {
-                 $domainNameForLog = (string) $domain->name;
+                $domainNameForLog = (string) $domain->name;
             }
             $errorMessage = (string) $e->getMessage();
             $traceString = (string) $e->getTraceAsString(); // Limit length if needed
 
-            Log::error('Domain renewal failed with throwable: '.$errorMessage, [
+            Log::error('Domain renewal failed with throwable: ' . $errorMessage, [
                 'domain' => $domainNameForLog,
                 'error' => $errorMessage,
                 'trace' => $traceString,
             ]);
 
             // Rethrow using the safe error message
-            throw new Exception('Domain renewal failed: '.$errorMessage);
+            throw new Exception('Domain renewal failed: ' . $errorMessage);
         } finally {
             $this->eppService->disconnect();
         }
+    }
+    public function handleCartPeriodCount()
+    {
+        // if ($operation === '+') {
+        //     $this->cartPeriodCount += 1;
+        // } else {
+        //     $this->cartPeriodCount -= 1;
+        // }
+        dd($this->periode);
+        Cart::update($this->domainId, ['quantity' => $this->periode]);
     }
 }
