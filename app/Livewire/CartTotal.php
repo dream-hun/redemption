@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Livewire;
 
 use Cknow\Money\Money;
@@ -9,7 +11,7 @@ use Illuminate\Contracts\View\View;
 use Illuminate\Foundation\Application;
 use Livewire\Component;
 
-class CartTotal extends Component
+final class CartTotal extends Component
 {
     protected $listeners = ['refreshCart' => '$refresh'];
 

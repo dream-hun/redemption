@@ -1,6 +1,5 @@
 @extends('layouts.user')
 @section('content')
-
     <div class="rts-hosting-banner rts-hosting-banner-bg banner-default-height">
         <div class="container">
             <div class="row justify-content-sm-center">
@@ -20,7 +19,7 @@
                                 data-sal-duration="800">
                                 <div class="hosting-feature__single">
                                     <div class="icon-image">
-                                        <img src="assets/images/banner/shared/diamond.png" alt="">
+                                        <img src="{{ asset('assets/images/banner/shared/diamond.png') }}" alt="">
                                     </div>
                                     <p class="feature-text">
                                         Look like a Pri- Fast,
@@ -29,7 +28,7 @@
                                 </div>
                                 <div class="hosting-feature__single">
                                     <div class="icon-image">
-                                        <img src="assets/images/banner/shared/wordpress.png" alt="">
+                                        <img src="{{ asset('assets/images/banner/shared/wordpress.png') }}" alt="">
                                     </div>
                                     <p class="feature-text">
                                         Look like a Pri- Fast,
@@ -39,10 +38,10 @@
                             </div>
                         </div>
                         <div class="rts-hosting-banner__image">
-                            <img src="assets/images/banner/shared/shared__hosting.svg" alt="">
+                            <img src="{{ asset('assets/images/banner/shared/shared__hosting.svg') }}" alt="Shared Hosting">
                             <img class="shape-image one right-left"
-                                src="assets/images/banner/shared/shared__hosting-sm1.svg" alt="">
-                            <img class="shape-image two pulsing" src="assets/images/banner/shared/shared__hosting-sm2.svg"
+                                src="{{ asset('assets/images/banner/shared/shared__hosting-sm1.svg') }}" alt="">
+                            <img class="shape-image two pulsing" src="{{ asset('assets/images/banner/shared/shared__hosting-sm2.svg' )}}"
                                 alt="">
                         </div>
                     </div>
@@ -50,5 +49,4 @@
             </div>
         </div>
     </div>
-
 @endsection

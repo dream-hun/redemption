@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
@@ -10,7 +12,7 @@ use App\Models\User;
 use Illuminate\Support\Facades\Gate;
 use Symfony\Component\HttpFoundation\Response;
 
-class UsersController extends Controller
+final class UsersController extends Controller
 {
     public function index()
     {
@@ -18,7 +20,7 @@ class UsersController extends Controller
 
         $users = User::with(['roles'])->get();
 
-        return view('admin.users.index', compact('users'));
+        return view('admin.users.index', ['users' => $users]);
     }
 
     public function create()
@@ -27,7 +29,7 @@ class UsersController extends Controller
 
         $roles = Role::pluck('title', 'id');
 
-        return view('admin.users.create', compact('roles'));
+        return view('admin.users.create', ['roles' => $roles]);
     }
 
     public function store(StoreUserRequest $request)
@@ -46,7 +48,7 @@ class UsersController extends Controller
 
         $user->load('roles');
 
-        return view('admin.users.edit', compact('roles', 'user'));
+        return view('admin.users.edit', ['roles' => $roles, 'user' => $user]);
     }
 
     public function update(UpdateUserRequest $request, User $user)
@@ -63,7 +65,7 @@ class UsersController extends Controller
 
         $user->load('roles');
 
-        return view('admin.users.show', compact('user'));
+        return view('admin.users.show', ['user' => $user]);
     }
 
     public function destroy(User $user)

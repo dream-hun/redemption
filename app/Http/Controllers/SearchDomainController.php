@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers;
 
 use App\Models\DomainPricing;
@@ -11,7 +13,7 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\View\View;
 use Log;
 
-class SearchDomainController extends Controller
+final class SearchDomainController extends Controller
 {
     private EppService $eppService;
 
@@ -26,7 +28,7 @@ class SearchDomainController extends Controller
             ->select('tld', 'register_price')
             ->get();
 
-        return view('domains.index', compact('tlds'));
+        return view('domains.index', ['tlds' => $tlds]);
     }
 
     public function search(Request $request): JsonResponse
@@ -53,7 +55,7 @@ class SearchDomainController extends Controller
 
             $results = [];
             foreach ($tlds as $tld) {
-                $domainWithTld = $domain.'.'.ltrim($tld->tld, '.');
+                $domainWithTld = $domain.'.'.mb_ltrim($tld->tld, '.');
                 Log::debug('Checking domain:', ['domain' => $domainWithTld]);
 
                 // Check domain availability with EPP
@@ -68,7 +70,7 @@ class SearchDomainController extends Controller
                     ],
                 ]);
 
-                if (! empty($eppResults) && isset($eppResults[$domainWithTld])) {
+                if ($eppResults !== [] && isset($eppResults[$domainWithTld])) {
                     $result = $eppResults[$domainWithTld];
                     $results[$domainWithTld] = (object) [
                         'available' => $result->available,

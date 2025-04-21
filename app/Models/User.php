@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models;
 
 use DateTimeInterface;
@@ -10,7 +12,7 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Str;
 
-class User extends Authenticatable
+final class User extends Authenticatable
 {
     use Notifiable;
 
@@ -28,19 +30,11 @@ class User extends Authenticatable
         'remember_token',
     ];
 
-    protected function casts(): array
-    {
-        return [
-            'email_verified_at' => 'datetime',
-            'password' => 'hashed',
-        ];
-    }
-
     public static function boot(): void
     {
         parent::boot();
 
-        self::creating(function ($model) {
+        self::creating(function ($model): void {
             $model->client_code = self::generateCustomerNumber();
             $model->uuid = (string) Str::uuid();
         });
@@ -51,7 +45,7 @@ class User extends Authenticatable
      */
     public static function generateCustomerNumber(): string
     {
-        $lastUser = User::orderBy('id', 'desc')->first();
+        $lastUser = self::orderBy('id', 'desc')->first();
         if (! $lastUser) {
             return 'BLUCL-000001';
         }
@@ -60,19 +54,14 @@ class User extends Authenticatable
             throw new Exception('Invalid format for reg_number');
         }
 
-        $number = intval($matches[0]) + 1;
+        $number = (int) ($matches[0]) + 1;
 
-        return 'BLCL-'.str_pad($number, 6, '0', STR_PAD_LEFT);
+        return 'BLCL-'.mb_str_pad($number, 6, '0', STR_PAD_LEFT);
     }
 
     public function domains(): HasMany
     {
         return $this->hasMany(Domain::class);
-    }
-
-    protected function serializeDate(DateTimeInterface $date): string
-    {
-        return $date->format('Y-m-d H:i:s');
     }
 
     public function getIsAdminAttribute(): bool
@@ -87,8 +76,21 @@ class User extends Authenticatable
 
     public function getGravatarAttribute(): string
     {
-        $email = md5(strtolower(trim($this->email)));
+        $email = md5(mb_strtolower(mb_trim($this->email)));
 
         return "https://www.gravatar.com/avatar/$email";
+    }
+
+    protected function casts(): array
+    {
+        return [
+            'email_verified_at' => 'datetime',
+            'password' => 'hashed',
+        ];
+    }
+
+    protected function serializeDate(DateTimeInterface $date): string
+    {
+        return $date->format('Y-m-d H:i:s');
     }
 }

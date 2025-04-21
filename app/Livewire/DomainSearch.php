@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Livewire;
 
 use App\Models\Domain;
@@ -15,7 +17,7 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 use Livewire\Component;
 
-class DomainSearch extends Component
+final class DomainSearch extends Component
 {
     public $domain = '';
 
@@ -102,12 +104,12 @@ class DomainSearch extends Component
             $cartContent = Cart::getContent();
 
             // Check primary domain
-            $primaryDomainName = strtolower($this->domain.'.'.ltrim($primaryTld->tld, '.'));
+            $primaryDomainName = mb_strtolower($this->domain.'.'.mb_ltrim($primaryTld->tld, '.'));
             $this->checkAndAddDomain($results, $primaryDomainName, $primaryTld, $cartContent, true);
 
             // Check all other TLDs
             foreach ($tlds->where('tld', '!=', $primaryTld->tld) as $tld) {
-                $domainWithTld = strtolower($this->domain.'.'.ltrim($tld->tld, '.'));
+                $domainWithTld = mb_strtolower($this->domain.'.'.mb_ltrim($tld->tld, '.'));
                 $this->checkAndAddDomain($results, $domainWithTld, $tld, $cartContent, false);
             }
 
@@ -128,43 +130,6 @@ class DomainSearch extends Component
         }
     }
 
-    /**
-     * Check a domain and add it to results if check succeeds
-     */
-    private function checkAndAddDomain(array &$results, string $domainName, $tld, $cartContent, bool $isPrimary): void
-    {
-        try {
-            $eppResults = $this->eppService->checkDomain([$domainName]);
-
-            if (! empty($eppResults) && isset($eppResults[$domainName])) {
-                $result = $eppResults[$domainName];
-                $rawPrice = intval($tld->register_price);
-
-                $results[$domainName] = [
-                    'available' => $result->available,
-                    'reason' => $result->reason,
-                    'register_price' => $rawPrice,
-                    'transfer_price' => $tld->transfer_price,
-                    'renew_price' => $tld->renew_price,
-                    'formatted_price' => Money::RWF($rawPrice)->format(),
-                    'in_cart' => $cartContent->has($domainName),
-                    'is_primary' => $isPrimary,
-                ];
-
-                Log::debug('Domain check successful', [
-                    'domain' => $domainName,
-                    'available' => $result->available,
-                    'raw_price' => $rawPrice,
-                ]);
-            }
-        } catch (Exception $e) {
-            Log::error('EPP check error for domain:', [
-                'domain' => $domainName,
-                'error' => $e->getMessage(),
-            ]);
-        }
-    }
-
     public function addToCart($domain, $price): void
     {
         try {
@@ -181,7 +146,7 @@ class DomainSearch extends Component
             }
 
             // Add debug logging before cart addition
-            \Illuminate\Support\Facades\Log::debug('Adding to cart:', [
+            Log::debug('Adding to cart:', [
                 'domain' => $domain,
                 'price' => $price,
             ]);
@@ -204,7 +169,7 @@ class DomainSearch extends Component
             $this->dispatch('refreshCart');
 
             // Add debug logging after cart addition
-            \Illuminate\Support\Facades\Log::debug('Cart after addition:', [
+            Log::debug('Cart after addition:', [
                 'total' => Cart::getTotal(),
                 'items' => Cart::getContent()->toArray(),
             ]);
@@ -231,7 +196,7 @@ class DomainSearch extends Component
         }
     }
 
-    public function removeFromCart($domain): void
+    public function removeFromCart(string $domain): void
     {
         try {
             // Remove from cart
@@ -259,6 +224,43 @@ class DomainSearch extends Component
             $this->dispatch('notify', [
                 'type' => 'error',
                 'message' => 'Failed to remove domain from cart. Please try again.',
+            ]);
+        }
+    }
+
+    /**
+     * Check a domain and add it to results if check succeeds
+     */
+    private function checkAndAddDomain(array &$results, string $domainName, $tld, $cartContent, bool $isPrimary): void
+    {
+        try {
+            $eppResults = $this->eppService->checkDomain([$domainName]);
+
+            if ($eppResults !== [] && isset($eppResults[$domainName])) {
+                $result = $eppResults[$domainName];
+                $rawPrice = (int) ($tld->register_price);
+
+                $results[$domainName] = [
+                    'available' => $result->available,
+                    'reason' => $result->reason,
+                    'register_price' => $rawPrice,
+                    'transfer_price' => $tld->transfer_price,
+                    'renew_price' => $tld->renew_price,
+                    'formatted_price' => Money::RWF($rawPrice)->format(),
+                    'in_cart' => $cartContent->has($domainName),
+                    'is_primary' => $isPrimary,
+                ];
+
+                Log::debug('Domain check successful', [
+                    'domain' => $domainName,
+                    'available' => $result->available,
+                    'raw_price' => $rawPrice,
+                ]);
+            }
+        } catch (Exception $e) {
+            Log::error('EPP check error for domain:', [
+                'domain' => $domainName,
+                'error' => $e->getMessage(),
             ]);
         }
     }

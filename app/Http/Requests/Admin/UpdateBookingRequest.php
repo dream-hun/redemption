@@ -1,18 +1,20 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Requests\Admin;
 
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Gate;
 
-class UpdateBookingRequest extends FormRequest
+final class UpdateBookingRequest extends FormRequest
 {
     public function authorize()
     {
         return Gate::allows('booking_edit');
     }
 
-    public function rules()
+    public function rules(): array
     {
         return [
             'service_id' => [

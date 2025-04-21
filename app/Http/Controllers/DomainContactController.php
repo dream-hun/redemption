@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers;
 
 use App\Models\Contact;
@@ -11,72 +13,15 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
-class DomainContactController extends Controller
+final class DomainContactController extends Controller
 {
-    private EppService $eppService;
-
     private const MAX_ATTEMPTS = 5;
+
+    private EppService $eppService;
 
     public function __construct(EppService $eppService)
     {
         $this->eppService = $eppService;
-    }
-
-    /**
-     * Generate a unique EPP contact ID
-     */
-    private function generateUniqueContactId(string $contactType): string
-    {
-        $attempts = 0;
-        $prefix = match ($contactType) {
-            'registrant' => 'REG',
-            'admin' => 'ADM',
-            'tech' => 'TECH',
-            default => 'CNT'
-        };
-
-        do {
-            if ($attempts >= self::MAX_ATTEMPTS) {
-                throw new Exception('Failed to generate unique contact ID after multiple attempts');
-            }
-
-            // Generate ID: PREFIX-TIMESTAMP-RANDOM
-            $contactId = sprintf(
-                '%s-%s-%s',
-                $prefix,
-                now()->format('ymdHis'),
-                strtoupper(Str::random(2))
-            );
-
-            // Check if ID exists in local database
-            $existsInDb = Contact::where('contact_id', $contactId)->exists();
-
-            if ($existsInDb) {
-                $attempts++;
-
-                continue;
-            }
-
-            // Check if ID is available in EPP
-            $checkFrame = $this->eppService->checkContacts([$contactId]);
-            $response = $this->eppService->getClient()->request($checkFrame);
-
-            if (! $response || ! $response->success()) {
-                throw new Exception('Failed to check contact ID availability with EPP');
-            }
-
-            $data = $response->data();
-
-            // Check if the ID is available in the EPP system
-            if (! empty($data['chkData']['cd'])) {
-                $checkData = $data['chkData']['cd'];
-                if (is_array($checkData) && isset($checkData['@id']['avail']) && $checkData['@id']['avail'] === '1') {
-                    return $contactId;
-                }
-            }
-
-            $attempts++;
-        } while (true);
     }
 
     public function store(Request $request): JsonResponse
@@ -177,5 +122,62 @@ class DomainContactController extends Controller
                 'message' => $e->getMessage(),
             ], 500);
         }
+    }
+
+    /**
+     * Generate a unique EPP contact ID
+     */
+    private function generateUniqueContactId(string $contactType): string
+    {
+        $attempts = 0;
+        $prefix = match ($contactType) {
+            'registrant' => 'REG',
+            'admin' => 'ADM',
+            'tech' => 'TECH',
+            default => 'CNT'
+        };
+
+        do {
+            if ($attempts >= self::MAX_ATTEMPTS) {
+                throw new Exception('Failed to generate unique contact ID after multiple attempts');
+            }
+
+            // Generate ID: PREFIX-TIMESTAMP-RANDOM
+            $contactId = sprintf(
+                '%s-%s-%s',
+                $prefix,
+                now()->format('ymdHis'),
+                mb_strtoupper(Str::random(2))
+            );
+
+            // Check if ID exists in local database
+            $existsInDb = Contact::where('contact_id', $contactId)->exists();
+
+            if ($existsInDb) {
+                $attempts++;
+
+                continue;
+            }
+
+            // Check if ID is available in EPP
+            $checkFrame = $this->eppService->checkContacts([$contactId]);
+            $response = $this->eppService->getClient()->request($checkFrame);
+
+            if (! $response || ! $response->success()) {
+                throw new Exception('Failed to check contact ID availability with EPP');
+            }
+
+            $data = $response->data();
+
+            // Check if the ID is available in the EPP system
+            if (! empty($data['chkData']['cd'])) {
+                $checkData = $data['chkData']['cd'];
+                if (is_array($checkData) && isset($checkData['@id']['avail']) && $checkData['@id']['avail'] === '1') {
+                    return $contactId;
+                }
+            }
+
+            $attempts++;
+        } while (true);
     }
 }

@@ -1,12 +1,14 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models;
 
 use Cknow\Money\Money;
 use DateTimeInterface;
 use Illuminate\Database\Eloquent\Model;
 
-class DomainPricing extends Model
+final class DomainPricing extends Model
 {
     public const STATUS_SELECT = [
         'active' => 'Active',

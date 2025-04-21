@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Providers;
 
 use App\Enums\HostingStatus;
@@ -10,7 +12,7 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
 
-class AppServiceProvider extends ServiceProvider
+final class AppServiceProvider extends ServiceProvider
 {
     /**
      * Register any application services.
@@ -28,7 +30,7 @@ class AppServiceProvider extends ServiceProvider
                 ->select('tld', 'register_price')
                 ->get();
         }));
-        View::share('categories',Cache::remember('categories', 3600, function () {
+        View::share('categories', Cache::remember('categories', 3600, function () {
             return Category::where('status', HostingStatus::Active)->get();
         }));
 
