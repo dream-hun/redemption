@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\Validator;
 
 final class HostController extends Controller
 {
-    protected EppService $eppService;
+    private EppService $eppService;
 
     public function __construct(EppService $eppService)
     {

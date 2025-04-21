@@ -16,7 +16,7 @@ use Illuminate\View\View;
 
 final class ContactController extends Controller
 {
-    protected EppService $eppService;
+    private EppService $eppService;
 
     public function __construct(EppService $eppService)
     {
@@ -118,8 +118,7 @@ final class ContactController extends Controller
             // Update contact in EPP registry
             $eppResponse = $this->eppService->updateContact(
                 $contact->contact_id,
-                $request->validated(),
-                auth()->user()
+                $request->validated()
             );
 
             if (! $eppResponse->success()) {

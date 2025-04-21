@@ -24,7 +24,7 @@ use Symfony\Component\HttpFoundation\Response;
 
 final class DomainController extends Controller
 {
-    protected EppService $eppService;
+    private EppService $eppService;
 
     public function __construct(EppService $eppService)
     {
