@@ -19,11 +19,12 @@ use App\Http\Controllers\LandingController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\RegisterDomainController;
 use App\Http\Controllers\SearchDomainController;
+use App\Http\Controllers\SharedHostingController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', LandingController::class)->name('home');
 
-Route::get('/hosting/shared', [HostingController::class, 'index'])->name('shared.index');
+Route::get('/hosting/shared', [SharedHostingController::class, 'index'])->name('shared.index');
 
 Route::middleware('auth')->group(function (): void {
     Route::get('/contacts/{id}/details', [App\Http\Controllers\Api\ContactController::class, 'details'])->name('contacts.details');

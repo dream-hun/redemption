@@ -54,94 +54,9 @@
     </section>
     <!-- HERO BANNER ONE END -->
 
-    <!-- BRAND AREA -->
-    <div class="rts-brand rts-brand__bg--section pt-100 pb-120">
-        <div class="container">
-            <div class="row">
-                <div class="col-lg-12">
-                    <div class="rts-brand__wrapper">
-                        <div class="rts-brand__wrapper--text">
-                            <h5 data-sal="slide-down" data-sal-delay="300" data-sal-duration="800">Hosting solutions
-                                trusted by the owners of <span>2,800,000</span> domains.</h5>
-                            <div class="rts-brand__wrapper--text-review" data-sal="slide-down" data-sal-delay="400"
-                                data-sal-duration="800">
-                                <div class="review">
-                                    <div class="star">Excellent <img src="assets/images/brand/review-star.svg"
-                                            alt="">
-                                    </div>
-                                </div>
-                                <div class="review__company">
-                                    954 reviews on <img src="assets/images/brand/trust-pilot.svg" alt="">
-                                </div>
-                            </div>
-                        </div>
-                        <div class="rts-brand__slider">
-                            <div class="swiper-wrapper">
-                                <div class="swiper-slide">
-                                    <div class="rts-brand__slider--single">
-                                        <a href="#" aria-label="brand-link"><img src="assets/images/brand/01.svg"
-                                                alt=""></a>
-                                    </div>
-                                </div>
-                                <div class="swiper-slide">
-                                    <div class="rts-brand__slider--single">
-                                        <a href="#" aria-label="brand-link"><img src="assets/images/brand/02.svg"
-                                                alt=""></a>
-                                    </div>
-                                </div>
-                                <div class="swiper-slide">
-                                    <div class="rts-brand__slider--single">
-                                        <a href="#" aria-label="brand-link"><img src="assets/images/brand/03.svg"
-                                                alt=""></a>
-                                    </div>
-                                </div>
-                                <div class="swiper-slide">
-                                    <div class="rts-brand__slider--single">
-                                        <a href="#" aria-label="brand-link"><img src="assets/images/brand/04.svg"
-                                                alt=""></a>
-                                    </div>
-                                </div>
-                                <div class="swiper-slide">
-                                    <div class="rts-brand__slider--single">
-                                        <a href="#" aria-label="brand-link"><img src="assets/images/brand/05.svg"
-                                                alt=""></a>
-                                    </div>
-                                </div>
-                                <div class="swiper-slide">
-                                    <div class="rts-brand__slider--single">
-                                        <a href="#" aria-label="brand-link"><img src="assets/images/brand/06.svg"
-                                                alt=""></a>
-                                    </div>
-                                </div>
-                                <div class="swiper-slide">
-                                    <div class="rts-brand__slider--single">
-                                        <a href="#" aria-label="brand-link"> <img src="assets/images/brand/07.svg"
-                                                alt=""></a>
-                                    </div>
-                                </div>
-                                <div class="swiper-slide">
-                                    <div class="rts-brand__slider--single">
-                                        <a href="#" aria-label="brand-link"><img src="assets/images/brand/08.svg"
-                                                alt=""></a>
-                                    </div>
-                                </div>
-                                <div class="swiper-slide">
-                                    <div class="rts-brand__slider--single">
-                                        <a href="#" aria-label="brand-link"><img src="assets/images/brand/01.svg"
-                                                alt=""></a>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    <!-- BRAND AREA END-->
 
     <!-- HOSTING OPTION -->
-    <div class="rts-hosting-type">
+    <div class="rts-hosting-type pt--100">
         <div class="container">
             <div class="row">
                 <div class="col-12">

@@ -10,7 +10,7 @@ final class SharedHostingController extends Controller
 {
     public function index()
     {
-        $plans = Hosting::where('category_id', 1)->whereColumn('status', 'active')->get();
+        $plans = Hosting::where('category_id', 1)->orWhere('status', 'active')->get();
 
         return view('hosting.shared', ['plans' => $plans]);
     }
