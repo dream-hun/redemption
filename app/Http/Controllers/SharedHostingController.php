@@ -1,15 +1,17 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers;
 
 use App\Models\Hosting;
-use Illuminate\Http\Request;
 
-class SharedHostingController extends Controller
+final class SharedHostingController extends Controller
 {
     public function index()
     {
-        $plans=Hosting::where('category_id',1)->whereColumn('status','active')->get();
-        return view('hosting.shared',['plans'=>$plans]);
+        $plans = Hosting::where('category_id', 1)->whereColumn('status', 'active')->get();
+
+        return view('hosting.shared', ['plans' => $plans]);
     }
 }

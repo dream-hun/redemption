@@ -8,6 +8,6 @@ final class HostingController extends Controller
 {
     public function index()
     {
-        return view('hosting.index');
+        return view('hosting.shared');
     }
 }
