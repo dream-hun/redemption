@@ -97,28 +97,28 @@ final class Domain extends Model
 
     }
 
-    protected function registeredAt(): Attribute
+    private function registeredAt(): Attribute
     {
         return Attribute::make(
             get: fn ($value): string => Carbon::parse($value)->format('M d, Y')
         );
     }
 
-    protected function expiresAt(): Attribute
+    private function expiresAt(): Attribute
     {
         return Attribute::make(
             get: fn ($value): string => Carbon::parse($value)->format('M d, Y')
         );
     }
 
-    protected function sslExpiresAt(): Attribute
+    private function sslExpiresAt(): Attribute
     {
         return Attribute::make(
             get: fn ($value): ?string => $value ? Carbon::parse($value)->format('M d, Y') : null
         );
     }
 
-    protected function lastRenewalAt(): Attribute
+    private function lastRenewalAt(): Attribute
     {
         return Attribute::make(
             get: fn ($value): ?string => $value ? Carbon::parse($value)->format('M d, Y') : null

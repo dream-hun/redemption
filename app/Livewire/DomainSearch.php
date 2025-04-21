@@ -33,7 +33,7 @@ final class DomainSearch extends Component
 
     public $quantity = 1;
 
-    protected EppService $eppService;
+    private EppService $eppService;
 
     public function boot(EppService $eppService): void
     {

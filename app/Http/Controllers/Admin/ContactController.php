@@ -22,7 +22,7 @@ use Throwable;
 
 final class ContactController extends Controller
 {
-    protected EppService $eppService;
+    private EppService $eppService;
 
     public function __construct(EppService $eppService)
     {

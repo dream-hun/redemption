@@ -13,9 +13,9 @@ use Illuminate\View\Component;
 
 final class DomainInformationComponent extends Component
 {
-    protected $domain;
+    private $domain;
 
-    protected EppService $eppService;
+    private EppService $eppService;
 
     /**
      * Create a new component instance.

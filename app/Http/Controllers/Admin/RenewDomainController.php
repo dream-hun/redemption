@@ -31,7 +31,7 @@ final class RenewDomainController extends Controller
 
     public $domainId = '';
 
-    protected EppService $eppService;
+    private EppService $eppService;
 
     public function __construct(EppService $eppService)
     {
@@ -486,7 +486,7 @@ final class RenewDomainController extends Controller
         }
     }
 
-    public function handleCartPeriodCount(): void
+    public function handleCartPeriodCount(): never
     {
         // if ($operation === '+') {
         //     $this->cartPeriodCount += 1;

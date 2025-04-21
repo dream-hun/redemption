@@ -45,7 +45,7 @@ final class EppService
     {
         $this->config = config('epp');
 
-        if (! $this->config) {
+        if ($this->config === []) {
             throw new Exception('EPP configuration not found');
         }
 
@@ -893,7 +893,7 @@ final class EppService
             $nameservers = array_filter(array_map(function ($ns): string {
                 // Normalize nameserver hostname (remove trailing dot if present)
                 return mb_rtrim(mb_trim($ns), '.');
-            }, $nameservers), fn ($ns): bool => ! empty($ns));
+            }, $nameservers), fn ($ns): bool => $ns !== '' && $ns !== '0');
 
             // Get current nameservers for the domain
             $infoFrame = new InfoDomain;
@@ -1187,7 +1187,7 @@ final class EppService
             // Log request for debugging
             Log::debug('Sending domain info request', ['domain' => $domain]);
 
-            $response = $this->getClient()->request($frame);
+            $response = $this->client->request($frame);
 
             // Validate response
             if (! ($response instanceof Response) || ! ($result = $response->results()[0])) {

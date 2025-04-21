@@ -12,12 +12,6 @@ final class Role extends Model
 {
     public $table = 'roles';
 
-    protected array $dates = [
-        'created_at',
-        'updated_at',
-        'deleted_at',
-    ];
-
     protected $fillable = [
         'title',
         'created_at',
