@@ -1,18 +1,20 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Requests\Admin;
 
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Gate;
 
-class StoreSettingRequest extends FormRequest
+final class StoreSettingRequest extends FormRequest
 {
     public function authorize()
     {
         return Gate::allows('setting_create');
     }
 
-    public function rules()
+    public function rules(): array
     {
         return [
             'title' => [

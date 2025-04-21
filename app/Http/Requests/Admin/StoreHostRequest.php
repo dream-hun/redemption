@@ -1,12 +1,14 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Requests\Admin;
 
 use Illuminate\Auth\Access\Gate;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 
-class StoreHostRequest extends FormRequest
+final class StoreHostRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -30,7 +32,7 @@ class StoreHostRequest extends FormRequest
             'status' => ['required', 'string', 'in:active,inactive'],
             'price' => ['required', 'integer', 'min:0'],
             'period' => ['required', 'integer', 'min:1'],
-            'category_id' => ['required', 'exists:categories,id']
+            'category_id' => ['required', 'exists:categories,id'],
         ];
     }
 }

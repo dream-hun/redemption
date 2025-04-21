@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
@@ -8,7 +10,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
-class UserContactController extends Controller
+final class UserContactController extends Controller
 {
     /**
      * Get all contacts for the authenticated user.
@@ -20,7 +22,7 @@ class UserContactController extends Controller
             ->get();
 
         // Get the domain contacts to determine the contact type
-        $contacts->each(function ($contact) {
+        $contacts->each(function ($contact): void {
             // Get the domain contact types for this contact
             $domainContacts = \App\Models\DomainContact::where('contact_id', $contact->id)
                 ->distinct('type')
@@ -28,7 +30,7 @@ class UserContactController extends Controller
                 ->toArray();
 
             // Set the contact type based on domain contacts, or default to null
-            $contact->contact_type = ! empty($domainContacts) ? $domainContacts[0] : null;
+            $contact->contact_type = empty($domainContacts) ? null : $domainContacts[0];
         });
 
         return response()->json([

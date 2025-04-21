@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
@@ -18,7 +20,7 @@ use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\Response;
 use Throwable;
 
-class ContactController extends Controller
+final class ContactController extends Controller
 {
     protected EppService $eppService;
 
@@ -53,7 +55,7 @@ class ContactController extends Controller
 
             // First check if contact exists in EPP registry
             $checkResult = $this->eppService->checkContacts([$contactId]);
-            if (! $checkResult || ! isset($checkResult[$contactId])) {
+            if ($checkResult === [] || ! isset($checkResult[$contactId])) {
                 throw new Exception('Failed to check contact availability in registry');
             }
 
@@ -66,12 +68,12 @@ class ContactController extends Controller
             // Format phone numbers according to EPP format (+CC.number)
             $voice = $data['voice'];
             if (! str_starts_with($voice, '+')) {
-                $voice = '+250.'.ltrim($voice, '0'); // Using Rwanda country code
+                $voice = '+250.'.mb_ltrim($voice, '0'); // Using Rwanda country code
             }
 
-            $fax = ! empty($data['fax']) ? $data['fax'] : '';
+            $fax = empty($data['fax']) ? '' : $data['fax'];
             if ($fax && ! str_starts_with($fax, '+')) {
-                $fax = '+250.'.ltrim($fax, '0');
+                $fax = '+250.'.mb_ltrim($fax, '0');
             }
 
             // Prepare contact data for EPP service - following EPP protocol format
@@ -100,7 +102,7 @@ class ContactController extends Controller
 
             // Create EPP contact
             $eppResult = $this->eppService->createContacts($contactData);
-            if (! $eppResult || ! is_array($eppResult) || empty($eppResult)) {
+            if ($eppResult === [] || ! is_array($eppResult) || $eppResult === []) {
                 throw new Exception('Failed to create contact in registry: '.($eppResult['message'] ?? 'Unknown error'));
             }
 
@@ -115,7 +117,7 @@ class ContactController extends Controller
 
             // Verify contact was created in EPP registry
             $eppContact = $this->eppService->infoContact($contactId);
-            if (! $eppContact) {
+            if ($eppContact === null || $eppContact === []) {
                 throw new Exception('Failed to get contact info from registry');
             }
 
@@ -211,19 +213,19 @@ class ContactController extends Controller
 
             // First verify contact exists in EPP registry
             $eppInfo = $this->eppService->infoContact($contact->contact_id);
-            if (! $eppInfo || ! isset($eppInfo['contact'])) {
+            if ($eppInfo === null || $eppInfo === [] || ! isset($eppInfo['contact'])) {
                 throw new Exception('Contact not found in EPP registry');
             }
 
             // Format phone numbers according to EPP format (+CC.number)
             $voice = $data['voice'];
             if (! str_starts_with($voice, '+')) {
-                $voice = '+250.'.ltrim($voice, '0'); // Using Rwanda country code
+                $voice = '+250.'.mb_ltrim($voice, '0'); // Using Rwanda country code
             }
 
-            $fax = ! empty($data['fax']) ? $data['fax'] : '';
+            $fax = empty($data['fax']) ? '' : $data['fax'];
             if ($fax && ! str_starts_with($fax, '+')) {
-                $fax = '+250.'.ltrim($fax, '0');
+                $fax = '+250.'.mb_ltrim($fax, '0');
             }
 
             // Prepare contact data for EPP service - following EPP protocol format
@@ -254,13 +256,13 @@ class ContactController extends Controller
             try {
                 // Update contact in EPP registry
                 $updateResult = $this->eppService->updateContact($contact->contact_id, $contactData);
-                if (! $updateResult || ! isset($updateResult['success']) || ! $updateResult['success']) {
+                if ($updateResult === [] || ! isset($updateResult['success']) || ! $updateResult['success']) {
                     throw new Exception('Failed to update contact in registry: '.($updateResult['message'] ?? 'Unknown error'));
                 }
 
                 // Verify the update was successful
                 $updatedEppInfo = $this->eppService->infoContact($contact->contact_id);
-                if (! $updatedEppInfo || ! isset($updatedEppInfo['contact'])) {
+                if ($updatedEppInfo === null || $updatedEppInfo === [] || ! isset($updatedEppInfo['contact'])) {
                     throw new Exception('Failed to verify contact update in registry');
                 }
 
@@ -329,7 +331,7 @@ class ContactController extends Controller
 
             // First verify contact exists in EPP registry
             $eppInfo = $this->eppService->infoContact($contact->contact_id);
-            if (! $eppInfo || ! isset($eppInfo['contact'])) {
+            if ($eppInfo === null || $eppInfo === [] || ! isset($eppInfo['contact'])) {
                 Log::warning('Contact not found in EPP registry, proceeding with local deletion', [
                     'contact_id' => $contact->contact_id,
                 ]);
@@ -340,7 +342,7 @@ class ContactController extends Controller
                 ]);
 
                 $deleteResult = $this->eppService->deleteContact($contact->contact_id);
-                if (! $deleteResult || ! $deleteResult['success']) {
+                if ($deleteResult === [] || ! $deleteResult['success']) {
                     throw new Exception('Failed to delete contact from registry: '.($deleteResult['message'] ?? 'Unknown error'));
                 }
 

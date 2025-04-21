@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
@@ -11,7 +13,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 
-class DashboardController extends Controller
+final class DashboardController extends Controller
 {
     /**
      * Handle the incoming request.
@@ -21,7 +23,7 @@ class DashboardController extends Controller
         $tlds = Cache::remember('dashboard.tlds', 3600, function () {
             return DomainPricing::withoutGlobalScope(DomainPricingScope::class)->count();
         });
-        $plans=Cache::remember('dashboard.plans', 3600, function () {
+        $plans = Cache::remember('dashboard.plans', 3600, function () {
             return Hosting::count();
         });
 

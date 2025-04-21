@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
@@ -7,7 +9,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Str;
 
-class Contact extends Model
+final class Contact extends Model
 {
     protected $fillable = [
         'contact_id',
@@ -32,6 +34,23 @@ class Contact extends Model
         'disclose' => 'array',
     ];
 
+    public static function generateContactIds(): string
+    {
+        // Format: RW-XXXX-YYYY where X is random letter and Y is random number
+        $letters = mb_strtoupper(Str::random(4));
+        $numbers = mb_str_pad(rand(1, 9999), 4, '0', STR_PAD_LEFT);
+
+        return "RW-{$letters}-{$numbers}";
+    }
+
+    public static function boot(): void
+    {
+        parent::boot();
+        self::creating(function ($model): void {
+            $model->uuid = (string) Str::uuid();
+        });
+    }
+
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
@@ -40,23 +59,6 @@ class Contact extends Model
     public function domainContacts(): HasMany
     {
         return $this->hasMany(DomainContact::class, 'contact_id');
-    }
-
-    public static function generateContactIds(): string
-    {
-        // Format: RW-XXXX-YYYY where X is random letter and Y is random number
-        $letters = strtoupper(Str::random(4));
-        $numbers = str_pad(rand(1, 9999), 4, '0', STR_PAD_LEFT);
-
-        return "RW-{$letters}-{$numbers}";
-    }
-
-    public static function boot(): void
-    {
-        parent::boot();
-        static::creating(function ($model) {
-            $model->uuid = (string) Str::uuid();
-        });
     }
 
     /**

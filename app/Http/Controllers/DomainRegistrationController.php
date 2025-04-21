@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers;
 
 use AfriCC\EPP\Frame\Response;
@@ -8,7 +10,7 @@ use App\Models\Country;
 use App\Models\Domain;
 use App\Services\Epp\EppService;
 use Darryldecode\Cart\Facades\CartFacade as Cart;
-use DateTime;
+use DateTimeImmutable;
 use Exception;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -20,7 +22,7 @@ use Illuminate\Support\Str;
 use Illuminate\View\View;
 use Throwable;
 
-class DomainRegistrationController extends Controller
+final class DomainRegistrationController extends Controller
 {
     protected EppService $eppService;
 
@@ -44,7 +46,7 @@ class DomainRegistrationController extends Controller
             ->get()
             ->groupBy('contact_type');
 
-        return view('domains.create-contact', compact('countries', 'cartItems', 'total', 'existingContacts'));
+        return view('domains.create-contact', ['countries' => $countries, 'cartItems' => $cartItems, 'total' => $total, 'existingContacts' => $existingContacts]);
     }
 
     /**
@@ -52,7 +54,7 @@ class DomainRegistrationController extends Controller
      */
     public function success(string $domain): View
     {
-        return view('domains.registration-success', compact('domain'));
+        return view('domains.registration-success', ['domain' => $domain]);
     }
 
     /**
@@ -278,7 +280,7 @@ class DomainRegistrationController extends Controller
                             'type' => $type,
                             'operation' => $contact->wasRecentlyCreated ? 'create' : 'update',
                             'success' => $response->success(),
-                            'results' => array_map(fn ($result) => [
+                            'results' => array_map(fn ($result): array => [
                                 'code' => $result->code(),
                                 'message' => $result->message(),
                             ], $response->results()),
@@ -314,26 +316,18 @@ class DomainRegistrationController extends Controller
             $processedDomains = [];
             foreach ($cartItems as $item) {
                 // Extract domain from attributes or use item ID as fallback
-                if (isset($item->attributes->domain)) {
-                    $domainName = $item->attributes->domain;
-                } else {
-                    $domainName = $item->id;
-                }
+                $domainName = isset($item->attributes->domain) ? $item->attributes->domain : $item->id;
 
                 // Remove 'renew_' prefix if present for renewal items
-                if (strpos($domainName, 'renew_') === 0) {
-                    $domainName = substr($domainName, 6); // Remove the 'renew_' prefix
+                if (mb_strpos($domainName, 'renew_') === 0) {
+                    $domainName = mb_substr($domainName, 6); // Remove the 'renew_' prefix
                 }
 
                 // Determine if this is a renewal or registration
                 // Check both the item type attribute and the item ID prefix for renewal
                 $isRenewal = (isset($item->attributes->type) && $item->attributes->type === 'renewal') ||
-                            (strpos($item->id, 'renew_') === 0);
-                if ($isRenewal) {
-                    $operationType = 'renewal';
-                } else {
-                    $operationType = 'registration';
-                }
+                            (mb_strpos($item->id, 'renew_') === 0);
+                $operationType = $isRenewal ? 'renewal' : 'registration';
 
                 // Ensure we have a valid domain name
                 if (empty($domainName)) {
@@ -341,11 +335,7 @@ class DomainRegistrationController extends Controller
                 }
 
                 // Set default period if not specified
-                if (isset($item->quantity)) {
-                    $period = $item->quantity;
-                } else {
-                    $period = 1;
-                }
+                $period = isset($item->quantity) ? $item->quantity : 1;
 
                 // Log the operation being performed
                 Log::info("Processing domain {$operationType}", [
@@ -362,7 +352,7 @@ class DomainRegistrationController extends Controller
 
                     $availability = $this->eppService->checkDomain([$domainName]);
 
-                    $domainAvailable = ! empty($availability) &&
+                    $domainAvailable = $availability !== [] &&
                         isset($availability[$domainName]) &&
                         $availability[$domainName]->available;
 
@@ -409,7 +399,7 @@ class DomainRegistrationController extends Controller
                         try {
                             $domainInfo = $this->eppService->getDomainInfo($domainName);
 
-                            if (! $domainInfo || ! isset($domainInfo['exDate'])) {
+                            if ($domainInfo === [] || ! isset($domainInfo['exDate'])) {
                                 throw new Exception("Could not retrieve expiration date for domain {$domainName}");
                             }
 
@@ -422,12 +412,12 @@ class DomainRegistrationController extends Controller
                                 'domain' => $domainName,
                                 'error' => $e->getMessage(),
                             ]);
-                            throw new Exception("Could not retrieve information for domain {$domainName}: {$e->getMessage()}");
+                            throw new Exception("Could not retrieve information for domain {$domainName}: {$e->getMessage()}", $e->getCode(), $e);
                         }
 
                         // Parse the expiration date
                         try {
-                            $expiryDate = new DateTime($domainInfo['exDate']);
+                            $expiryDate = new DateTimeImmutable($domainInfo['exDate']);
                             Log::info('Parsed expiry date for renewal', [
                                 'domain' => $domainName,
                                 'expiry_date' => $expiryDate->format('Y-m-d'),
@@ -438,14 +428,14 @@ class DomainRegistrationController extends Controller
                                 'expiry_date_raw' => $domainInfo['exDate'],
                                 'error' => $e->getMessage(),
                             ]);
-                            throw new Exception("Invalid expiration date format for domain {$domainName}: {$e->getMessage()}");
+                            throw new Exception("Invalid expiration date format for domain {$domainName}: {$e->getMessage()}", $e->getCode(), $e);
                         }
 
                         // Renew the domain
                         $frame = $this->eppService->renewDomain(
                             $domainName,
                             $expiryDate->format('Y-m-d'),
-                            (string) $period.'y' // Period in years
+                            $period.'y' // Period in years
                         );
 
                         Log::info("Renewal frame created for domain {$domainName}", [
@@ -457,13 +447,13 @@ class DomainRegistrationController extends Controller
                             'domain' => $domainName,
                             'error' => $e->getMessage(),
                         ]);
-                        throw new Exception("Failed to prepare renewal for domain {$domainName}: {$e->getMessage()}");
+                        throw new Exception("Failed to prepare renewal for domain {$domainName}: {$e->getMessage()}", $e->getCode(), $e);
                     }
                 } else {
                     // For registration, use the createDomain method
                     $frame = $this->eppService->createDomain(
                         $domainName,
-                        (string) $period.'y', // Period in years
+                        $period.'y', // Period in years
                         [], // Empty hostAttr array since we're using hostObj
                         $contacts['registrant']['id'],
                         $contacts['admin']['id'],
@@ -532,11 +522,7 @@ class DomainRegistrationController extends Controller
                         'period' => $period.'y',
                     ]);
 
-                    if ($isRenewal) {
-                        $operationVerb = 'renew';
-                    } else {
-                        $operationVerb = 'register';
-                    }
+                    $operationVerb = $isRenewal ? 'renew' : 'register';
                     throw new Exception("Failed to {$operationVerb} domain: {$domainName}. {$errorMessage}");
                 }
 
@@ -598,7 +584,7 @@ class DomainRegistrationController extends Controller
             DB::commit();
 
             // Determine success message based on operations performed
-            $registrationCount = count(array_filter($cartItems, function ($item) {
+            $registrationCount = count(array_filter($cartItems, function ($item): bool {
                 return ! isset($item->attributes->type) || $item->attributes->type !== 'renewal';
             }));
             $renewalCount = count($cartItems) - $registrationCount;
@@ -607,17 +593,11 @@ class DomainRegistrationController extends Controller
             if ($registrationCount > 0 && $renewalCount > 0) {
                 $successMessage = "{$registrationCount} domain(s) registered and {$renewalCount} domain(s) renewed successfully!";
             } elseif ($registrationCount > 0) {
-                if ($registrationCount > 1) {
-                    $successMessage = 'Domains registered successfully!';
-                } else {
-                    $successMessage = 'Domain registered successfully!';
-                }
+                $successMessage = $registrationCount > 1 ? 'Domains registered successfully!' : 'Domain registered successfully!';
+            } elseif ($renewalCount > 1) {
+                $successMessage = 'Domains renewed successfully!';
             } else {
-                if ($renewalCount > 1) {
-                    $successMessage = 'Domains renewed successfully!';
-                } else {
-                    $successMessage = 'Domain renewed successfully!';
-                }
+                $successMessage = 'Domain renewed successfully!';
             }
 
             return redirect()->route('domains.index')
@@ -694,7 +674,7 @@ class DomainRegistrationController extends Controller
         }
     }
 
-    public function updateContacts(Domain $domain, $type, Request $request)
+    public function updateContacts(Domain $domain, string $type, Request $request)
     {
         // Log the start of contact update
         Log::info('Starting contact update', [
@@ -800,7 +780,7 @@ class DomainRegistrationController extends Controller
                     'type' => $type,
                     'operation' => $contact->wasRecentlyCreated ? 'create' : 'update',
                     'success' => $response->success(),
-                    'results' => array_map(function ($result) {
+                    'results' => array_map(function ($result): array {
                         return [
                             'code' => $result->code(),
                             'message' => $result->message(),
@@ -862,7 +842,7 @@ class DomainRegistrationController extends Controller
                     'domain' => $domain->name,
                     'type' => $type,
                     'success' => $response->success(),
-                    'results' => array_map(function ($result) {
+                    'results' => array_map(function ($result): array {
                         return [
                             'code' => $result->code(),
                             'message' => $result->message(),
@@ -923,6 +903,8 @@ class DomainRegistrationController extends Controller
         } finally {
             $this->eppService->disconnect();
         }
+
+        return null;
     }
 
     public function editNameservers(Domain $domain)

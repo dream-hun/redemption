@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\View\Components;
 
 use App\Services\Epp\EppService;
@@ -9,7 +11,7 @@ use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Log;
 use Illuminate\View\Component;
 
-class DomainInformationComponent extends Component
+final class DomainInformationComponent extends Component
 {
     protected $domain;
 
@@ -40,7 +42,7 @@ class DomainInformationComponent extends Component
 
             // Attempt to fetch EPP info
             $eppInfo = $this->eppService->getDomainInfo($this->domain->name);
-            if (! $eppInfo) {
+            if ($eppInfo === []) {
                 throw new Exception('No EPP information returned for domain');
             }
 
@@ -56,7 +58,7 @@ class DomainInformationComponent extends Component
             if (! empty($eppInfo['nameservers']) && is_array($eppInfo['nameservers'])) {
                 // Ensure nameservers are in a flat array format for the view
                 $flatNameservers = [];
-                array_walk_recursive($eppInfo['nameservers'], function ($ns) use (&$flatNameservers) {
+                array_walk_recursive($eppInfo['nameservers'], function ($ns) use (&$flatNameservers): void {
                     if (is_string($ns)) {
                         $flatNameservers[] = $ns;
                     }

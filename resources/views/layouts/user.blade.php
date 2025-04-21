@@ -35,11 +35,11 @@
         rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <!-- all styles -->
-    <link rel="preload stylesheet" href="assets/css/plugins.min.css" as="style">
+    <link rel="preload stylesheet" href="{{ asset('assets/css/plugins.min.css') }}" as="style">
     <!-- fontawesome css -->
-    <link rel="preload stylesheet" href="assets/css/plugins/fontawesome.min.css" as="style">
+    <link rel="preload stylesheet" href="{{ asset('assets/css/plugins/fontawesome.min.css') }}" as="style">
     <!-- Custom css -->
-    <link rel="preload stylesheet" href="assets/css/style.css" as="style">
+    <link rel="preload stylesheet" href="{{ asset('assets/css/style.css') }}" as="style">
     @yield('styles')
 
 </head>

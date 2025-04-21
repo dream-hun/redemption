@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
@@ -9,7 +11,7 @@ use App\Models\Permission;
 use Illuminate\Support\Facades\Gate;
 use Symfony\Component\HttpFoundation\Response;
 
-class PermissionsController extends Controller
+final class PermissionsController extends Controller
 {
     public function index()
     {
@@ -17,7 +19,7 @@ class PermissionsController extends Controller
 
         $permissions = Permission::all();
 
-        return view('admin.permissions.index', compact('permissions'));
+        return view('admin.permissions.index', ['permissions' => $permissions]);
     }
 
     public function create()
@@ -29,7 +31,7 @@ class PermissionsController extends Controller
 
     public function store(StorePermissionRequest $request)
     {
-        $permission = Permission::create($request->all());
+        Permission::create($request->all());
 
         return redirect()->route('admin.permissions.index');
     }
@@ -38,7 +40,7 @@ class PermissionsController extends Controller
     {
         abort_if(Gate::denies('permission_edit'), Response::HTTP_FORBIDDEN, '403 Forbidden');
 
-        return view('admin.permissions.edit', compact('permission'));
+        return view('admin.permissions.edit', ['permission' => $permission]);
     }
 
     public function update(UpdatePermissionRequest $request, Permission $permission)
@@ -52,7 +54,7 @@ class PermissionsController extends Controller
     {
         abort_if(Gate::denies('permission_show'), Response::HTTP_FORBIDDEN, '403 Forbidden');
 
-        return view('admin.permissions.show', compact('permission'));
+        return view('admin.permissions.show', ['permission' => $permission]);
     }
 
     public function destroy(Permission $permission)

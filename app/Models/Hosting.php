@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models;
 
 use App\Enums\HostingStatus;
@@ -8,7 +10,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
-class Hosting extends Model
+final class Hosting extends Model
 {
     protected $fillable = [
         'name',
@@ -24,16 +26,16 @@ class Hosting extends Model
 
     public function features(): BelongsToMany
     {
-        return $this->belongsToMany(Feature::class, 'host_features')->withPivot('quantity','status');
+        return $this->belongsToMany(Feature::class, 'host_features')->withPivot('quantity', 'status');
     }
 
     public function category(): BelongsTo
     {
         return $this->belongsTo(Category::class);
     }
+
     public function formattedPricing(): Money
     {
         return Money::RWF($this->price);
     }
-
 }

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
@@ -9,7 +11,7 @@ use App\Models\DomainPricing;
 use Gate;
 use Symfony\Component\HttpFoundation\Response;
 
-class DomainPricingController extends Controller
+final class DomainPricingController extends Controller
 {
     public function index()
     {
@@ -17,7 +19,7 @@ class DomainPricingController extends Controller
 
         $domainPricings = DomainPricing::all();
 
-        return view('admin.domainPricings.index', compact('domainPricings'));
+        return view('admin.domainPricings.index', ['domainPricings' => $domainPricings]);
     }
 
     public function create()
@@ -29,7 +31,7 @@ class DomainPricingController extends Controller
 
     public function store(StoreDomainPricingRequest $request)
     {
-        $domainPricing = DomainPricing::create($request->all());
+        DomainPricing::create($request->all());
 
         return redirect()->route('admin.domain-pricings.index');
     }
@@ -38,7 +40,7 @@ class DomainPricingController extends Controller
     {
         abort_if(Gate::denies('domain_pricing_edit'), Response::HTTP_FORBIDDEN, '403 Forbidden');
 
-        return view('admin.domainPricings.edit', compact('domainPricing'));
+        return view('admin.domainPricings.edit', ['domainPricing' => $domainPricing]);
     }
 
     public function update(UpdateDomainPricingRequest $request, DomainPricing $domainPricing)

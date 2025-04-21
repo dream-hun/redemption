@@ -1,11 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Requests\Admin;
 
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Gate;
 
-class UpdateContactRequest extends FormRequest
+final class UpdateContactRequest extends FormRequest
 {
     public function authorize(): true
     {

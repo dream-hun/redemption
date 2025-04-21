@@ -1,11 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Requests\Admin;
 
 use Gate;
 use Illuminate\Foundation\Http\FormRequest;
 
-class StoreDomainPricingRequest extends FormRequest
+final class StoreDomainPricingRequest extends FormRequest
 {
     public function authorize(): bool
     {

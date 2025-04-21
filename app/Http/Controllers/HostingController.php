@@ -1,8 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers;
 
-class HostingController extends Controller
+final class HostingController extends Controller
 {
     public function index()
     {

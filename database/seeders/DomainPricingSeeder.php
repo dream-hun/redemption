@@ -1,11 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Database\Seeders;
 
 use App\Models\DomainPricing;
 use Illuminate\Database\Seeder;
 
-class DomainPricingSeeder extends Seeder
+final class DomainPricingSeeder extends Seeder
 {
     public function run(): void
     {

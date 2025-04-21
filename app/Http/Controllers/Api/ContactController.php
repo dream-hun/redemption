@@ -1,13 +1,16 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Contact;
+use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
-class ContactController extends Controller
+final class ContactController extends Controller
 {
     /**
      * Get contact details.
@@ -32,7 +35,7 @@ class ContactController extends Controller
                     'postal_code' => $contact->postal_code,
                 ],
             ]);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             return response()->json([
                 'success' => false,
                 'message' => 'Contact not found',
