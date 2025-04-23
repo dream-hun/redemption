@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers;
 
 use App\Http\Requests\RegisterDomainRequest;
@@ -18,9 +20,9 @@ use Illuminate\Support\Str;
 use Illuminate\View\View;
 use Throwable;
 
-class RegisterDomainController extends Controller
+final class RegisterDomainController extends Controller
 {
-    protected EppService $eppService;
+    private EppService $eppService;
 
     public function __construct(EppService $eppService)
     {
@@ -151,7 +153,7 @@ class RegisterDomainController extends Controller
             $userContactIds = $userContacts->pluck('id')->toArray();
             $missingContacts = array_diff($contactIds, $userContactIds);
 
-            if (! empty($missingContacts)) {
+            if ($missingContacts !== []) {
                 \Log::warning('User attempted to use contacts that do not belong to them', [
                     'user_id' => Auth::id(),
                     'missing_contact_ids' => $missingContacts,
@@ -160,12 +162,12 @@ class RegisterDomainController extends Controller
             }
 
             // Filter out empty nameservers
-            $nameservers = array_filter($request->nameservers ?? [], function ($ns) {
-                return ! empty(trim($ns));
+            $nameservers = array_filter($request->nameservers ?? [], function ($ns): bool {
+                return ! in_array(mb_trim($ns), ['', '0'], true);
             });
 
             // If no nameservers provided, use default ones
-            if (empty($nameservers)) {
+            if ($nameservers === []) {
                 $nameservers = [
                     'ns1.dns-parking.com',
                     'ns2.dns-parking.com',
@@ -263,7 +265,7 @@ class RegisterDomainController extends Controller
 
             // Remove domain from cart
             foreach (Cart::getContent() as $item) {
-                if (strtolower($item->name) === strtolower($domainName)) {
+                if (mb_strtolower($item->name) === mb_strtolower($domainName)) {
                     Cart::remove($item->id);
                 }
             }

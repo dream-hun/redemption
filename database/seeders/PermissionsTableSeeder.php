@@ -1,11 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Database\Seeders;
 
 use App\Models\Permission;
 use Illuminate\Database\Seeder;
 
-class PermissionsTableSeeder extends Seeder
+final class PermissionsTableSeeder extends Seeder
 {
     public function run(): void
     {
@@ -191,26 +193,26 @@ class PermissionsTableSeeder extends Seeder
                 'title' => 'profile_password_edit',
             ],
             [
-                'id'=>46,
-                'title'=>'hosting_create',
+                'id' => 46,
+                'title' => 'hosting_create',
 
             ],
             [
-                'id'=>47,
-                'title'=>'hosting_edit',
+                'id' => 47,
+                'title' => 'hosting_edit',
             ],
             [
-                'id'=>48,
-                'title'=>'hosting_show',
+                'id' => 48,
+                'title' => 'hosting_show',
             ],
             [
-                'id'=>49,
-                'title'=>'hosting_delete',
+                'id' => 49,
+                'title' => 'hosting_delete',
             ],
             [
-                'id'=>50,
-                'title'=>'hosting_access',
-            ]
+                'id' => 50,
+                'title' => 'hosting_access',
+            ],
         ];
 
         Permission::insert($permissions);

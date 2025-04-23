@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers;
 
 use App\Models\Domain;
@@ -11,25 +13,25 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 
-class ClientDomainsController extends Controller
+final class ClientDomainsController extends Controller
 {
     public function index()
     {
         $domains = Domain::where('owner_id', Auth::id())->get();
 
-        return view('client.domains.index', compact('domains'));
+        return view('client.domains.index', ['domains' => $domains]);
     }
 
     public function manage(Domain $domain)
     {
-        return view('client.domains.manage', compact('domain'));
+        return view('client.domains.manage', ['domain' => $domain]);
     }
 
     public function destroy(HttpRequest $request, Domain $domain, EppService $eppService): RedirectResponse
     {
         // Validate the password
         $request->validate([
-            'password' => ['required', function ($attribute, $value, $fail) {
+            'password' => ['required', function ($attribute, $value, $fail): void {
                 if (! Hash::check($value, Auth::user()->password)) {
                     $fail('The provided password is incorrect.');
                 }

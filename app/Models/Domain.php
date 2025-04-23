@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models;
 
 use Carbon\Carbon;
@@ -9,7 +11,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Facades\Str;
 
-class Domain extends Model
+final class Domain extends Model
 {
     public const STATUS_SELECT = [
         'active' => 'Active',
@@ -82,44 +84,44 @@ class Domain extends Model
         return now()->diffInDays($this->expires_at);
     }
 
-    protected function registeredAt(): Attribute
-    {
-        return Attribute::make(
-            get: fn ($value) => Carbon::parse($value)->format('M d, Y')
-        );
-    }
-
-    protected function expiresAt(): Attribute
-    {
-        return Attribute::make(
-            get: fn ($value) => Carbon::parse($value)->format('M d, Y')
-        );
-    }
-
-    protected function sslExpiresAt(): Attribute
-    {
-        return Attribute::make(
-            get: fn ($value) => $value ? Carbon::parse($value)->format('M d, Y') : null
-        );
-    }
-
-    protected function lastRenewalAt(): Attribute
-    {
-        return Attribute::make(
-            get: fn ($value) => $value ? Carbon::parse($value)->format('M d, Y') : null
-        );
-    }
-
     protected static function boot(): void
     {
         parent::boot();
 
-        static::creating(function ($model) {
+        self::creating(function ($model): void {
             // Generate UUID if not provided
             if (! $model->uuid) {
                 $model->uuid = (string) Str::uuid();
             }
         });
 
+    }
+
+    private function registeredAt(): Attribute
+    {
+        return Attribute::make(
+            get: fn ($value): string => Carbon::parse($value)->format('M d, Y')
+        );
+    }
+
+    private function expiresAt(): Attribute
+    {
+        return Attribute::make(
+            get: fn ($value): string => Carbon::parse($value)->format('M d, Y')
+        );
+    }
+
+    private function sslExpiresAt(): Attribute
+    {
+        return Attribute::make(
+            get: fn ($value): ?string => $value ? Carbon::parse($value)->format('M d, Y') : null
+        );
+    }
+
+    private function lastRenewalAt(): Attribute
+    {
+        return Attribute::make(
+            get: fn ($value): ?string => $value ? Carbon::parse($value)->format('M d, Y') : null
+        );
     }
 }

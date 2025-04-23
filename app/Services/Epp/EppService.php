@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Services\Epp;
 
 use AfriCC\EPP\Client as EPPClient;
@@ -19,11 +21,12 @@ use AfriCC\EPP\Frame\Command\Transfer\Domain as TransferDomain;
 use AfriCC\EPP\Frame\Command\Update\Domain as UpdateDomain;
 use AfriCC\EPP\Frame\Response;
 use DateTime;
+use DateTimeImmutable;
 use Exception;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
-class EppService
+final class EppService
 {
     private EPPClient $client;
 
@@ -34,6 +37,36 @@ class EppService
     private int $maxRetries = 3;
 
     private int $retryDelay = 1; // seconds
+
+    /**
+     * @throws Exception
+     */
+    public function __construct()
+    {
+        $this->config = config('epp');
+
+        if ($this->config === []) {
+            throw new Exception('EPP configuration not found');
+        }
+
+        if (empty($this->config['host'])) {
+            throw new Exception('EPP host is not configured. Please set EPP_HOST in your .env file.');
+        }
+
+        if (empty($this->config['certificate']) || ! file_exists($this->config['certificate'])) {
+            throw new Exception('EPP certificate not found. Please check the certificate path in your configuration.');
+        }
+
+        $this->initializeClient();
+    }
+
+    /**
+     * Destructor to ensure connection is closed
+     */
+    public function __destruct()
+    {
+        $this->disconnect();
+    }
 
     /**
      * Delete a contact from the EPP registry
@@ -82,6 +115,7 @@ class EppService
     }
 
     /**
+
      * @throws Exception
      */
     public function __construct()
@@ -264,6 +298,7 @@ class EppService
     }
 
     /**
+
      * Check if client is connected and try to reconnect if not
      *
      * @throws Exception
@@ -530,7 +565,11 @@ class EppService
 
             if (! str_starts_with($phone, '+')) {
                 // Add country code for Rwanda if not present
+
                 $phone = '+250.' . ltrim($phone, '0');
+
+                $phone = '+250.'.mb_ltrim($phone, '0');
+
             }
             $frame->setVoice($phone);
 
@@ -542,7 +581,10 @@ class EppService
                 }
 
                 if (! str_starts_with($fax, '+')) {
+
                     $fax = '+250.' . ltrim($fax, '0');
+
+                    $fax = '+250.'.mb_ltrim($fax, '0');
                 }
                 $frame->setFax($fax, $contacts['fax_ext'] ?? '');
             }
@@ -799,8 +841,8 @@ class EppService
             foreach ($nameservers as $host) {
                 if (! empty($host)) {
                     // Make sure the host is properly formatted
-                    $host = trim($host);
-                    if (! empty($host)) {
+                    $host = mb_trim($host);
+                    if ($host !== '' && $host !== '0') {
                         // Log the nameserver being added
                         Log::info('Adding nameserver to domain', [
                             'domain' => $domain,
@@ -960,9 +1002,9 @@ class EppService
             // Example: "2027-02-28T06:32:27.850Z" - NOT just "2027-02-28"
 
             // Only format if it's a DateTime object (should be avoided for renewals)
-            if ($currentExpirationDate instanceof \DateTime) {
+            if ($currentExpirationDate instanceof DateTimeImmutable) {
                 // Use ISO 8601 format with timezone to match registry format
-                $currentExpirationDate = $currentExpirationDate->format(\DateTime::ISO8601);
+                $currentExpirationDate = $currentExpirationDate->format(DateTime::ISO8601);
                 Log::warning('Converting DateTime to string for EPP renewal - this may cause issues', [
                     'domain' => $domain,
                     'formatted_date' => $currentExpirationDate,
@@ -973,7 +1015,7 @@ class EppService
                     'domain' => $domain,
                     'date_type' => gettype($currentExpirationDate),
                 ]);
-                $currentExpirationDate = (new \DateTime)->format(\DateTime::ISO8601);
+                $currentExpirationDate = (new DateTimeImmutable)->format(DateTime::ISO8601);
             } else {
                 // It's already a string - log but don't modify at all
                 Log::info('Using exact registry date string for EPP renewal', [
@@ -1067,13 +1109,18 @@ class EppService
             $this->ensureConnection();
 
             // Normalize domain name (remove trailing dot if present)
-            $domain = rtrim($domain, '.');
+            $domain = mb_rtrim($domain, '.');
 
             // Filter out empty nameservers and normalize hostnames
-            $nameservers = array_filter(array_map(function ($ns) {
+            $nameservers = array_filter(array_map(function ($ns): string {
                 // Normalize nameserver hostname (remove trailing dot if present)
+
                 return rtrim(trim($ns), '.');
             }, $nameservers), fn($ns) => ! empty($ns));
+
+                return mb_rtrim(mb_trim($ns), '.');
+            }, $nameservers), fn ($ns): bool => $ns !== '' && $ns !== '0');
+
 
             // Get current nameservers for the domain
             $infoFrame = new InfoDomain;
@@ -1088,7 +1135,7 @@ class EppService
             // If they don't exist, we need to create them first
             foreach ($nameservers as $ns) {
                 // Check if the nameserver exists
-                $checkFrame = new \AfriCC\EPP\Frame\Command\Check\Host;
+                $checkFrame = new CheckHost;
                 $checkFrame->addHost($ns);
                 $checkResponse = $this->client->request($checkFrame);
 
@@ -1103,10 +1150,13 @@ class EppService
                         strpos($ns, $domain) !== false
                     ) {
 
+                    if (mb_strpos($responseXml, '<host:name avail="1">') !== false &&
+                        mb_strpos($ns, $domain) !== false) {
+
                         Log::info("Creating subordinate host: {$ns}");
 
                         // Create the host
-                        $createFrame = new \AfriCC\EPP\Frame\Command\Create\Host;
+                        $createFrame = new CreateHost;
                         $createFrame->setHost($ns);
 
                         // Add a default IP address for the host
@@ -1135,11 +1185,9 @@ class EppService
                 // This is a simple approach since we can't use XPath directly
                 preg_match_all('/<domain:hostObj>([^<]+)<\/domain:hostObj>/', $responseXml, $matches);
 
-                if (! empty($matches[1])) {
-                    foreach ($matches[1] as $currentNs) {
-                        Log::info("Removing nameserver: {$currentNs}");
-                        $frame->removeHostObj($currentNs);
-                    }
+                foreach ($matches[1] as $currentNs) {
+                    Log::info("Removing nameserver: {$currentNs}");
+                    $frame->removeHostObj($currentNs);
                 }
             }
 
@@ -1187,7 +1235,7 @@ class EppService
             $this->ensureConnection();
 
             // Normalize domain name (remove trailing dot if present)
-            $domain = rtrim($domain, '.');
+            $domain = mb_rtrim($domain, '.');
 
             // Create update domain frame
             $frame = new UpdateDomain;
@@ -1206,14 +1254,14 @@ class EppService
                 preg_match_all('/<domain:contact type="([^"]+)">([^<]+)<\/domain:contact>/', $responseXml, $matches, PREG_SET_ORDER);
 
                 foreach ($matches as $match) {
-                    $contactType = strtolower($match[1]);
+                    $contactType = mb_strtolower($match[1]);
                     $contactId = $match[2];
                     $currentContacts[$contactType] = $contactId;
                 }
 
                 // Extract registrant
                 preg_match('/<domain:registrant>([^<]+)<\/domain:registrant>/', $responseXml, $registrantMatch);
-                if (! empty($registrantMatch[1])) {
+                if (isset($registrantMatch[1]) && ($registrantMatch[1] !== '' && $registrantMatch[1] !== '0')) {
                     $currentContacts['registrant'] = $registrantMatch[1];
                 }
             }
@@ -1290,49 +1338,41 @@ class EppService
             // Add section
             $addSection = false;
 
-            if (! empty($adminContacts)) {
+            if ($adminContacts !== []) {
                 foreach ($adminContacts as $contact) {
                     $frame->addAdminContact($contact);
                 }
                 $addSection = true;
             }
 
-            if (! empty($techContacts)) {
+            if ($techContacts !== []) {
                 foreach ($techContacts as $contact) {
                     $frame->addTechContact($contact);
                 }
                 $addSection = true;
             }
 
-            if (! empty($hostObjs)) {
-                foreach ($hostObjs as $host) {
-                    $frame->addHostObj($host);
-                    $addSection = true;
-                }
+            foreach ($hostObjs as $host) {
+                $frame->addHostObj($host);
+                $addSection = true;
             }
 
-            if (! empty($hostAttrs)) {
-                foreach ($hostAttrs as $host => $ips) {
-                    $frame->addHostAttr($host, $ips);
-                    $addSection = true;
-                }
+            foreach ($hostAttrs as $host => $ips) {
+                $frame->addHostAttr($host, $ips);
+                $addSection = true;
             }
 
-            if (! empty($statuses)) {
-                foreach ($statuses as $status => $reason) {
-                    $frame->addStatus($status, $reason);
-                    $addSection = true;
-                }
+            foreach ($statuses as $status => $reason) {
+                $frame->addStatus($status, $reason);
+                $addSection = true;
             }
 
             // Remove section
             $removeSection = false;
 
-            if (! empty($removeHostAttrs)) {
-                foreach ($removeHostAttrs as $host) {
-                    $frame->removeHostObj($host);
-                    $removeSection = true;
-                }
+            foreach ($removeHostAttrs as $host) {
+                $frame->removeHostObj($host);
+                $removeSection = true;
             }
 
             // Only change authInfo if we're making changes
@@ -1379,7 +1419,7 @@ class EppService
             // Log request for debugging
             Log::debug('Sending domain info request', ['domain' => $domain]);
 
-            $response = $this->getClient()->request($frame);
+            $response = $this->client->request($frame);
 
             // Validate response
             if (! ($response instanceof Response) || ! ($result = $response->results()[0])) {
@@ -1454,9 +1494,9 @@ class EppService
                 'status' => is_array($data['status'] ?? null) ? $data['status'] : [$data['status'] ?? null],
                 'registrant' => $data['registrant'] ?? null,
                 'contacts' => [
-                    'admin' => ! empty($adminContacts) ? $adminContacts : ($data['admin'] ?? null),
-                    'tech' => ! empty($techContacts) ? $techContacts : ($data['tech'] ?? null),
-                    'billing' => ! empty($billingContacts) ? $billingContacts : ($data['billing'] ?? null),
+                    'admin' => $adminContacts === [] ? $data['admin'] ?? null : ($adminContacts),
+                    'tech' => $techContacts === [] ? $data['tech'] ?? null : ($techContacts),
+                    'billing' => $billingContacts === [] ? $data['billing'] ?? null : ($billingContacts),
                 ],
                 'nameservers' => $nameservers,
                 'hosts' => is_array($data['host'] ?? null) ? $data['host'] : [],
@@ -1488,14 +1528,6 @@ class EppService
     }
 
     /**
-     * Destructor to ensure connection is closed
-     */
-    public function __destruct()
-    {
-        $this->disconnect();
-    }
-
-    /**
      * Close the EPP connection
      */
     public function disconnect(): void
@@ -1503,6 +1535,106 @@ class EppService
         if (isset($this->client)) {
             $this->client->close();
             $this->connected = false;
+        }
+    }
+
+    /**
+     * Initialize the EPP client with retries
+     *
+     * @throws Exception
+     */
+    private function initializeClient(): void
+    {
+        $config = [
+            'host' => $this->config['host'],
+            'port' => (int) $this->config['port'],
+            'username' => $this->config['username'],
+            'password' => $this->config['password'],
+            'ssl' => (bool) $this->config['ssl'],
+            'local_cert' => $this->config['certificate'],
+            'verify_peer' => false,
+            'verify_peer_name' => false,
+            'verify_host' => false,
+            'debug' => (bool) ($this->config['debug'] ?? false),
+            'timeout' => 30, // Add timeout
+        ];
+
+        $attempts = 0;
+        $lastException = null;
+
+        while ($attempts < $this->maxRetries) {
+            try {
+                $this->client = new EPPClient($config);
+
+                return;
+            } catch (Exception $e) {
+                $lastException = $e;
+                $attempts++;
+                Log::warning("EPP Client initialization attempt $attempts failed: ".$e->getMessage());
+
+                if ($attempts < $this->maxRetries) {
+                    sleep($this->retryDelay);
+                }
+            }
+        }
+
+        Log::error('EPP Client initialization failed after '.$this->maxRetries.' attempts');
+        throw $lastException;
+    }
+
+    /**
+     * Check if client is connected and try to reconnect if not
+     *
+     * @throws Exception
+     */
+    private function ensureConnection(): void
+    {
+        if (! isset($this->client)) {
+            throw new Exception('EPP client not initialized');
+        }
+
+        try {
+            if (! $this->connected) {
+                $greeting = $this->connect();
+                Log::info('EPP connection established', [
+                    'greeting' => $greeting,
+                    'host' => $this->config['host'],
+                ]);
+            }
+
+            // Test connection with a simple check domain command
+            try {
+                $frame = new CheckDomain;
+                $frame->addDomain($this->config['host']); // Use host as test domain
+                $response = $this->client->request($frame);
+
+                if (! ($response instanceof Response)) {
+                    $this->connected = false;
+                    throw new Exception('EPP connection test failed - invalid response');
+                }
+
+                $result = $response->results()[0];
+                if (! $result) {
+                    $this->connected = false;
+                    throw new Exception('EPP connection test failed - no result');
+                }
+
+                Log::debug('EPP connection test successful', [
+                    'code' => $result->code(),
+                    'message' => $result->message(),
+                ]);
+
+            } catch (Exception $e) {
+                $this->connected = false;
+                throw new Exception('EPP connection test failed: '.$e->getMessage(), $e->getCode(), $e);
+            }
+        } catch (Exception $e) {
+            $this->connected = false;
+            Log::error('EPP connection error: '.$e->getMessage(), [
+                'host' => $this->config['host'],
+                'trace' => $e->getTraceAsString(),
+            ]);
+            throw new Exception('Failed to establish EPP connection: '.$e->getMessage(), $e->getCode(), $e);
         }
     }
 }

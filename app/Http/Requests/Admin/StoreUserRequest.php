@@ -1,18 +1,20 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Requests\Admin;
 
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Gate;
 
-class StoreUserRequest extends FormRequest
+final class StoreUserRequest extends FormRequest
 {
     public function authorize()
     {
         return Gate::allows('user_create');
     }
 
-    public function rules()
+    public function rules(): array
     {
         return [
             'name' => [

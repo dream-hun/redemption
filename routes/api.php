@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 use App\Http\Controllers\Api\ContactController;
 use Illuminate\Support\Facades\Route;
 
@@ -14,6 +16,6 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::middleware(['auth'])->group(function () {
+Route::middleware(['auth'])->group(function (): void {
     Route::get('/contacts/{id}/details', [ContactController::class, 'details'])->name('api.contacts.details');
 });

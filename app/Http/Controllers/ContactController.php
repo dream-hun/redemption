@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers;
 
 use App\Http\Requests\Contact\CreateContactRequest;
@@ -12,9 +14,9 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\View\View;
 
-class ContactController extends Controller
+final class ContactController extends Controller
 {
-    protected $eppService;
+    private EppService $eppService;
 
     public function __construct(EppService $eppService)
     {
@@ -30,7 +32,7 @@ class ContactController extends Controller
             ->orderBy('created_at', 'desc')
             ->paginate(10);
 
-        return view('admin.contacts.index', compact('contacts'));
+        return view('admin.contacts.index', ['contacts' => $contacts]);
     }
 
     /**
@@ -102,7 +104,7 @@ class ContactController extends Controller
     {
         $this->authorize('update', $contact);
 
-        return view('admin.contacts.edit', compact('contact'));
+        return view('admin.contacts.edit', ['contact' => $contact]);
     }
 
     /**
@@ -116,8 +118,7 @@ class ContactController extends Controller
             // Update contact in EPP registry
             $eppResponse = $this->eppService->updateContact(
                 $contact->contact_id,
-                $request->validated(),
-                auth()->user()
+                $request->validated()
             );
 
             if (! $eppResponse->success()) {

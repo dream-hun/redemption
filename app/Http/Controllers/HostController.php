@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers;
 
 use App\Services\Epp\EppService;
@@ -8,9 +10,9 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 
-class HostController extends Controller
+final class HostController extends Controller
 {
-    protected EppService $eppService;
+    private EppService $eppService;
 
     public function __construct(EppService $eppService)
     {
@@ -58,15 +60,14 @@ class HostController extends Controller
                 }
 
                 return response()->json(['results' => $results]);
-            } else {
-                $result = $response ? $response->results()[0] : null;
-
-                return response()->json([
-                    'error' => 'Host check failed',
-                    'code' => $result ? $result->code() : 'unknown',
-                    'message' => $result ? $result->message() : 'No response',
-                ], 400);
             }
+            $result = $response ? $response->results()[0] : null;
+
+            return response()->json([
+                'error' => 'Host check failed',
+                'code' => $result ? $result->code() : 'unknown',
+                'message' => $result ? $result->message() : 'No response',
+            ], 400);
         } catch (Exception $e) {
             Log::error('Host availability check failed: '.$e->getMessage());
 
@@ -121,15 +122,14 @@ class HostController extends Controller
                     'message' => 'Host created successfully',
                     'data' => $response->data(),
                 ]);
-            } else {
-                $result = $response ? $response->results()[0] : null;
-
-                return response()->json([
-                    'error' => 'Failed to create host',
-                    'code' => $result ? $result->code() : 'unknown',
-                    'message' => $result ? $result->message() : 'No response',
-                ], 400);
             }
+            $result = $response ? $response->results()[0] : null;
+
+            return response()->json([
+                'error' => 'Failed to create host',
+                'code' => $result ? $result->code() : 'unknown',
+                'message' => $result ? $result->message() : 'No response',
+            ], 400);
         } catch (Exception $e) {
             Log::error('Host creation failed: '.$e->getMessage());
 

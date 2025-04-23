@@ -50,7 +50,7 @@
                                             <div class="col-lg-12">
                                                 <ul class="mega-menu-item">
                                                     <li>
-                                                        <a href="#">
+                                                        <a href="{{ route('shared.index') }}">
                                                             <img src="{{ asset('assets/images/mega-menu/22.svg') }}"
                                                                 alt="icon">
                                                             <div class="info">

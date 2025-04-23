@@ -1,19 +1,15 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models;
 
 use DateTimeInterface;
 use Illuminate\Database\Eloquent\Model;
 
-class Permission extends Model
+final class Permission extends Model
 {
     public $table = 'permissions';
-
-    protected $dates = [
-        'created_at',
-        'updated_at',
-        'deleted_at',
-    ];
 
     protected $fillable = [
         'title',

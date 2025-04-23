@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Livewire;
 
 use App\Models\Domain;
@@ -10,23 +12,29 @@ use Illuminate\Contracts\View\View;
 use Illuminate\Foundation\Application;
 use Livewire\Component;
 
-class CartQuantityInput extends Component
+final class CartQuantityInput extends Component
 {
-    protected $listeners = ['refreshCart' => '$refresh'];
     public $periode = 1;
+
     public $quantityPrevious = 0;
+
     public $total = 0;
+
     public $cartitem = [];
 
     public $domainId = '';
-    public function mount($domain_id)
+
+    protected $listeners = ['refreshCart' => '$refresh'];
+
+    public function mount($domain_id): void
     {
         $this->domainId = $domain_id;
         $this->cartitem = Cart::get($domain_id);
         $this->quantityPrevious = $this->cartitem['quantity'];
         $this->periode = $this->quantityPrevious;
-        $this->total =  Cart::getTotal();
+        $this->total = Cart::getTotal();
     }
+
     public function getFormattedTotalProperty()
     {
         return Money::RWF(Cart::getTotal())->format();
@@ -36,13 +44,14 @@ class CartQuantityInput extends Component
     {
         return view('livewire.cart-quantity-input');
     }
-    public function handleCartPeriodCount()
+
+    public function handleCartPeriodCount(): void
     {
         Cart::remove($this->domainId);
         Cart::add([
             'id' => $this->domainId,
             'name' => $this->cartitem['name'],
-            'price' =>  $this->cartitem['price'],
+            'price' => $this->cartitem['price'],
             'quantity' => $this->periode,
             'attributes' => [
                 'domain' => $this->cartitem['name'],
@@ -53,6 +62,6 @@ class CartQuantityInput extends Component
             'associatedModel' => Domain::class,
         ]);
 
-        $this->total =  Cart::getTotal();
+        $this->total = Cart::getTotal();
     }
 }

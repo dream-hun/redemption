@@ -1,18 +1,20 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Requests\Admin;
 
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Gate;
 
-class UpdateServiceRequest extends FormRequest
+final class UpdateServiceRequest extends FormRequest
 {
     public function authorize()
     {
         return Gate::allows('service_edit');
     }
 
-    public function rules()
+    public function rules(): array
     {
         return [
             'name' => [

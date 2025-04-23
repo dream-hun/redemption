@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
@@ -20,9 +22,9 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\Response;
 
-class DomainController extends Controller
+final class DomainController extends Controller
 {
-    protected EppService $eppService;
+    private EppService $eppService;
 
     public function __construct(EppService $eppService)
     {
@@ -36,7 +38,7 @@ class DomainController extends Controller
         $domains = Domain::with(['owner', 'contacts.contact', 'nameservers'])
             ->where('owner_id', auth()->id())->get();
 
-        return view('admin.domains.index', compact('domains'));
+        return view('admin.domains.index', ['domains' => $domains]);
     }
 
     public function edit(Domain $domain): View
@@ -49,12 +51,12 @@ class DomainController extends Controller
         // Get contacts already attached to this domain and the registrant
         $domainContactIds = $domain->contacts()->pluck('contact_id')->toArray();
         $availableContacts = Contact::where('user_id', auth()->id())
-            ->where(function ($query) use ($domainContactIds) {
+            ->where(function ($query) use ($domainContactIds): void {
                 // Include contacts that are either:
                 // 1. Already attached to this domain
                 // 2. Have been used as registrant in any domain
                 $query->whereIn('id', $domainContactIds)
-                    ->orWhereHas('domainContacts', function ($q) {
+                    ->orWhereHas('domainContacts', function ($q): void {
                         $q->where('type', 'registrant');
                     });
             })
@@ -73,7 +75,7 @@ class DomainController extends Controller
             }
         }
 
-        return view('admin.domains.edit', compact('domain', 'countries', 'contactsByType', 'availableContacts'));
+        return view('admin.domains.edit', ['domain' => $domain, 'countries' => $countries, 'contactsByType' => $contactsByType, 'availableContacts' => $availableContacts]);
     }
 
     public function show(Domain $domain): View
@@ -99,7 +101,7 @@ class DomainController extends Controller
 
             // Attempt to fetch EPP info
             $eppInfo = $this->eppService->getDomainInfo($domain->name);
-            if (! $eppInfo) {
+            if ($eppInfo === []) {
                 throw new Exception('No EPP information returned for domain');
             }
 
@@ -115,7 +117,7 @@ class DomainController extends Controller
             if (! empty($eppInfo['nameservers']) && is_array($eppInfo['nameservers'])) {
                 // Ensure nameservers are in a flat array format for the view
                 $flatNameservers = [];
-                array_walk_recursive($eppInfo['nameservers'], function ($ns) use (&$flatNameservers) {
+                array_walk_recursive($eppInfo['nameservers'], function ($ns) use (&$flatNameservers): void {
                     if (is_string($ns)) {
                         $flatNameservers[] = $ns;
                     }
@@ -123,7 +125,7 @@ class DomainController extends Controller
                 $eppInfo['nameservers'] = $flatNameservers;
 
                 // If we have EPP nameservers but no local nameserver records, sync them
-                if ($domain->nameservers()->count() === 0 && ! empty($flatNameservers)) {
+                if ($domain->nameservers()->count() === 0 && $flatNameservers !== []) {
                     $this->syncNameserversFromEpp($domain, $flatNameservers);
                 }
             }
@@ -140,7 +142,7 @@ class DomainController extends Controller
                 // This would require additional implementation to create Contact records from EPP data
             }
 
-            return view('admin.domains.show', compact('domain', 'eppInfo', 'contactsByType'));
+            return view('admin.domains.show', ['domain' => $domain, 'eppInfo' => $eppInfo, 'contactsByType' => $contactsByType]);
 
         } catch (Exception $e) {
             Log::error('Failed to fetch EPP domain info: '.$e->getMessage(), [
@@ -156,41 +158,7 @@ class DomainController extends Controller
 
             session()->flash('error', $errorMessage);
 
-            return view('admin.domains.show', compact('domain', 'contactsByType'));
-        }
-    }
-
-    /**
-     * Sync nameservers from EPP to local database
-     */
-    private function syncNameserversFromEpp(Domain $domain, array $nameservers): void
-    {
-        try {
-            DB::transaction(function () use ($domain, $nameservers) {
-                // Update domain nameservers array
-                $domain->update([
-                    'nameservers' => $nameservers,
-                ]);
-
-                // Create nameserver records
-                foreach ($nameservers as $hostname) {
-                    if (! empty($hostname)) {
-                        $domain->nameservers()->create([
-                            'hostname' => $hostname,
-                            'ipv4_addresses' => [],
-                            'ipv6_addresses' => [],
-                        ]);
-                    }
-                }
-            });
-
-            Log::info('Synchronized nameservers from EPP for domain: '.$domain->name);
-        } catch (Exception $e) {
-            Log::error('Failed to sync nameservers from EPP: '.$e->getMessage(), [
-                'domain' => $domain->name,
-                'nameservers' => $nameservers,
-                'exception' => $e,
-            ]);
+            return view('admin.domains.show', ['domain' => $domain, 'contactsByType' => $contactsByType]);
         }
     }
 
@@ -214,7 +182,7 @@ class DomainController extends Controller
 
             if ($response->code() === 1000) {
                 // Successfully deleted from registry, now delete from database
-                DB::transaction(function () use ($domain) {
+                DB::transaction(function () use ($domain): void {
                     // Delete related records first
                     $domain->nameservers()->delete();
                     $domain->contacts()->delete();
@@ -226,16 +194,14 @@ class DomainController extends Controller
                 }
 
                 return redirect()->route('admin.domains.index')->with('message', 'Domain deleted successfully');
-            } else {
-                $errorMessage = 'Failed to delete domain: '.$response->message();
-                Log::error('EPP domain deletion failed: '.$response->message());
-
-                if (request()->wantsJson()) {
-                    return response()->json(['message' => $errorMessage], Response::HTTP_INTERNAL_SERVER_ERROR);
-                }
-
-                return back()->with('error', $errorMessage);
             }
+            $errorMessage = 'Failed to delete domain: '.$response->message();
+            Log::error('EPP domain deletion failed: '.$response->message());
+            if (request()->wantsJson()) {
+                return response()->json(['message' => $errorMessage], Response::HTTP_INTERNAL_SERVER_ERROR);
+            }
+
+            return back()->with('error', $errorMessage);
         } catch (Exception $e) {
             $errorMessage = 'An error occurred while deleting the domain';
             Log::error('Domain deletion error: '.$e->getMessage(), [
@@ -267,7 +233,7 @@ class DomainController extends Controller
 
             if ($response->code() === 1000) {
                 // Successfully updated in registry, now update in database
-                DB::transaction(function () use ($domain, $nameservers) {
+                DB::transaction(function () use ($domain, $nameservers): void {
                     // Delete existing nameservers
                     $domain->nameservers()->delete();
 
@@ -288,13 +254,12 @@ class DomainController extends Controller
 
                 return redirect()->route('admin.domains.edit', $domain)
                     ->with('message', 'Nameservers updated successfully');
-            } else {
-                $errorMessage = 'Failed to update nameservers: '.$response->message();
-                Log::error('EPP nameserver update failed: '.$response->message());
-
-                return back()->with('error', $errorMessage)
-                    ->withInput();
             }
+            $errorMessage = 'Failed to update nameservers: '.$response->message();
+            Log::error('EPP nameserver update failed: '.$response->message());
+
+            return back()->with('error', $errorMessage)
+                ->withInput();
         } catch (Exception $e) {
             $errorMessage = 'An error occurred while updating nameservers';
             Log::error('Nameserver update error: '.$e->getMessage(), [
@@ -347,7 +312,7 @@ class DomainController extends Controller
 
             if ($response->code() === 1000) {
                 // Successfully updated in registry, now update in database
-                DB::transaction(function () use ($domain, $contactType) {
+                DB::transaction(function () use ($domain, $contactType): void {
                     // Remove the association in the database
                     $domain->contacts()->where('type', $contactType)->delete();
 
@@ -367,12 +332,11 @@ class DomainController extends Controller
 
                 return redirect()->route('admin.domains.edit', $domain)
                     ->with('message', ucfirst($contactType).' contact removed successfully');
-            } else {
-                $errorMessage = 'Failed to remove contact from registry: '.$response->message();
-                Log::error('EPP contact removal failed: '.$response->message());
-
-                return back()->with('error', $errorMessage);
             }
+            $errorMessage = 'Failed to remove contact from registry: '.$response->message();
+            Log::error('EPP contact removal failed: '.$response->message());
+
+            return back()->with('error', $errorMessage);
         } catch (Exception $e) {
             $errorMessage = 'An error occurred while removing the contact';
             Log::error('Contact removal error: '.$e->getMessage(), [
@@ -443,7 +407,7 @@ class DomainController extends Controller
             }
 
             // Update contacts via EPP only if we have contacts to update or remove
-            if (! empty($contactData) || ! empty($contactsToRemove)) {
+            if ($contactData !== [] || $contactsToRemove !== []) {
                 // Log what we're about to do
                 Log::info('Updating domain contacts', [
                     'domain' => $domain->name,
@@ -457,7 +421,7 @@ class DomainController extends Controller
 
                 if ($response->code() === 1000) {
                     // Successfully updated in registry, now update in database
-                    DB::transaction(function () use ($domain, $contactData, $contactsToRemove, $updatedContactIds) {
+                    DB::transaction(function () use ($domain, $contactData, $contactsToRemove, $updatedContactIds): void {
                         // Process contacts to remove first
                         foreach ($contactsToRemove as $typeToRemove) {
                             Log::info("Removing {$typeToRemove} contact from database for domain {$domain->name}");
@@ -495,7 +459,7 @@ class DomainController extends Controller
 
                             if ($existingContact) {
                                 // If the existing contact is different from the new one, update it
-                                if ($existingContact->contact_id != $dbContactId) {
+                                if ($existingContact->contact_id !== $dbContactId) {
                                     Log::info("Updating existing {$type} contact association", [
                                         'old_contact_id' => $existingContact->contact_id,
                                         'new_contact_id' => $dbContactId,
@@ -534,29 +498,27 @@ class DomainController extends Controller
 
                     return redirect()->route('admin.domains.edit', $domain)
                         ->with('message', 'Domain contacts updated successfully');
-                } else {
-                    $errorMessage = 'Failed to update domain contacts: '.$response->message();
-                    Log::error('EPP domain contact update failed: '.$response->message(), [
-                        'domain' => $domain->name,
-                        'response_code' => $response->code(),
-                        'response_message' => $response->message(),
-                    ]);
-
-                    if ($request->wantsJson()) {
-                        return response()->json([
-                            'success' => false,
-                            'message' => $errorMessage,
-                        ], 400);
-                    }
-
-                    return back()->with('error', $errorMessage)
-                        ->withInput();
                 }
-            } else {
-                // No changes to make
-                return redirect()->route('admin.domains.edit', $domain)
-                    ->with('message', 'No contact changes were made');
+                $errorMessage = 'Failed to update domain contacts: '.$response->message();
+                Log::error('EPP domain contact update failed: '.$response->message(), [
+                    'domain' => $domain->name,
+                    'response_code' => $response->code(),
+                    'response_message' => $response->message(),
+                ]);
+                if ($request->wantsJson()) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => $errorMessage,
+                    ], 400);
+                }
+
+                return back()->with('error', $errorMessage)
+                    ->withInput();
             }
+
+            // No changes to make
+            return redirect()->route('admin.domains.edit', $domain)
+                ->with('message', 'No contact changes were made');
         } catch (Exception $e) {
             $errorMessage = 'An error occurred while updating domain contacts';
             Log::error('Domain contact update error: '.$e->getMessage(), [
@@ -567,6 +529,40 @@ class DomainController extends Controller
 
             return back()->with('error', $errorMessage)
                 ->withInput();
+        }
+    }
+
+    /**
+     * Sync nameservers from EPP to local database
+     */
+    private function syncNameserversFromEpp(Domain $domain, array $nameservers): void
+    {
+        try {
+            DB::transaction(function () use ($domain, $nameservers): void {
+                // Update domain nameservers array
+                $domain->update([
+                    'nameservers' => $nameservers,
+                ]);
+
+                // Create nameserver records
+                foreach ($nameservers as $hostname) {
+                    if (! empty($hostname)) {
+                        $domain->nameservers()->create([
+                            'hostname' => $hostname,
+                            'ipv4_addresses' => [],
+                            'ipv6_addresses' => [],
+                        ]);
+                    }
+                }
+            });
+
+            Log::info('Synchronized nameservers from EPP for domain: '.$domain->name);
+        } catch (Exception $e) {
+            Log::error('Failed to sync nameservers from EPP: '.$e->getMessage(), [
+                'domain' => $domain->name,
+                'nameservers' => $nameservers,
+                'exception' => $e,
+            ]);
         }
     }
 }

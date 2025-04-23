@@ -19,7 +19,7 @@
                             data-sal-duration="800">
                             <a href="{{ route('register') }}" class="primary__btn white__bg">Get Started <i
                                     class="fa-regular fa-long-arrow-right"></i></a>
-                            <a href="{{ route('hosting.index') }}" class="btn__zero plan__btn">Plans & Pricing <i
+                            <a href="{{ route('shared.index') }}" class="btn__zero plan__btn">Plans & Pricing <i
                                     class="fa-regular fa-long-arrow-right"></i></a>
                         </div>
 

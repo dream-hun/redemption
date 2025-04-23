@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 return [
     'host' => env('EPP_HOST'),
     'username' => env('EPP_USERNAME'),
