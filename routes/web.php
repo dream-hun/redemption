@@ -10,6 +10,8 @@ use App\Http\Controllers\Admin\PermissionsController;
 use App\Http\Controllers\Admin\RenewDomainController;
 use App\Http\Controllers\Admin\RolesController;
 use App\Http\Controllers\Admin\SettingController;
+use App\Http\Controllers\Admin\TransferDomainController;
+use App\Http\Controllers\Admin\TransferDomainCController;
 use App\Http\Controllers\Admin\UsersController;
 use App\Http\Controllers\Api\UserContactController;
 use App\Http\Controllers\CartController;
@@ -23,6 +25,10 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/', LandingController::class)->name('home');
 
+
+Route::get('/hosting', [HostingController::class, 'index'])->name('hosting.index');
+Route::get('/admin/domains/transfer/auth-code/{domain}', [TransferDomainCController::class, 'getAuthCode'])->name('authcode');
+
 Route::get('/hosting/shared', [HostingController::class, 'index'])->name('shared.index');
 
 Route::middleware('auth')->group(function (): void {
@@ -35,13 +41,17 @@ Route::post('/check-domains', [SearchDomainController::class, 'search'])->name('
 
 Route::get('/shopping-cart', [CartController::class, 'cart'])->name('cart.index');
 
+
 Route::group(['middleware' => 'auth', 'prefix' => 'admin', 'as' => 'admin.'], function (): void {
+
     Route::resource('settings', SettingController::class);
     Route::resource('users', UsersController::class);
     Route::resource('roles', RolesController::class);
     Route::resource('permissions', PermissionsController::class);
     Route::resource('domain-pricings', DomainPricingController::class)->except('show');
-    Route::resource('hostings', App\Http\Controllers\Admin\HostingController::class)->except(['show']);
+
+    Route::resource('hostings', \App\Http\Controllers\Admin\HostingController::class)->except(['show']);
+
 
     // Contact management (global)
     Route::group(['prefix' => 'contacts', 'as' => 'contacts.'], function (): void {
@@ -66,6 +76,7 @@ Route::group(['middleware' => 'auth', 'prefix' => 'admin', 'as' => 'admin.'], fu
         Route::put('/{domain:uuid}', [DomainController::class, 'update'])->name('update');
         Route::delete('/{domain:uuid}', [DomainController::class, 'destroy'])->name('destroy');
 
+
         // Domain operations
         Route::prefix('{domain:uuid}')->group(function (): void {
             // Contact management
@@ -77,7 +88,6 @@ Route::group(['middleware' => 'auth', 'prefix' => 'admin', 'as' => 'admin.'], fu
 
             // Nameserver management
             Route::put('nameservers', [DomainController::class, 'updateNameservers'])->name('nameservers.update');
-
         });
 
         // Domain renewal
@@ -86,6 +96,16 @@ Route::group(['middleware' => 'auth', 'prefix' => 'admin', 'as' => 'admin.'], fu
             Route::post('/{uuid}', [RenewDomainController::class, 'addToCart'])->name('addToCart');
             Route::put('/{uuid}', [RenewDomainController::class, 'renew'])->name('renew');
         });
+        // Domain transfer
+        // Transfer routes
+        Route::prefix('transfer')->name('transfer.')->group(function () {
+            Route::get('/{uuid}', [TransferDomainController::class, 'index'])->name('index');
+            Route::put('/{uuid}', [TransferDomainController::class, 'transfer'])->name('transfer');
+            Route::post('/auth-code', [TransferDomainController::class, 'getAuthCode'])->name('get-auth-code');
+        });
+
+        // Transfers page (Approach 2)
+        Route::get('/transfers', [TransferDomainController::class, 'listTransfers'])->name('transfers');
 
         // Domain registration flow
         Route::prefix('registration')->name('registration.')->group(function (): void {
@@ -93,7 +113,6 @@ Route::group(['middleware' => 'auth', 'prefix' => 'admin', 'as' => 'admin.'], fu
             Route::post('/{domain:uuid}', [DomainRegistrationController::class, 'store'])->name('store');
             Route::get('/{domain:uuid}/success', [DomainRegistrationController::class, 'success'])->name('success');
         });
-
     });
 });
 
@@ -120,4 +139,4 @@ Route::middleware('auth')->group(function (): void {
     });
 });
 
-require __DIR__.'/auth.php';
+require __DIR__ . '/auth.php';
