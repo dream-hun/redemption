@@ -84,6 +84,34 @@ final class Domain extends Model
         return now()->diffInDays($this->expires_at);
     }
 
+    public function registeredAt(): Attribute
+    {
+        return Attribute::make(
+            get: fn ($value): string => Carbon::parse($value)->format('M d, Y')
+        );
+    }
+
+    public function expiresAt(): Attribute
+    {
+        return Attribute::make(
+            get: fn ($value): string => Carbon::parse($value)->format('M d, Y')
+        );
+    }
+
+    public function sslExpiresAt(): Attribute
+    {
+        return Attribute::make(
+            get: fn ($value): ?string => $value ? Carbon::parse($value)->format('M d, Y') : null
+        );
+    }
+
+    public function lastRenewalAt(): Attribute
+    {
+        return Attribute::make(
+            get: fn ($value): ?string => $value ? Carbon::parse($value)->format('M d, Y') : null
+        );
+    }
+
     protected static function boot(): void
     {
         parent::boot();
@@ -95,33 +123,5 @@ final class Domain extends Model
             }
         });
 
-    }
-
-    private function registeredAt(): Attribute
-    {
-        return Attribute::make(
-            get: fn ($value): string => Carbon::parse($value)->format('M d, Y')
-        );
-    }
-
-    private function expiresAt(): Attribute
-    {
-        return Attribute::make(
-            get: fn ($value): string => Carbon::parse($value)->format('M d, Y')
-        );
-    }
-
-    private function sslExpiresAt(): Attribute
-    {
-        return Attribute::make(
-            get: fn ($value): ?string => $value ? Carbon::parse($value)->format('M d, Y') : null
-        );
-    }
-
-    private function lastRenewalAt(): Attribute
-    {
-        return Attribute::make(
-            get: fn ($value): ?string => $value ? Carbon::parse($value)->format('M d, Y') : null
-        );
     }
 }

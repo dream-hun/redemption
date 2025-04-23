@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
@@ -9,17 +11,17 @@ use App\Models\Country;
 use App\Models\Domain;
 use App\Models\DomainTransfer;
 use App\Services\DomainService;
+use Exception;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\View\View;
-use Exception;
 
-class TransferDomainController extends Controller
+final class TransferDomainController extends Controller
 {
-    protected DomainService $domainService;
+    private DomainService $domainService;
 
     public function __construct(DomainService $domainService)
     {
@@ -34,11 +36,12 @@ class TransferDomainController extends Controller
         $domain = Domain::where('uuid', $uuid)->firstOrFail();
 
         // Restrict non-admins to their own domains
-        if (!Auth::user()->is_admin && $domain->owner_id !== Auth::id()) {
+        if (! Auth::user()->is_admin && $domain->owner_id !== Auth::id()) {
             Log::warning('Unauthorized access to transfer form', [
                 'domain' => $domain->name,
                 'user_id' => Auth::id(),
             ]);
+
             return redirect()->route('admin.domains.index')
                 ->with('error', 'You do not have permission to transfer this domain.');
         }
@@ -91,11 +94,12 @@ class TransferDomainController extends Controller
         $domain = Domain::where('uuid', $uuid)->firstOrFail();
 
         // Restrict non-admins to their own domains
-        if (!Auth::user()->is_admin && $domain->owner_id !== Auth::id()) {
+        if (! Auth::user()->is_admin && $domain->owner_id !== Auth::id()) {
             Log::error('Unauthorized transfer attempt', [
                 'domain' => $domain->name,
                 'user_id' => Auth::id(),
             ]);
+
             return redirect()->route('admin.domains.index')
                 ->with('error', 'You are not allowed to transfer this domain.');
         }
@@ -133,6 +137,7 @@ class TransferDomainController extends Controller
                 ]);
 
                 DB::commit();
+
                 return redirect()->route('admin.domains.index')
                     ->with('success', $result['message']);
             }
@@ -149,6 +154,7 @@ class TransferDomainController extends Controller
             ]);
 
             DB::rollBack();
+
             return redirect()->back()
                 ->with('error', $result['message']);
         } catch (Exception $e) {
@@ -158,7 +164,7 @@ class TransferDomainController extends Controller
             if (isset($transferRecord)) {
                 $transferRecord->update([
                     'status' => 'failed',
-                    'message' => 'Failed to transfer domain: ' . $e->getMessage(),
+                    'message' => 'Failed to transfer domain: '.$e->getMessage(),
                 ]);
             }
 
@@ -170,7 +176,7 @@ class TransferDomainController extends Controller
             ]);
 
             return redirect()->back()
-                ->with('error', 'Failed to transfer domain: ' . $e->getMessage());
+                ->with('error', 'Failed to transfer domain: '.$e->getMessage());
         } finally {
             $this->domainService->getEppClient()->disconnect();
         }
@@ -182,14 +188,14 @@ class TransferDomainController extends Controller
     public function getAuthCode(Request $request): RedirectResponse
     {
         $uuid = $request->input('uuid');
-        if (!$uuid) {
+        if (! $uuid) {
             return redirect()->back()->with('error', 'No domain selected.');
         }
 
         $domain = Domain::where('uuid', $uuid)->firstOrFail();
 
         // Restrict non-admins to their own domains
-        if (!Auth::user()->is_admin && $domain->owner_id !== Auth::id()) {
+        if (! Auth::user()->is_admin && $domain->owner_id !== Auth::id()) {
             return redirect()->route('admin.domains.index')
                 ->with('error', 'You are not authorized to access this domain.');
         }
@@ -198,12 +204,13 @@ class TransferDomainController extends Controller
             $result = $this->domainService->getAuthCode($domain);
 
             if ($result['success']) {
-                session()->flash('success', 'Auth code retrieved: ' . $result['auth_code']);
+                session()->flash('success', 'Auth code retrieved: '.$result['auth_code']);
                 session()->flash('auth_code', $result['auth_code']);
+
                 return redirect()->back();
             }
 
-            $message = $result['code'] == 2303
+            $message = $result['code'] === 2303
                 ? 'Domain not managed by this registrar. Please obtain the auth code from the current registrar.'
                 : $result['message'];
 
@@ -216,7 +223,7 @@ class TransferDomainController extends Controller
             ]);
 
             return redirect()->back()
-                ->with('error', 'Failed to retrieve auth code: ' . $e->getMessage());
+                ->with('error', 'Failed to retrieve auth code: '.$e->getMessage());
         }
     }
 

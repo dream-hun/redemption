@@ -1,11 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Requests\Admin;
 
-use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 
-class DomainTransferRequest extends FormRequest
+final class DomainTransferRequest extends FormRequest
 {
     public function authorize(): bool
     {
@@ -26,6 +27,4 @@ class DomainTransferRequest extends FormRequest
             // 'new_registrant_country' => 'required|string|size:2',
         ];
     }
-
 }
-

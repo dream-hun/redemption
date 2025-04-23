@@ -1,31 +1,25 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Services;
 
 use AfriCC\EPP\Client as EPPClient;
 use AfriCC\EPP\Frame\Command\Create\Contact as ContactCreate;
-use AfriCC\EPP\Frame\Command\Update\Domain as DomainUpdate;
 use AfriCC\EPP\Frame\Command\Info\Domain as DomainInfo;
-
-use AfriCC\EPP\Frame\Command\Check\Contact as CheckContact;
-use AfriCC\EPP\Frame\Command\Check\Domain as CheckDomain;
-use AfriCC\EPP\Frame\Command\Check\Host as CheckHost;
-use AfriCC\EPP\Frame\Command\Create\Contact as CreateContact;
-use AfriCC\EPP\Frame\Command\Create\Domain as CreateDomain;
-use AfriCC\EPP\Frame\Command\Create\Host as CreateHost;
-use AfriCC\EPP\Frame\Command\Delete\Contact as DeleteContact;
-use AfriCC\EPP\Frame\Command\Delete\Domain as DeleteDomain;
-use AfriCC\EPP\Frame\Command\Info\Contact as InfoContact;
 use AfriCC\EPP\Frame\Command\Info\Domain as InfoDomain;
+use AfriCC\EPP\Frame\Command\Update\Domain as DomainUpdate;
 use AfriCC\EPP\Frame\Response;
 use Exception;
 use Illuminate\Support\Facades\Log;
 
-class EppService
+final class EppService
 {
-    protected $client;
-    protected $config;
-    protected $connected = false;
+    private \AfriCC\EPP\Client $client;
+
+    private array $config;
+
+    private bool $connected = false;
 
     public function __construct()
     {
@@ -44,22 +38,21 @@ class EppService
         return $this->client;
     }
 
-    public function ensureConnection()
+    public function ensureConnection(): void
     {
-        if (!$this->connected) {
+        if (! $this->connected) {
             $this->client->connect();
             $this->connected = true;
         }
     }
 
-    public function disconnect()
+    public function disconnect(): void
     {
         if ($this->connected) {
             $this->client->close();
             $this->connected = false;
         }
     }
-
 
     /**
      * Verify domain auth_code
@@ -80,7 +73,7 @@ class EppService
             ]);
 
             return [
-                'success' => $response->code() == 1000,
+                'success' => $response->code() === 1000,
                 'message' => $response->message(),
                 'code' => $response->code(),
             ];
@@ -106,7 +99,7 @@ class EppService
             $frame = new ContactCreate();
             $frame->setId($contactData['contact_id']);
             $frame->setName($contactData['name']);
-            if (!empty($contactData['organization'])) {
+            if (! empty($contactData['organization'])) {
                 $frame->setOrganization($contactData['organization']);
             }
             $frame->setCity($contactData['city']);
@@ -121,7 +114,7 @@ class EppService
             ]);
 
             return [
-                'success' => $response->code() == 1000,
+                'success' => $response->code() === 1000,
                 'message' => $response->message(),
                 'code' => $response->code(),
             ];
@@ -149,7 +142,6 @@ class EppService
             $frame->changeRegistrant($newRegistrantId);
             $frame->changeAuthInfo($authCode);
 
-
             $response = $this->client->request($frame);
 
             Log::debug('Domain registrant update response', [
@@ -159,7 +151,7 @@ class EppService
             ]);
 
             return [
-                'success' => $response->code() == 1000,
+                'success' => $response->code() === 1000,
                 'message' => $response->message(),
                 'code' => $response->code(),
             ];
@@ -187,7 +179,7 @@ class EppService
             $frame->setDomain($domain);
             $response = $this->client->request($frame);
 
-            if ($response->code() == 1000) {
+            if ($response->code() === 1000) {
                 $data = $response->data();
                 $authCode = $data['infData']['authInfo']['pw'] ?? null;
                 if ($authCode) {
@@ -195,6 +187,7 @@ class EppService
                         'domain' => $domain,
                         'auth_code' => $authCode,
                     ]);
+
                     return [
                         'success' => true,
                         'auth_code' => $authCode,
@@ -204,6 +197,7 @@ class EppService
                     'domain' => $domain,
                     'response' => $data,
                 ]);
+
                 return [
                     'success' => false,
                     'message' => 'Auth code not found.',
@@ -215,6 +209,7 @@ class EppService
                 'domain' => $domain,
                 'response' => $response->data(),
             ]);
+
             return [
                 'success' => false,
                 'message' => $response->message(),
@@ -230,6 +225,7 @@ class EppService
             throw $e;
         }
     }
+
     /**
      * Get domain info from registry
      *
@@ -247,7 +243,7 @@ class EppService
             // Log request for debugging
             Log::debug('Sending domain info request', ['domain' => $domain]);
 
-            $response = $this->getClient()->request($frame);
+            $response = $this->client->request($frame);
 
             // Validate response
             if (! ($response instanceof Response) || ! ($result = $response->results()[0])) {
@@ -322,9 +318,9 @@ class EppService
                 'status' => is_array($data['status'] ?? null) ? $data['status'] : [$data['status'] ?? null],
                 'registrant' => $data['registrant'] ?? null,
                 'contacts' => [
-                    'admin' => ! empty($adminContacts) ? $adminContacts : ($data['admin'] ?? null),
-                    'tech' => ! empty($techContacts) ? $techContacts : ($data['tech'] ?? null),
-                    'billing' => ! empty($billingContacts) ? $billingContacts : ($data['billing'] ?? null),
+                    'admin' => $adminContacts === [] ? $data['admin'] ?? null : ($adminContacts),
+                    'tech' => $techContacts === [] ? $data['tech'] ?? null : ($techContacts),
+                    'billing' => $billingContacts === [] ? $data['billing'] ?? null : ($billingContacts),
                 ],
                 'nameservers' => $nameservers,
                 'hosts' => is_array($data['host'] ?? null) ? $data['host'] : [],
@@ -338,7 +334,7 @@ class EppService
                 'authInfo' => $data['authInfo'] ?? null,
             ];
         } catch (Exception $e) {
-            Log::error('Failed to get domain info: ' . $e->getMessage(), [
+            Log::error('Failed to get domain info: '.$e->getMessage(), [
                 'domain' => $domain,
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
