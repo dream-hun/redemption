@@ -92,8 +92,4 @@ class User extends Authenticatable
 
         return "https://www.gravatar.com/avatar/$email";
     }
-    // public function getIsAdminAttribute(): bool
-    // {
-    //     return $this->role === 'admin';
-    // }
 }
