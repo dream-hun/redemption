@@ -84,26 +84,12 @@ final class Domain extends Model
         return now()->diffInDays($this->expires_at);
     }
 
-    protected static function boot(): void
-    {
-        parent::boot();
-
-        self::creating(function ($model): void {
-            // Generate UUID if not provided
-            if (! $model->uuid) {
-                $model->uuid = (string) Str::uuid();
-            }
-        });
-
-    }
-
     public function registeredAt(): Attribute
     {
         return Attribute::make(
             get: fn ($value): string => Carbon::parse($value)->format('M d, Y')
         );
     }
-
 
     public function expiresAt(): Attribute
     {
@@ -125,6 +111,7 @@ final class Domain extends Model
             get: fn ($value): ?string => $value ? Carbon::parse($value)->format('M d, Y') : null
         );
     }
+
     public function authCodeRequests()
     {
         return $this->hasMany(AuthCodeRequest::class);
@@ -139,5 +126,18 @@ final class Domain extends Model
         $this->update(['auth_code' => $authCode]);
 
         return $authCode;
+    }
+
+    protected static function boot(): void
+    {
+        parent::boot();
+
+        self::creating(function ($model): void {
+            // Generate UUID if not provided
+            if (! $model->uuid) {
+                $model->uuid = (string) Str::uuid();
+            }
+        });
+
     }
 }

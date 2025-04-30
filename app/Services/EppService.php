@@ -15,7 +15,7 @@ use Illuminate\Support\Facades\Log;
 
 final class EppService
 {
-    private \AfriCC\EPP\Client $client;
+    private EPPClient $client;
 
     private array $config;
 
@@ -33,7 +33,7 @@ final class EppService
         $this->client = new EPPClient($this->config);
     }
 
-    public function getClient()
+    public function getClient(): \AfriCC\EPP\Client
     {
         return $this->client;
     }

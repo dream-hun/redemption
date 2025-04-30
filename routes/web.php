@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Http\Controllers\Admin\AuthCodeController;
 use App\Http\Controllers\Admin\ContactController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\DomainController;
@@ -11,7 +12,6 @@ use App\Http\Controllers\Admin\RenewDomainController;
 use App\Http\Controllers\Admin\RolesController;
 use App\Http\Controllers\Admin\SettingController;
 use App\Http\Controllers\Admin\TransferDomainController;
-use App\Http\Controllers\Admin\AuthCodeController;
 use App\Http\Controllers\Admin\UsersController;
 use App\Http\Controllers\Api\UserContactController;
 use App\Http\Controllers\CartController;
@@ -92,7 +92,7 @@ Route::group(['middleware' => 'auth', 'prefix' => 'admin', 'as' => 'admin.'], fu
             Route::put('/{uuid}', [RenewDomainController::class, 'renew'])->name('renew');
         });
         // Transfer routes
-        Route::prefix('transfer')->name('transfer.')->group(function () {
+        Route::prefix('transfer')->name('transfer.')->group(function (): void {
             Route::post('/check', [TransferDomainController::class, 'checkDomain'])->name('check');
             Route::post('/auth-code', [TransferDomainController::class, 'submitAuthCode'])->name('auth-code');
             Route::post('/initiate', [TransferDomainController::class, 'initiateTransfer'])->name('initiate');
@@ -107,13 +107,13 @@ Route::group(['middleware' => 'auth', 'prefix' => 'admin', 'as' => 'admin.'], fu
     });
 });
 // Transfer routes
-Route::prefix('transfer')->name('transfer.')->group(function () {
+Route::prefix('transfer')->name('transfer.')->group(function (): void {
     Route::get('/', [TransferDomainController::class, 'index'])->name('index');
     Route::post('/check', [TransferDomainController::class, 'checkDomain'])->name('check');
     Route::post('/auth-code', [TransferDomainController::class, 'submitAuthCode'])->name('auth-code');
     Route::post('/initiate', [TransferDomainController::class, 'initiateTransfer'])->name('initiate');
 });
-Route::middleware('auth')->group(function () {
+Route::middleware('auth')->group(function (): void {
     Route::get('domains/{domain}/auth-code', [AuthCodeController::class, 'showGenerateForm'])
         ->name('domains.auth_code.generate');
     Route::post('domains/{domain}/auth-code', [AuthCodeController::class, 'generateAndSend'])
@@ -149,4 +149,4 @@ Route::middleware('auth')->group(function (): void {
 //         });
 //     });
 // });
-require __DIR__ . '/auth.php';
+require __DIR__.'/auth.php';

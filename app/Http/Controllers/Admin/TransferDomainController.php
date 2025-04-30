@@ -13,7 +13,6 @@ use App\Models\Domain;
 use App\Models\DomainContact;
 use App\Models\Nameserver;
 use App\Services\Epp\EppService;
-use Carbon\Carbon;
 use Darryldecode\Cart\Facades\CartFacade as Cart;
 use Exception;
 use Illuminate\Contracts\View\View;
@@ -26,7 +25,7 @@ use Illuminate\Support\Str;
 
 final class TransferDomainController extends Controller
 {
-    protected $eppService;
+    private \App\Services\Epp\EppService $eppService;
 
     public function __construct(EppService $eppService)
     {
@@ -77,12 +76,13 @@ final class TransferDomainController extends Controller
                     'domain' => $domainName,
                 ]);
         } catch (Exception $e) {
-            Log::error('Domain check failed: ' . $e->getMessage(), [
+            Log::error('Domain check failed: '.$e->getMessage(), [
                 'domain' => $domainName,
                 'error' => $e->getMessage(),
             ]);
+
             return redirect()->route('transfer.index')
-                ->with('error', 'Failed to check domain status. ' . $e->getMessage())
+                ->with('error', 'Failed to check domain status. '.$e->getMessage())
                 ->with('domainCheck', [
                     'status' => 'error',
                     'domain' => $domainName,
@@ -122,15 +122,15 @@ final class TransferDomainController extends Controller
                 ])
                 ->with('authCodeSubmitted', true);
         } catch (Exception $e) {
-            Log::error('Auth code submission failed: ' . $e->getMessage(), [
+            Log::error('Auth code submission failed: '.$e->getMessage(), [
                 'domain' => $domainName,
                 'error' => $e->getMessage(),
             ]);
+
             return redirect()->route('transfer.index')
                 ->with('error', 'Failed to process auth code.');
         }
     }
-
 
     public function initiateTransfer(DomainTransferRequest $request): RedirectResponse
     {
@@ -198,21 +198,21 @@ final class TransferDomainController extends Controller
             }
 
             // Send transfer request to registry
-            $frame = $this->eppService->transferDomain($domainName, $authInfo, $period . 'y');
+            $frame = $this->eppService->transferDomain($domainName, $authInfo, $period.'y');
             $client = $this->eppService->getClient();
             $response = $client->request($frame);
 
-            if (!$response instanceof \AfriCC\EPP\Frame\Response) {
+            if (! $response instanceof \AfriCC\EPP\Frame\Response) {
                 throw new Exception('Invalid response from registry');
             }
-           // dd($response);
+            // dd($response);
             $result = $response->results()[0];
             if ($result->code() < 1000 || $result->code() >= 2000) {
                 throw new Exception("Registry error (code: {$result->code()}): {$result->message()}");
             }
 
             $responseData = $response->data();
-            if (!is_array($responseData)) {
+            if (! is_array($responseData)) {
                 throw new Exception('Unexpected response data format');
             }
 
@@ -222,9 +222,9 @@ final class TransferDomainController extends Controller
                 'expires_at' => now()->addYears($period),
             ]);
             // Handle cart for payable domains (not ending with .rw)
-            $isFreeTransfer = str_ends_with(strtolower($domainName), '.rw');
-            if (!$isFreeTransfer) {
-                $cartItemId = 'transfer_' . $domainName;
+            $isFreeTransfer = str_ends_with(mb_strtolower($domainName), '.rw');
+            if (! $isFreeTransfer) {
+                $cartItemId = 'transfer_'.$domainName;
                 if (Cart::get($cartItemId)) {
                     return redirect()->route('transfer.index')
                         ->with('warning', 'Domain transfer is already in your cart.');
@@ -249,11 +249,10 @@ final class TransferDomainController extends Controller
                     ],
                 ]);
 
-
                 return redirect()->route('cart.index')
                     ->with('success', 'Domain transfer initiated successfully. Continue on Shopping so u can pay in checkout');
 
-              //  Cart::remove($cartItemId);
+                //  Cart::remove($cartItemId);
             }
 
             DB::commit();
@@ -262,12 +261,13 @@ final class TransferDomainController extends Controller
                 ->with('success', 'Domain transfer initiated successfully.');
         } catch (Exception $e) {
             DB::rollBack();
-            Log::error('Domain transfer failed: ' . $e->getMessage(), [
+            Log::error('Domain transfer failed: '.$e->getMessage(), [
                 'domain' => $domainName,
                 'user_id' => Auth::id(),
             ]);
+
             return redirect()->route('transfer.index')
-                ->with('error', 'Failed to initiate domain transfer: ' . $e->getMessage());
+                ->with('error', 'Failed to initiate domain transfer: '.$e->getMessage());
         } finally {
             $this->eppService->disconnect();
         }

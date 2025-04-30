@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Mail;
 
 use App\Models\Domain;
@@ -7,12 +9,23 @@ use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
 use Illuminate\Queue\SerializesModels;
 
-class AuthCodeDelivery extends Mailable
+final class AuthCodeDelivery extends Mailable
 {
     use Queueable, SerializesModels;
 
+    /**
+     * @var \App\Models\Domain
+     */
     public $domain;
+
+    /**
+     * @var string
+     */
     public $authCode;
+
+    /**
+     * @var string
+     */
     public $recipientEmail;
 
     public function __construct(Domain $domain, string $authCode, string $recipientEmail)
@@ -24,7 +37,7 @@ class AuthCodeDelivery extends Mailable
 
     public function build()
     {
-        return $this->subject('Domain Transfer Auth Code for ' . $this->domain->name)
+        return $this->subject('Domain Transfer Auth Code for '.$this->domain->name)
             ->markdown('emails.auth_code_delivery')
             ->with([
                 'domainName' => $this->domain->name,

@@ -1,22 +1,23 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\Domain;
 use App\Mail\AuthCodeDelivery;
+use App\Models\Domain;
+use Exception;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\RateLimiter;
-use Illuminate\Http\RedirectResponse;
 
-class AuthCodeController extends Controller
+final class AuthCodeController extends Controller
 {
-    public function __construct()
-    {
-    }
+    public function __construct() {}
 
     /**
      * Show the auth code generation form
@@ -27,7 +28,7 @@ class AuthCodeController extends Controller
             abort(403, 'Unauthorized: You do not own this domain.');
         }
 
-        return view('admin.domains.auth_code_generate', compact('domain'));
+        return view('admin.domains.auth_code_generate', ['domain' => $domain]);
     }
 
     /**
@@ -44,7 +45,7 @@ class AuthCodeController extends Controller
         ]);
 
         // Rate limit to prevent abuse (e.g., 3 requests per hour per user)
-        $rateLimitKey = 'auth-code:' . Auth::id();
+        $rateLimitKey = 'auth-code:'.Auth::id();
         if (RateLimiter::tooManyAttempts($rateLimitKey, 3)) {
             return redirect()->back()
                 ->with('error', 'Too many auth code requests. Please try again again in 5 min.');
@@ -67,9 +68,8 @@ class AuthCodeController extends Controller
                     new AuthCodeDelivery($domain, $authCode, $request->recipient_email, Auth::user())
                 );
 
-
                 // Increment rate limiter
-                 RateLimiter::hit($rateLimitKey, (5*60)); // again in 5 min
+                RateLimiter::hit($rateLimitKey, (5 * 60)); // again in 5 min
 
                 Log::info('Auth code sent', [
                     'domain' => $domain->name,
@@ -78,8 +78,8 @@ class AuthCodeController extends Controller
                 ]);
 
                 return redirect()->route('admin.domains.index')
-                    ->with('success', 'Auth code sent to ' . $request->recipient_email);
-            } catch (\Exception $ee) {
+                    ->with('success', 'Auth code sent to '.$request->recipient_email);
+            } catch (Exception $ee) {
                 Log::error('Auth code NOT sent', [
                     'Error: ' => $ee->getMessage(),
                     'domain' => $domain->name,
@@ -88,17 +88,17 @@ class AuthCodeController extends Controller
                 ]);
 
                 return redirect()->back()
-                    ->with('error', 'Failed to send email with auth code: ' . $ee->getMessage());
+                    ->with('error', 'Failed to send email with auth code: '.$ee->getMessage());
             }
-        } catch (\Exception $e) {
-            Log::error('Failed to send auth code: ' . $e->getMessage(), [
+        } catch (Exception $e) {
+            Log::error('Failed to send auth code: '.$e->getMessage(), [
                 'domain' => $domain->name,
                 'user_id' => Auth::id(),
                 'recipient_email' => $request->recipient_email,
             ]);
 
             return redirect()->back()
-                ->with('error', 'Failed to send auth code: ' . $e->getMessage());
+                ->with('error', 'Failed to send auth code: '.$e->getMessage());
         }
     }
 }

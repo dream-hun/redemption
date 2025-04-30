@@ -19,7 +19,7 @@ final class DomainService
         $this->eppService = $eppService;
     }
 
-    public function getEppClient(): \App\Services\EppService
+    public function getEppClient(): EppService
     {
         return $this->eppService;
     }

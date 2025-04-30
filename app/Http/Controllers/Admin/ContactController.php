@@ -46,23 +46,23 @@ final class ContactController extends Controller
     }
 
     public function store(CreateContactRequest $request)
-    { 
+    {
         try {
             DB::beginTransaction();
 
             $data = $request->validated();
-          //  dd($data);
+            //  dd($data);
             $contactId = Contact::generateContactIds();
 
             // First check if contact exists in EPP registry
             $checkResult = $this->eppService->checkContacts([$contactId]);
-          //  dd($checkResult);
+            //  dd($checkResult);
             if ($checkResult === [] || ! isset($checkResult[$contactId])) {
                 throw new Exception('Failed to check contact availability in registry');
             }
 
             if (! $checkResult[$contactId]->available) {
-                throw new Exception('Contact ID already exists in registry: ' . ($checkResult[$contactId]->reason ?? 'Unknown reason'));
+                throw new Exception('Contact ID already exists in registry: '.($checkResult[$contactId]->reason ?? 'Unknown reason'));
             }
 
             Log::info('Contact ID available in EPP registry', ['contact_id' => $contactId]);
@@ -70,7 +70,7 @@ final class ContactController extends Controller
             // Format phone numbers according to EPP format (+CC.number)
             $voice = $data['voice'];
             if (! str_starts_with($voice, '+')) {
-                $voice = '+250.' . mb_ltrim($voice, '0'); // Using Rwanda country code
+                $voice = '+250.'.mb_ltrim($voice, '0'); // Using Rwanda country code
             }
 
             // $fax = empty($data['fax']) ? '' : $data['fax'];
@@ -93,7 +93,7 @@ final class ContactController extends Controller
                 'fax' => $voice,
                 'fax_ext' => '',
                 'email' => $data['email'],
-                'auth_info' => Str::random(16), 
+                'auth_info' => Str::random(16),
                 'disclose' => ['voice', 'email'],
             ];
 
@@ -101,17 +101,17 @@ final class ContactController extends Controller
             Log::debug('Prepared EPP data:', ['data' => $contactData]);
 
             Log::debug('Prepared contact data for EPP:', ['data' => $contactData]);
-           // dd($contactData);
+            // dd($contactData);
             // Create EPP contact
             $eppResult = $this->eppService->createContacts($contactData);
             // dd($eppResult);
             if ($eppResult === [] || ! is_array($eppResult) || $eppResult === []) {
-                throw new Exception('Failed to create contact in registry: ' . ($eppResult['message'] ?? 'Unknown error'));
+                throw new Exception('Failed to create contact in registry: '.($eppResult['message'] ?? 'Unknown error'));
             }
 
             // Get the first result since we're only creating one contact
             $contactResult = is_array($eppResult) ? reset($eppResult) : null;
-           // dd($contactResult);
+            // dd($contactResult);
             // if (! $contactResult || ! isset($contactResult['contact_id'])) {
             //     throw new Exception('Invalid contact creation response from registry');
             // }
@@ -169,7 +169,7 @@ final class ContactController extends Controller
             return redirect()
                 ->route('admin.contacts.index')
                 ->with('success', 'Contact created successfully');
-        } catch (Exception | Throwable $e) {
+        } catch (Exception|Throwable $e) {
             DB::rollBack();
 
             Log::error('Failed to create contact', [
@@ -181,7 +181,7 @@ final class ContactController extends Controller
             return redirect()
                 ->back()
                 ->withInput()
-                ->with('error', 'Failed to create contact: ' . $e->getMessage());
+                ->with('error', 'Failed to create contact: '.$e->getMessage());
         } finally {
             $this->eppService->disconnect();
         }
@@ -224,12 +224,12 @@ final class ContactController extends Controller
             // Format phone numbers according to EPP format (+CC.number)
             $voice = $data['voice'];
             if (! str_starts_with($voice, '+')) {
-                $voice = '+250.' . mb_ltrim($voice, '0'); // Using Rwanda country code
+                $voice = '+250.'.mb_ltrim($voice, '0'); // Using Rwanda country code
             }
 
             $fax = empty($data['fax']) ? '' : $data['fax'];
             if ($fax && ! str_starts_with($fax, '+')) {
-                $fax = '+250.' . mb_ltrim($fax, '0');
+                $fax = '+250.'.mb_ltrim($fax, '0');
             }
 
             // Prepare contact data for EPP service - following EPP protocol format
@@ -261,7 +261,7 @@ final class ContactController extends Controller
                 // Update contact in EPP registry
                 $updateResult = $this->eppService->updateContact($contact->contact_id, $contactData);
                 if ($updateResult === [] || ! isset($updateResult['success']) || ! $updateResult['success']) {
-                    throw new Exception('Failed to update contact in registry: ' . ($updateResult['message'] ?? 'Unknown error'));
+                    throw new Exception('Failed to update contact in registry: '.($updateResult['message'] ?? 'Unknown error'));
                 }
 
                 // Verify the update was successful
@@ -312,13 +312,13 @@ final class ContactController extends Controller
         } catch (Exception $e) {
             DB::rollBack();
 
-            Log::error('Failed to update contact: ' . $e->getMessage(), [
+            Log::error('Failed to update contact: '.$e->getMessage(), [
                 'contact_id' => $contact->contact_id,
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
             ]);
 
-            return redirect()->route('admin.contacts.index')->with('error', 'Failed to update contact: ' . $e->getMessage());
+            return redirect()->route('admin.contacts.index')->with('error', 'Failed to update contact: '.$e->getMessage());
         } finally {
             $this->eppService->disconnect();
         }
@@ -345,7 +345,7 @@ final class ContactController extends Controller
 
                 $deleteResult = $this->eppService->deleteContact($contact->contact_id);
                 if ($deleteResult === [] || ! $deleteResult['success']) {
-                    throw new Exception('Failed to delete contact from registry: ' . ($deleteResult['message'] ?? 'Unknown error'));
+                    throw new Exception('Failed to delete contact from registry: '.($deleteResult['message'] ?? 'Unknown error'));
                 }
 
                 // Verify deletion
@@ -381,7 +381,7 @@ final class ContactController extends Controller
             ]);
 
             return redirect()->route('admin.contacts.index')
-                ->with('error', 'Failed to delete contact: ' . $e->getMessage());
+                ->with('error', 'Failed to delete contact: '.$e->getMessage());
         } finally {
             $this->eppService->disconnect();
         }
