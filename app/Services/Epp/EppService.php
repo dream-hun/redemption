@@ -137,7 +137,7 @@ final class EppService
             } catch (Exception $e) {
                 $lastException = $e;
                 $attempts++;
-                Log::warning("EPP Connection attempt $attempts failed: ".$e->getMessage());
+                Log::warning("EPP Connection attempt $attempts failed: " . $e->getMessage());
 
                 if ($attempts < $this->maxRetries) {
                     sleep($this->retryDelay);
@@ -145,7 +145,7 @@ final class EppService
             }
         }
 
-        Log::error('EPP Connection failed after '.$this->maxRetries.' attempts');
+        Log::error('EPP Connection failed after ' . $this->maxRetries . ' attempts');
         throw $lastException;
     }
 
@@ -288,7 +288,7 @@ final class EppService
 
             return $results;
         } catch (Exception $e) {
-            Log::error('Domain check error: '.$e->getMessage());
+            Log::error('Domain check error: ' . $e->getMessage());
             // Try to reconnect on next request
             $this->connected = false;
             throw $e;
@@ -353,7 +353,7 @@ final class EppService
 
             return $results;
         } catch (Exception $e) {
-            Log::error('Contact check failed: '.$e->getMessage());
+            Log::error('Contact check failed: ' . $e->getMessage());
             // Try to reconnect on next request
             $this->connected = false;
             throw $e;
@@ -443,9 +443,9 @@ final class EppService
             if (! str_starts_with($phone, '+')) {
                 // Add country code for Rwanda if not present
 
-                $phone = '+250.'.mb_ltrim($phone, '0');
+                $phone = '+250.' . mb_ltrim($phone, '0');
 
-                $phone = '+250.'.mb_ltrim($phone, '0');
+                $phone = '+250.' . mb_ltrim($phone, '0');
             }
             $frame->setVoice($phone);
 
@@ -458,9 +458,9 @@ final class EppService
 
                 if (! str_starts_with($fax, '+')) {
 
-                    $fax = '+250.'.mb_ltrim($fax, '0');
+                    $fax = '+250.' . mb_ltrim($fax, '0');
 
-                    $fax = '+250.'.mb_ltrim($fax, '0');
+                    $fax = '+250.' . mb_ltrim($fax, '0');
                 }
                 $frame->setFax($fax, $contacts['fax_ext'] ?? '');
             }
@@ -494,7 +494,7 @@ final class EppService
                     'code' => $result->code(),
                     'message' => $result->message(),
                 ]);
-                throw new Exception('Failed to create contact in EPP registry: '.$result->message());
+                throw new Exception('Failed to create contact in EPP registry: ' . $result->message());
             }
 
             Log::info('Contact created successfully in EPP', [
@@ -510,7 +510,7 @@ final class EppService
                 'message' => $result->message(),
             ];
         } catch (Exception $e) {
-            Log::error('Contact creation failed: '.$e->getMessage());
+            Log::error('Contact creation failed: ' . $e->getMessage());
             // Try to reconnect on next request
             $this->connected = false;
             throw $e;
@@ -640,7 +640,7 @@ final class EppService
                 'auth' => $auth,
             ];
         } catch (Exception $e) {
-            Log::error('Contact update failed: '.$e->getMessage(), [
+            Log::error('Contact update failed: ' . $e->getMessage(), [
                 'contact_id' => $contactId,
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
@@ -668,7 +668,7 @@ final class EppService
 
             return $frame;
         } catch (Exception $e) {
-            Log::error('Host check failed: '.$e->getMessage());
+            Log::error('Host check failed: ' . $e->getMessage());
             // Try to reconnect on next request
             $this->connected = false;
             throw $e;
@@ -693,7 +693,7 @@ final class EppService
 
             return $frame;
         } catch (Exception $e) {
-            Log::error('Host creation failed: '.$e->getMessage());
+            Log::error('Host creation failed: ' . $e->getMessage());
             // Try to reconnect on next request
             $this->connected = false;
             throw $e;
@@ -738,128 +738,12 @@ final class EppService
 
             return $frame;
         } catch (Exception $e) {
-            Log::error('Domain creation failed: '.$e->getMessage());
+            Log::error('Domain creation failed: ' . $e->getMessage());
             // Try to reconnect on next request
             $this->connected = false;
             throw $e;
         }
     }
-    // /**
-    //  * Transfer Domain
-    //  *
-    //  * @throws Exception
-    //  */
-    // public function transferDomain(string $domain, string $authInfo, string $period = '1y'): TransferDomain
-    // {
-    //     try {
-    //         $this->ensureConnection();
-
-    //         Log::info('Attempting domain transfer', [
-    //             'domain' => $domain,
-    //             'period' => $period,
-    //             'epp_host' => $this->config['host'],
-    //         ]);
-
-    //         $frame = new TransferDomain;
-    //         $frame->setDomain($domain);
-    //         $frame->setAuthInfo($authInfo);
-    //         $frame->setPeriod($period);
-
-    //         return $frame;
-    //     } catch (Exception $e) {
-    //         Log::error('Domain transfer failed: ' . $e->getMessage(), [
-    //             'domain' => $domain,
-    //             'period' => $period,
-    //             'epp_host' => $this->config['host'],
-    //             'trace' => $e->getTraceAsString(),
-    //         ]);
-    //         $this->connected = false;
-    //         throw $e;
-    //     }
-    // }
-    // /**
-    //  * Domain transfer
-    //  *
-    //  * @throws Exception
-    //  */
-    // public function transferDomain(string $domain, string $operation, string $period, string $authInfo): TransferDomain
-    // {
-    //     try {
-    //         $this->ensureConnection();
-    //         $frame = new TransferDomain;
-    //         $frame->setOperation($operation);
-    //         $frame->setDomain($domain);
-    //         $frame->setPeriod($period);
-    //         $frame->setAuthInfo($authInfo);
-
-    //         return $frame;
-    //     } catch (Exception $e) {
-    //         Log::error('Domain transfer failed: ' . $e->getMessage());
-    //         // Try to reconnect on next request
-    //         $this->connected = false;
-    //         throw $e;
-    //     }
-    // }
-    // public function transferDomain(string $domain, string $operation, string $period, string $authInfo, array $contactInfo = [] ): TransferDomain {
-    //     try {
-    //         $this->ensureConnection();
-
-    //         // Validate contact information
-    //         if ($operation === 'request' && empty($contactInfo['email'])) {
-    //             Log::warning('Transfer requested without recipient email', [
-    //                 'domain' => $domain,
-    //                 'operation' => $operation
-    //             ]);
-    //         }
-
-    //         $frame = new TransferDomain;
-    //         $frame->setOperation($operation);
-    //         $frame->setDomain($domain);
-    //         $frame->setPeriod($period);
-    //         $frame->setAuthInfo($authInfo);
-    //         // Add contact information for the transfer recipient
-    //         if (!empty($contactInfo)) {
-    //             if (!empty($contactInfo['email'])) {
-    //                 $frame->setContactEmail($contactInfo['email']);
-    //             }
-
-    //             // Add other contact information if available
-    //             if (!empty($contactInfo['registrantId'])) {
-    //                 $frame->setRegistrant($contactInfo['registrantId']);
-    //             }
-
-    //             // Handle technical, admin, and billing contacts if provided
-    //             foreach (['tech', 'admin', 'billing'] as $contactType) {
-    //                 if (!empty($contactInfo[$contactType])) {
-    //                     $frame->setContact($contactInfo[$contactType], $contactType);
-    //                 }
-    //             }
-    //         }
-
-    //         // Log the transfer attempt with configuration context
-    //         Log::info('Attempting domain transfer', [
-    //             'domain' => $domain,
-    //             'operation' => $operation,
-    //             'period' => $period,
-    //             'has_auth_info' => !empty($authInfo),
-    //             'has_contact_info' => !empty($contactInfo),
-    //             'epp_host' => $this->config['host'],
-    //         ]);
-
-    //         return $frame;
-    //     } catch (Exception $e) {
-    //         Log::error('Domain transfer failed: ' . $e->getMessage(), [
-    //             'domain' => $domain,
-    //             'operation' => $operation,
-    //             'period' => $period,
-    //             'epp_host' => $this->config['host'] ?? 'unknown',
-    //             'trace' => $e->getTraceAsString(),
-    //         ]);
-    //         // Try to reconnect on next request
-    //         $this->connected = false;
-    //         throw $e;
-    //     }
-    // }
 
     /**
      * Get Auth Code to use in Domain transfer
@@ -889,9 +773,9 @@ final class EppService
             //     return $authInfo;
             // }
 
-            throw new Exception('EPP InfoDomain command failed: '.$response->message());
+            throw new Exception('EPP InfoDomain command failed: ' . $response->message());
         } catch (Exception $e) {
-            Log::error('EPP getAuthorizationCode failed: '.$e->getMessage());
+            Log::error('EPP getAuthorizationCode failed: ' . $e->getMessage());
             throw $e;
         }
     }
@@ -948,7 +832,7 @@ final class EppService
 
             return $frame;
         } catch (Exception $e) {
-            Log::error('Domain renewal failed: '.$e->getMessage(), [
+            Log::error('Domain renewal failed: ' . $e->getMessage(), [
                 'domain' => $domain,
                 'expiration_date' => $currentExpirationDate,
                 'period' => $period,
@@ -1010,7 +894,7 @@ final class EppService
                 'reason' => $reason,
             ];
         } catch (Exception $e) {
-            Log::error('Domain check failed: '.$e->getMessage(), [
+            Log::error('Domain check failed: ' . $e->getMessage(), [
                 'domain' => $domain,
                 'epp_host' => $this->config['host'],
                 'trace' => $e->getTraceAsString(),
@@ -1034,7 +918,7 @@ final class EppService
 
             return $frame;
         } catch (Exception $e) {
-            Log::error('Domain deletion failed: '.$e->getMessage());
+            Log::error('Domain deletion failed: ' . $e->getMessage());
             // Try to reconnect on next request
             $this->connected = false;
             throw $e;
@@ -1055,7 +939,7 @@ final class EppService
 
             return $frame;
         } catch (Exception $e) {
-            Log::error('Poll acknowledge failed: '.$e->getMessage());
+            Log::error('Poll acknowledge failed: ' . $e->getMessage());
             // Try to reconnect on next request
             $this->connected = false;
             throw $e;
@@ -1084,7 +968,7 @@ final class EppService
                 // Normalize nameserver hostname (remove trailing dot if present)
 
                 return mb_rtrim(mb_trim($ns), '.');
-            }, $nameservers), fn ($ns): bool => ! empty($ns));
+            }, $nameservers), fn($ns): bool => ! empty($ns));
 
             //     return mb_rtrim(mb_trim($ns), '.');
             // }, $nameservers), fn ($ns): bool => $ns !== '' && $ns !== '0');
@@ -1352,7 +1236,7 @@ final class EppService
 
             return ['frame' => $frame, 'authInfo' => $pw];
         } catch (Exception $e) {
-            Log::error('Domain update failed: '.$e->getMessage(), [
+            Log::error('Domain update failed: ' . $e->getMessage(), [
                 'domain' => $domain,
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
@@ -1471,7 +1355,7 @@ final class EppService
                 'authInfo' => $data['authInfo'] ?? null,
             ];
         } catch (Exception $e) {
-            Log::error('Failed to get domain info: '.$e->getMessage(), [
+            Log::error('Failed to get domain info: ' . $e->getMessage(), [
                 'domain' => $domain,
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
@@ -1517,7 +1401,7 @@ final class EppService
 
             return $responseData['infData'];
         } catch (Exception $e) {
-            Log::error('Failed to fetch domain info: '.$e->getMessage(), [
+            Log::error('Failed to fetch domain info: ' . $e->getMessage(), [
                 'domain' => $domain,
                 'epp_host' => $this->config['host'],
                 'trace' => $e->getTraceAsString(),
@@ -1610,12 +1494,12 @@ final class EppService
 
             // Return result for the requested domain
             if (! isset($results[$domain])) {
-                throw new Exception('No result found for domain: '.$domain);
+                throw new Exception('No result found for domain: ' . $domain);
             }
 
             return $results[$domain];
         } catch (Exception $e) {
-            Log::error('Domain check failed: '.$e->getMessage(), [
+            Log::error('Domain check failed: ' . $e->getMessage(), [
                 'domain' => $domain,
                 'epp_host' => $this->config['host'],
                 'trace' => $e->getTraceAsString(),
@@ -1648,7 +1532,7 @@ final class EppService
 
             return $frame;
         } catch (Exception $e) {
-            Log::error('Domain transfer failed: '.$e->getMessage(), [
+            Log::error('Domain transfer failed: ' . $e->getMessage(), [
                 'domain' => $domain,
                 'period' => $period,
                 'epp_host' => $this->config['host'],
@@ -1710,7 +1594,7 @@ final class EppService
             } catch (Exception $e) {
                 $lastException = $e;
                 $attempts++;
-                Log::warning("EPP Client initialization attempt $attempts failed: ".$e->getMessage());
+                Log::warning("EPP Client initialization attempt $attempts failed: " . $e->getMessage());
 
                 if ($attempts < $this->maxRetries) {
                     sleep($this->retryDelay);
@@ -1718,7 +1602,7 @@ final class EppService
             }
         }
 
-        Log::error('EPP Client initialization failed after '.$this->maxRetries.' attempts');
+        Log::error('EPP Client initialization failed after ' . $this->maxRetries . ' attempts');
         throw $lastException;
     }
 
@@ -1765,15 +1649,25 @@ final class EppService
                 ]);
             } catch (Exception $e) {
                 $this->connected = false;
-                throw new Exception('EPP connection test failed: '.$e->getMessage(), $e->getCode(), $e);
+                throw new Exception('EPP connection test failed: ' . $e->getMessage(), $e->getCode(), $e);
             }
         } catch (Exception $e) {
             $this->connected = false;
-            Log::error('EPP connection error: '.$e->getMessage(), [
+            Log::error('EPP connection error: ' . $e->getMessage(), [
                 'host' => $this->config['host'],
                 'trace' => $e->getTraceAsString(),
             ]);
-            throw new Exception('Failed to establish EPP connection: '.$e->getMessage(), $e->getCode(), $e);
+            throw new Exception('Failed to establish EPP connection: ' . $e->getMessage(), $e->getCode(), $e);
         }
+    }
+
+
+    public function checkNameserver(string $hostname): bool
+    {
+        $frame = new \AfriCC\EPP\Frame\Command\Check\Host();
+        $frame->addHost($hostname);
+        $response = $this->getClient()->request($frame);
+              
+        return $response->code()===1000 ;
     }
 }

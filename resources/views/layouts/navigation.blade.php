@@ -15,7 +15,7 @@
                     <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
                         {{ __('Dashboard') }}
                     </x-nav-link>
-                    <x-nav-link :href="route('client.domains')" :active="request()->routeIs('client.domains')">
+                    <x-nav-link :href="route('domains.index')" :active="request()->routeIs('domains.index')">
                         {{ __('My Domains') }}
                     </x-nav-link>
                 </div>
@@ -33,7 +33,7 @@
 
 
                             <span
-                                class="absolute top-0 right-0 inline-flex items-center justify-center w-6 h-6 text-xs font-bold leading-none text-black transform translate-x-1/2 -translate-y-1/2 bg-blue-600 rounded-full">{{ $cartCount }}</span>
+                                class="absolute top-0 right-0 inline-flex items-center justify-center w-6 h-6 text-xs font-bold leading-none text-black transform translate-x-1/2 -translate-y-1/2 bg-blue-600 rounded-full">{{ Cart::getContent()->count() }}</span>
 
                     </span>
 
