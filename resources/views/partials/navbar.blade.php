@@ -9,7 +9,7 @@
             <a href="{{ route('dashboard') }}" class="nav-link">Home</a>
         </li>
         <li class="nav-item d-none d-sm-inline-block">
-            <a href="#" class="nav-link">Contact</a>
+            <a href="/shopping-cart" class="nav-link"> <i class="fa fa-cart"></i> Cart</a>
         </li>
     </ul>
 

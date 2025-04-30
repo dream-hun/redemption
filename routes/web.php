@@ -10,8 +10,8 @@ use App\Http\Controllers\Admin\PermissionsController;
 use App\Http\Controllers\Admin\RenewDomainController;
 use App\Http\Controllers\Admin\RolesController;
 use App\Http\Controllers\Admin\SettingController;
-use App\Http\Controllers\Admin\TransferDomainCController;
 use App\Http\Controllers\Admin\TransferDomainController;
+use App\Http\Controllers\Admin\AuthCodeController;
 use App\Http\Controllers\Admin\UsersController;
 use App\Http\Controllers\Api\UserContactController;
 use App\Http\Controllers\CartController;
@@ -26,7 +26,6 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', LandingController::class)->name('home');
 
 Route::get('/hosting', [HostingController::class, 'index'])->name('hosting.index');
-Route::get('/admin/domains/transfer/auth-code/{domain}', [TransferDomainCController::class, 'getAuthCode'])->name('authcode');
 
 Route::get('/hosting/shared', [HostingController::class, 'index'])->name('shared.index');
 
@@ -92,16 +91,12 @@ Route::group(['middleware' => 'auth', 'prefix' => 'admin', 'as' => 'admin.'], fu
             Route::post('/{uuid}', [RenewDomainController::class, 'addToCart'])->name('addToCart');
             Route::put('/{uuid}', [RenewDomainController::class, 'renew'])->name('renew');
         });
-        // Domain transfer
         // Transfer routes
-        Route::prefix('transfer')->name('transfer.')->group(function (): void {
-            Route::get('/{uuid}', [TransferDomainController::class, 'index'])->name('index');
-            Route::put('/{uuid}', [TransferDomainController::class, 'transfer'])->name('transfer');
-            Route::post('/auth-code', [TransferDomainController::class, 'getAuthCode'])->name('get-auth-code');
+        Route::prefix('transfer')->name('transfer.')->group(function () {
+            Route::post('/check', [TransferDomainController::class, 'checkDomain'])->name('check');
+            Route::post('/auth-code', [TransferDomainController::class, 'submitAuthCode'])->name('auth-code');
+            Route::post('/initiate', [TransferDomainController::class, 'initiateTransfer'])->name('initiate');
         });
-
-        // Transfers page (Approach 2)
-        Route::get('/transfers', [TransferDomainController::class, 'listTransfers'])->name('transfers');
 
         // Domain registration flow
         Route::prefix('registration')->name('registration.')->group(function (): void {
@@ -111,7 +106,19 @@ Route::group(['middleware' => 'auth', 'prefix' => 'admin', 'as' => 'admin.'], fu
         });
     });
 });
-
+// Transfer routes
+Route::prefix('transfer')->name('transfer.')->group(function () {
+    Route::get('/', [TransferDomainController::class, 'index'])->name('index');
+    Route::post('/check', [TransferDomainController::class, 'checkDomain'])->name('check');
+    Route::post('/auth-code', [TransferDomainController::class, 'submitAuthCode'])->name('auth-code');
+    Route::post('/initiate', [TransferDomainController::class, 'initiateTransfer'])->name('initiate');
+});
+Route::middleware('auth')->group(function () {
+    Route::get('domains/{domain}/auth-code', [AuthCodeController::class, 'showGenerateForm'])
+        ->name('domains.auth_code.generate');
+    Route::post('domains/{domain}/auth-code', [AuthCodeController::class, 'generateAndSend'])
+        ->name('domains.auth_code.send');
+});
 Route::get('/dashboard', DashboardController::class)->middleware(['auth', 'verified'])->name('dashboard');
 // Domain registration routes
 Route::middleware(['auth', 'verified'])->group(function (): void {
@@ -134,5 +141,12 @@ Route::middleware('auth')->group(function (): void {
         Route::get('/contacts/{id}', [UserContactController::class, 'show'])->name('contacts.show');
     });
 });
-
-require __DIR__.'/auth.php';
+// Route::prefix('admin')->group(function () { // Remove middleware(['auth'])
+//     Route::prefix('domains')->name('domains.')->group(function () {
+//         Route::prefix('transfer')->name('transfer.')->group(function () {
+//             Route::get('/', [TransferDomainController::class, 'index'])->name('index');
+//             // ... other routes ...
+//         });
+//     });
+// });
+require __DIR__ . '/auth.php';

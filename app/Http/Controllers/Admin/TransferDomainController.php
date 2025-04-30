@@ -5,249 +5,271 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Admin\DomainCheckRequest;
 use App\Http\Requests\Admin\DomainTransferRequest;
 use App\Models\Contact;
 use App\Models\Country;
 use App\Models\Domain;
-use App\Models\DomainTransfer;
-use App\Services\DomainService;
+use App\Models\DomainContact;
+use App\Models\Nameserver;
+use App\Services\Epp\EppService;
+use Carbon\Carbon;
+use Darryldecode\Cart\Facades\CartFacade as Cart;
 use Exception;
+use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-use Illuminate\View\View;
+use Illuminate\Support\Str;
 
 final class TransferDomainController extends Controller
 {
-    private DomainService $domainService;
+    protected $eppService;
 
-    public function __construct(DomainService $domainService)
+    public function __construct(EppService $eppService)
     {
-        $this->domainService = $domainService;
+        $this->eppService = $eppService;
     }
 
-    /**
-     * Show the transfer form for a specific domain (both approaches).
-     */
-    public function index(string $uuid): View|RedirectResponse
+    public function index(): View
     {
-        $domain = Domain::where('uuid', $uuid)->firstOrFail();
-
-        // Restrict non-admins to their own domains
-        if (! Auth::user()->is_admin && $domain->owner_id !== Auth::id()) {
-            Log::warning('Unauthorized access to transfer form', [
-                'domain' => $domain->name,
-                'user_id' => Auth::id(),
-            ]);
-
-            return redirect()->route('admin.domains.index')
-                ->with('error', 'You do not have permission to transfer this domain.');
-        }
-
-        $contacts = Contact::where('user_id', Auth::id())
-            ->select('id', 'contact_id', 'name', 'organization', 'email', 'voice')
-            ->orderBy('created_at', 'desc')
-            ->get();
-
-        // Admins can select from all contacts
-        if (Auth::user()->is_admin) {
-            $contacts = Contact::select('id', 'contact_id', 'name', 'organization', 'email', 'voice')
-                ->orderBy('created_at', 'desc')
-                ->get();
-        }
-
-        $countries = Country::all();
-
-        try {
-            $eppInfo = $this->domainService->getEppClient()->getDomainInfo($domain->name);
-            Log::debug('Registry response for domain info', [
-                'domain' => $domain->name,
-                'response' => $eppInfo,
-            ]);
-
-            if ($eppInfo && isset($eppInfo['infData'])) {
-                $eppInfo = $eppInfo['infData'];
-            }
-        } catch (Exception $e) {
-            Log::warning('EPP service warning - continuing with transfer process', [
-                'domain' => $domain->name,
-                'error' => $e->getMessage(),
-            ]);
-            $eppInfo = [];
-        }
-
         return view('admin.domains.transfer', [
-            'domain' => $domain,
-            'contacts' => $contacts,
-            'countries' => $countries,
-            'eppInfo' => $eppInfo,
+            'domainCheck' => session('domainCheck', null),
+            'authCodeSubmitted' => session('authCodeSubmitted', false),
+            'contacts' => Contact::where('user_id', Auth::id())->get(),
+            'countries' => Country::all(),
+            'cartItems' => Cart::getContent(),
+            'total' => Cart::getTotal(),
         ]);
     }
 
-    /**
-     * Process the domain transfer (registrant change).
-     */
-    public function transfer(DomainTransferRequest $request, string $uuid): RedirectResponse
+    public function checkDomain(DomainCheckRequest $request): RedirectResponse
     {
-        $domain = Domain::where('uuid', $uuid)->firstOrFail();
+        $domainName = $request->domain_name;
 
-        // Restrict non-admins to their own domains
-        if (! Auth::user()->is_admin && $domain->owner_id !== Auth::id()) {
-            Log::error('Unauthorized transfer attempt', [
-                'domain' => $domain->name,
-                'user_id' => Auth::id(),
+        try {
+            $existingDomain = Domain::where('name', $domainName)->first();
+            // if ($existingDomain) {
+            //     return redirect()->route('transfer.index')
+            //         ->with('error', 'This domain is already registered with us.')
+            //         ->with('domainCheck', [
+            //             'status' => 'in_system',
+            //             'domain' => $domainName,
+            //         ]);
+            // }
+
+            $checkResult = $this->eppService->checkDomainForTransfer($domainName);
+            if ($checkResult['available']) {
+                return redirect()->route('transfer.index')
+                    ->with('error', 'This domain is not registered with any registrar.')
+                    ->with('domainCheck', [
+                        'status' => 'not_registered',
+                        'domain' => $domainName,
+                    ]);
+            }
+
+            return redirect()->route('transfer.index')
+                ->with('success', 'Domain is eligible for transfer. Please provide the auth code.')
+                ->with('domainCheck', [
+                    'status' => 'eligible',
+                    'domain' => $domainName,
+                ]);
+        } catch (Exception $e) {
+            Log::error('Domain check failed: ' . $e->getMessage(), [
+                'domain' => $domainName,
+                'error' => $e->getMessage(),
             ]);
-
-            return redirect()->route('admin.domains.index')
-                ->with('error', 'You are not allowed to transfer this domain.');
+            return redirect()->route('transfer.index')
+                ->with('error', 'Failed to check domain status. ' . $e->getMessage())
+                ->with('domainCheck', [
+                    'status' => 'error',
+                    'domain' => $domainName,
+                ]);
         }
+    }
+
+    public function submitAuthCode(Request $request): RedirectResponse
+    {
+        $request->validate([
+            'domain_name' => ['required', 'string', 'regex:/^[a-zA-Z0-9\-\.]+$/'],
+            'auth_info' => ['required', 'string', 'max:255'],
+        ]);
+
+        $domainName = $request->domain_name;
+        $authInfo = $request->auth_info;
+
+        try {
+            $existingDomain = Domain::where('name', $domainName)->first();
+            // if ($existingDomain) {
+            //     return redirect()->route('transfer.index')
+            //         ->with('error', 'This domain is already registered with us.');
+            // }
+
+            $checkResult = $this->eppService->checkDomainForTransfer($domainName);
+            if ($checkResult['available']) {
+                return redirect()->route('transfer.index')
+                    ->with('error', 'This domain is not registered with any registrar.');
+            }
+
+            return redirect()->route('transfer.index')
+                ->with('success', 'Auth code submitted. Please complete the transfer details.')
+                ->with('domainCheck', [
+                    'status' => 'eligible',
+                    'domain' => $domainName,
+                    'authInfo' => $authInfo,
+                ])
+                ->with('authCodeSubmitted', true);
+        } catch (Exception $e) {
+            Log::error('Auth code submission failed: ' . $e->getMessage(), [
+                'domain' => $domainName,
+                'error' => $e->getMessage(),
+            ]);
+            return redirect()->route('transfer.index')
+                ->with('error', 'Failed to process auth code.');
+        }
+    }
+
+
+    public function initiateTransfer(DomainTransferRequest $request): RedirectResponse
+    {
+        $domainName = $request->input('domain_name');
+        $authInfo = $request->input('auth_info');
+        $period = 1;
 
         try {
             DB::beginTransaction();
 
-            // Create a pending DomainTransfer record
-            $transferRecord = DomainTransfer::create([
-                'domain_id' => $domain->id,
-                'user_id' => Auth::id(),
-                'new_registrant_id' => $request->validated()['new_registrant_id'],
+            $existingDomain = Domain::where('name', $domainName)->first();
+            // if ($existingDomain) {
+            //     throw new Exception('Domain is already registered with us.');
+            // }
+
+            $checkResult = $this->eppService->checkDomainForTransfer($domainName);
+            if ($checkResult['available']) {
+                throw new Exception('Domain is not registered with any registrar.');
+            }
+
+            $domain = Domain::create([
+                'name' => $domainName,
+                'uuid' => Str::uuid(),
+                'owner_id' => Auth::id(),
+                'registrar' => env('EPP_HOST'),
                 'status' => 'pending',
-                'message' => 'Transfer initiated.',
+                'registered_at' => now(),
+                'expires_at' => now()->addYears($period),
+                'registration_period' => $period,
+                'auth_code' => $authInfo,
+                'whois_privacy' => true,
+                'auto_renew' => 0,
+                'domain_pricing_id' => 1,
             ]);
 
-            Log::info('DomainTransfer record created', [
-                'transfer_id' => $transferRecord->id,
-                'domain_id' => $domain->id,
-                'user_id' => Auth::id(),
-                'new_registrant_id' => $request->validated()['new_registrant_id'],
-            ]);
+            $contacts = [
+                'registrant' => $request->input('registrant_contact_id'),
+                'admin' => $request->input('admin_contact_id') ?? $request->input('registrant_contact_id'),
+                'tech' => $request->input('tech_contact_id') ?? $request->input('registrant_contact_id'),
+                'billing' => $request->input('billing_contact_id') ?? $request->input('registrant_contact_id'),
+            ];
 
-            $result = $this->domainService->changeRegistrant($domain, $request->validated());
-
-            if ($result['success']) {
-                $transferRecord->update([
-                    'status' => 'completed',
-                    'message' => $result['message'],
-                ]);
-
-                Log::info('DomainTransfer completed', [
-                    'transfer_id' => $transferRecord->id,
+            foreach ($contacts as $type => $contactId) {
+                DomainContact::create([
                     'domain_id' => $domain->id,
-                ]);
-
-                DB::commit();
-
-                return redirect()->route('admin.domains.index')
-                    ->with('success', $result['message']);
-            }
-
-            $transferRecord->update([
-                'status' => 'failed',
-                'message' => $result['message'],
-            ]);
-
-            Log::warning('DomainTransfer failed', [
-                'transfer_id' => $transferRecord->id,
-                'domain_id' => $domain->id,
-                'message' => $result['message'],
-            ]);
-
-            DB::rollBack();
-
-            return redirect()->back()
-                ->with('error', $result['message']);
-        } catch (Exception $e) {
-            DB::rollBack();
-
-            // Update the transfer record if it exists
-            if (isset($transferRecord)) {
-                $transferRecord->update([
-                    'status' => 'failed',
-                    'message' => 'Failed to transfer domain: '.$e->getMessage(),
+                    'contact_id' => $contactId,
+                    'type' => $type,
+                    'user_id' => Auth::id(),
                 ]);
             }
 
-            Log::error('Domain transfer failed', [
-                'domain' => $domain->name,
-                'user_id' => Auth::id(),
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString(),
+            // Create nameserver records
+            $nameservers = $request->input('nameservers', []);
+            foreach ($nameservers as $hostname) {
+
+                $dnsProvider = explode('.', $hostname)[1] ?? 'unknown';
+
+                Nameserver::create([
+                    'domain_id' => $domain->id,
+                    'dns_provider' => $dnsProvider,
+                    'hostname' => $hostname,
+                    'ipv4_addresses' => null,
+                    'ipv6_addresses' => null,
+                ]);
+            }
+
+            // Send transfer request to registry
+            $frame = $this->eppService->transferDomain($domainName, $authInfo, $period . 'y');
+            $client = $this->eppService->getClient();
+            $response = $client->request($frame);
+
+            if (!$response instanceof \AfriCC\EPP\Frame\Response) {
+                throw new Exception('Invalid response from registry');
+            }
+           // dd($response);
+            $result = $response->results()[0];
+            if ($result->code() < 1000 || $result->code() >= 2000) {
+                throw new Exception("Registry error (code: {$result->code()}): {$result->message()}");
+            }
+
+            $responseData = $response->data();
+            if (!is_array($responseData)) {
+                throw new Exception('Unexpected response data format');
+            }
+
+            // Update domain status
+            $domain->update([
+                'status' => 'active',
+                'expires_at' => now()->addYears($period),
             ]);
+            // Handle cart for payable domains (not ending with .rw)
+            $isFreeTransfer = str_ends_with(strtolower($domainName), '.rw');
+            if (!$isFreeTransfer) {
+                $cartItemId = 'transfer_' . $domainName;
+                if (Cart::get($cartItemId)) {
+                    return redirect()->route('transfer.index')
+                        ->with('warning', 'Domain transfer is already in your cart.');
+                }
 
-            return redirect()->back()
-                ->with('error', 'Failed to transfer domain: '.$e->getMessage());
-        } finally {
-            $this->domainService->getEppClient()->disconnect();
-        }
-    }
+                $transferPrice = 0.00;
+                Cart::add([
+                    'id' => $cartItemId,
+                    'name' => $domainName,
+                    'price' => $transferPrice,
+                    'quantity' => 1,
+                    'attributes' => [
+                        'domain' => $domainName,
+                        'type' => 'transfer',
+                        'user_id' => Auth::id(),
+                        'auth_info' => $authInfo,
+                        'registrant_contact_id' => $request->input('registrant_contact_id'),
+                        'admin_contact_id' => $request->input('admin_contact_id'),
+                        'tech_contact_id' => $request->input('tech_contact_id'),
+                        'billing_contact_id' => $request->input('billing_contact_id'),
+                        'nameservers' => $nameservers,
+                    ],
+                ]);
 
-    /**
-     * Get the auth code for a domain.
-     */
-    public function getAuthCode(Request $request): RedirectResponse
-    {
-        $uuid = $request->input('uuid');
-        if (! $uuid) {
-            return redirect()->back()->with('error', 'No domain selected.');
-        }
 
-        $domain = Domain::where('uuid', $uuid)->firstOrFail();
+                return redirect()->route('cart.index')
+                    ->with('success', 'Domain transfer initiated successfully. Continue on Shopping so u can pay in checkout');
 
-        // Restrict non-admins to their own domains
-        if (! Auth::user()->is_admin && $domain->owner_id !== Auth::id()) {
+              //  Cart::remove($cartItemId);
+            }
+
+            DB::commit();
+
             return redirect()->route('admin.domains.index')
-                ->with('error', 'You are not authorized to access this domain.');
-        }
-
-        try {
-            $result = $this->domainService->getAuthCode($domain);
-
-            if ($result['success']) {
-                session()->flash('success', 'Auth code retrieved: '.$result['auth_code']);
-                session()->flash('auth_code', $result['auth_code']);
-
-                return redirect()->back();
-            }
-
-            $message = $result['code'] === 2303
-                ? 'Domain not managed by this registrar. Please obtain the auth code from the current registrar.'
-                : $result['message'];
-
-            return redirect()->back()->with('error', $message);
+                ->with('success', 'Domain transfer initiated successfully.');
         } catch (Exception $e) {
-            Log::error('Failed to retrieve auth code', [
-                'domain' => $domain->name,
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString(),
+            DB::rollBack();
+            Log::error('Domain transfer failed: ' . $e->getMessage(), [
+                'domain' => $domainName,
+                'user_id' => Auth::id(),
             ]);
-
-            return redirect()->back()
-                ->with('error', 'Failed to retrieve auth code: '.$e->getMessage());
+            return redirect()->route('transfer.index')
+                ->with('error', 'Failed to initiate domain transfer: ' . $e->getMessage());
+        } finally {
+            $this->eppService->disconnect();
         }
-    }
-
-    /**
-     * Show the transfers page (Approach 2).
-     */
-    public function listTransfers(): View
-    {
-        // Admins see all domains, non-admins see only their own
-        $domains = Auth::user()->is_admin
-            ? Domain::all()
-            : Domain::where('owner_id', Auth::id())->get();
-
-        // Transfer history for the current user
-        $transfers = DomainTransfer::where('user_id', Auth::id())->latest()->get();
-
-        // Admins can optionally see all transfer history
-        if (Auth::user()->is_admin) {
-            $transfers = DomainTransfer::latest()->get();
-        }
-
-        return view('admin.domains.transfers', [
-            'domains' => $domains,
-            'transfers' => $transfers,
-        ]);
     }
 }

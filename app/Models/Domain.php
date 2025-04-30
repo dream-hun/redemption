@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Support\Facades\Str;
+use Illuminate\Support\Str;
 
 final class Domain extends Model
 {
@@ -84,34 +84,6 @@ final class Domain extends Model
         return now()->diffInDays($this->expires_at);
     }
 
-    public function registeredAt(): Attribute
-    {
-        return Attribute::make(
-            get: fn ($value): string => Carbon::parse($value)->format('M d, Y')
-        );
-    }
-
-    public function expiresAt(): Attribute
-    {
-        return Attribute::make(
-            get: fn ($value): string => Carbon::parse($value)->format('M d, Y')
-        );
-    }
-
-    public function sslExpiresAt(): Attribute
-    {
-        return Attribute::make(
-            get: fn ($value): ?string => $value ? Carbon::parse($value)->format('M d, Y') : null
-        );
-    }
-
-    public function lastRenewalAt(): Attribute
-    {
-        return Attribute::make(
-            get: fn ($value): ?string => $value ? Carbon::parse($value)->format('M d, Y') : null
-        );
-    }
-
     protected static function boot(): void
     {
         parent::boot();
@@ -123,5 +95,51 @@ final class Domain extends Model
             }
         });
 
+    }
+
+    public function registeredAt(): Attribute
+    {
+        return Attribute::make(
+            get: fn ($value): string => Carbon::parse($value)->format('M d, Y')
+        );
+    }
+
+    public function expiresAt(): Attribute
+    public function expiresAt(): Attribute
+    {
+        return Attribute::make(
+            get: fn ($value): string => Carbon::parse($value)->format('M d, Y')
+        );
+    }
+
+    public function sslExpiresAt(): Attribute
+    public function sslExpiresAt(): Attribute
+    {
+        return Attribute::make(
+            get: fn ($value): ?string => $value ? Carbon::parse($value)->format('M d, Y') : null
+        );
+    }
+
+    public function lastRenewalAt(): Attribute
+    public function lastRenewalAt(): Attribute
+    {
+        return Attribute::make(
+            get: fn ($value): ?string => $value ? Carbon::parse($value)->format('M d, Y') : null
+        );
+    }
+    public function authCodeRequests()
+    {
+        return $this->hasMany(AuthCodeRequest::class);
+    }
+
+    public function generateAuthCode(): string
+    {
+        if ($this->auth_code) {
+            return $this->auth_code;
+        }
+        $authCode = Str::random(16);
+        $this->update(['auth_code' => $authCode]);
+
+        return $authCode;
     }
 }

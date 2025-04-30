@@ -10,21 +10,20 @@ final class DomainTransferRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return true;
+        return auth()->check();
     }
 
     public function rules(): array
     {
         return [
-            'auth_code' => 'required|string',
-            'new_registrant_id' => ['required', 'exists:contacts,contact_id'],
-            // 'new_registrant_email' => 'required|email',
-            // 'new_registrant_name' => 'required|string',
-            // 'new_registrant_org' => 'nullable|string',
-            // 'new_registrant_phone' => 'required|string',
-            // 'new_registrant_address' => 'required|string',
-            // 'new_registrant_city' => 'required|string',
-            // 'new_registrant_country' => 'required|string|size:2',
+            'domain_name' => ['required', 'string', 'regex:/^[a-zA-Z0-9\-\.]+$/'],
+            'auth_info' => ['required', 'string', 'max:255'],
+            'registrant_contact_id' => ['required', 'exists:contacts,id'],
+            'admin_contact_id' => ['nullable', 'exists:contacts,id'],
+            'tech_contact_id' => ['nullable', 'exists:contacts,id'],
+            'billing_contact_id' => ['nullable', 'exists:contacts,id'],
+            'nameservers' => ['array', 'min:2', 'max:4'],
+            'nameservers.*' => ['nullable', 'string', 'regex:/^[a-zA-Z0-9\-\.]+$/'],
         ];
     }
 }

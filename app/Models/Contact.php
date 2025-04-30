@@ -38,7 +38,7 @@ final class Contact extends Model
     {
         // Format: RW-XXXX-YYYY where X is random letter and Y is random number
         $letters = mb_strtoupper(Str::random(4));
-        $numbers = mb_str_pad(rand(1, 9999), 4, '0', STR_PAD_LEFT);
+        $numbers = mb_str_pad(rand(1, 9999).'', 4, '0', STR_PAD_LEFT);
 
         return "RW-{$letters}-{$numbers}";
     }
