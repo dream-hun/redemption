@@ -26,7 +26,10 @@
             <a class="btn btn-success" href="{{ route('domains.index') }}">
                 Register Domain
             </a>
-            <a class="btn btn-info" href="{{ route('admin.domains.transfers') }}">Domain Transfers</a>
+             <!-- Add Transfer Domain Button -->
+             <a href="{{ route('transfer.index') }}" class="btn btn-primary">
+                <i class="bi bi-arrow-right-circle"></i> Transfer a Domain
+            </a>
 
 
         </div>
@@ -102,7 +105,7 @@
                                         </a>
                                     @endcan
 
-
+                                    <a href="{{ route('domains.auth_code.generate', $domain) }}" class="btn btn-sm btn-primary">Get Auth Code</a>
 
                                     @can('domain_delete')
                                         @if ($domain->owner_id === auth()->id())

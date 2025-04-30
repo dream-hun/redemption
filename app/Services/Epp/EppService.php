@@ -88,9 +88,9 @@ final class EppService
 
             // Handle response based on its type
             if (method_exists($response, 'getMessage')) {
-                $message = $response->getMessage();
+                $message = $response->message();
             } elseif (method_exists($response, 'resultMessage')) {
-                $message = $response->resultMessage();
+                $message = $response->message();
             } else {
                 $message = 'Operation completed';
             }
@@ -113,30 +113,6 @@ final class EppService
             ];
         }
     }
-
-    /**
-
-     * @throws Exception
-     */
-    public function __construct()
-    {
-        $this->config = config('epp');
-
-        if (! $this->config) {
-            throw new Exception('EPP configuration not found');
-        }
-
-        if (empty($this->config['host'])) {
-            throw new Exception('EPP host is not configured. Please set EPP_HOST in your .env file.');
-        }
-
-        if (empty($this->config['certificate']) || ! file_exists($this->config['certificate'])) {
-            throw new Exception('EPP certificate not found. Please check the certificate path in your configuration.');
-        }
-
-        $this->initializeClient();
-    }
-
     /**
      * Initialize the EPP client with retries
      *
@@ -568,8 +544,7 @@ final class EppService
 
                 $phone = '+250.' . ltrim($phone, '0');
 
-                $phone = '+250.'.mb_ltrim($phone, '0');
-
+                $phone = '+250.' . mb_ltrim($phone, '0');
             }
             $frame->setVoice($phone);
 
@@ -584,7 +559,7 @@ final class EppService
 
                     $fax = '+250.' . ltrim($fax, '0');
 
-                    $fax = '+250.'.mb_ltrim($fax, '0');
+                    $fax = '+250.' . mb_ltrim($fax, '0');
                 }
                 $frame->setFax($fax, $contacts['fax_ext'] ?? '');
             }
@@ -744,7 +719,7 @@ final class EppService
 
             // Handle response based on its type
             if (method_exists($response, 'getMessage')) {
-                $message = $response->getMessage();
+                $message = $response->message();
             } elseif (method_exists($result, 'message')) {
                 $message = $result->message();
             } else {
@@ -868,30 +843,62 @@ final class EppService
             throw $e;
         }
     }
+    // /**
+    //  * Transfer Domain
+    //  *
+    //  * @throws Exception
+    //  */
+    // public function transferDomain(string $domain, string $authInfo, string $period = '1y'): TransferDomain
+    // {
+    //     try {
+    //         $this->ensureConnection();
 
-    /**
-     * Domain transfer
-     *
-     * @throws Exception
-     */
-    public function transferDomain(string $domain, string $operation, string $period, string $authInfo): TransferDomain
-    {
-        try {
-            $this->ensureConnection();
-            $frame = new TransferDomain;
-            $frame->setOperation($operation);
-            $frame->setDomain($domain);
-            $frame->setPeriod($period);
-            $frame->setAuthInfo($authInfo);
+    //         Log::info('Attempting domain transfer', [
+    //             'domain' => $domain,
+    //             'period' => $period,
+    //             'epp_host' => $this->config['host'],
+    //         ]);
 
-            return $frame;
-        } catch (Exception $e) {
-            Log::error('Domain transfer failed: ' . $e->getMessage());
-            // Try to reconnect on next request
-            $this->connected = false;
-            throw $e;
-        }
-    }
+    //         $frame = new TransferDomain;
+    //         $frame->setDomain($domain);
+    //         $frame->setAuthInfo($authInfo);
+    //         $frame->setPeriod($period);
+
+    //         return $frame;
+    //     } catch (Exception $e) {
+    //         Log::error('Domain transfer failed: ' . $e->getMessage(), [
+    //             'domain' => $domain,
+    //             'period' => $period,
+    //             'epp_host' => $this->config['host'],
+    //             'trace' => $e->getTraceAsString(),
+    //         ]);
+    //         $this->connected = false;
+    //         throw $e;
+    //     }
+    // }
+    // /**
+    //  * Domain transfer
+    //  *
+    //  * @throws Exception
+    //  */
+    // public function transferDomain(string $domain, string $operation, string $period, string $authInfo): TransferDomain
+    // {
+    //     try {
+    //         $this->ensureConnection();
+    //         $frame = new TransferDomain;
+    //         $frame->setOperation($operation);
+    //         $frame->setDomain($domain);
+    //         $frame->setPeriod($period);
+    //         $frame->setAuthInfo($authInfo);
+
+    //         return $frame;
+    //     } catch (Exception $e) {
+    //         Log::error('Domain transfer failed: ' . $e->getMessage());
+    //         // Try to reconnect on next request
+    //         $this->connected = false;
+    //         throw $e;
+    //     }
+    // }
     // public function transferDomain(string $domain, string $operation, string $period, string $authInfo, array $contactInfo = [] ): TransferDomain {
     //     try {
     //         $this->ensureConnection();
@@ -981,7 +988,7 @@ final class EppService
             //     return $authInfo;
             // }
 
-            throw new \Exception("EPP InfoDomain command failed: " . $response->getMessage());
+            throw new \Exception("EPP InfoDomain command failed: " . $response->message());
         } catch (\Exception $e) {
             Log::error('EPP getAuthorizationCode failed: ' . $e->getMessage());
             throw $e;
@@ -1051,7 +1058,63 @@ final class EppService
             throw $e;
         }
     }
+    /**
+     * Check if a domain is available or registered
+     *
+     * @throws Exception
+     * @return array{available: bool, reason?: string}
+     */
+    public function checkSingleDomain(string $domain): array
+    {
+        try {
+            $this->ensureConnection();
 
+            Log::info('Checking domain availability', [
+                'domain' => $domain,
+                'epp_host' => $this->config['host'],
+            ]);
+
+            $frame = new CheckDomain();
+            $frame->addDomain($domain);
+
+            $client = $this->getClient();
+            $response = $client->request($frame);
+
+            if (!($response instanceof \AfriCC\EPP\Frame\Response)) {
+                throw new Exception('Invalid response from registry');
+            }
+
+            $result = $response->results()[0];
+            $responseData = $response->data();
+
+            if (!is_array($responseData) || !isset($responseData['chkData']['cd'])) {
+                throw new Exception('Unexpected response data format');
+            }
+
+            $checkData = $responseData['chkData']['cd'][0];
+            $available = (bool) ($checkData['avail'] ?? false);
+            $reason = $checkData['reason'] ?? null;
+
+            Log::debug('Domain check result', [
+                'domain' => $domain,
+                'available' => $available,
+                'reason' => $reason,
+            ]);
+
+            return [
+                'available' => $available,
+                'reason' => $reason,
+            ];
+        } catch (Exception $e) {
+            Log::error('Domain check failed: ' . $e->getMessage(), [
+                'domain' => $domain,
+                'epp_host' => $this->config['host'],
+                'trace' => $e->getTraceAsString(),
+            ]);
+            $this->connected = false;
+            throw $e;
+        }
+    }
     /**
      * Delete Domain
      *
@@ -1118,9 +1181,14 @@ final class EppService
                 return rtrim(trim($ns), '.');
             }, $nameservers), fn($ns) => ! empty($ns));
 
-                return mb_rtrim(mb_trim($ns), '.');
-            }, $nameservers), fn ($ns): bool => $ns !== '' && $ns !== '0');
+            //     return mb_rtrim(mb_trim($ns), '.');
+            // }, $nameservers), fn ($ns): bool => $ns !== '' && $ns !== '0');
 
+            // // Filter out empty nameservers and normalize hostnames
+            // $nameservers = array_filter(array_map(function ($ns): string {
+            //     // Normalize nameserver hostname (remove trailing dot if present)
+            //     return rtrim(trim($ns), '.');
+            // }, $nameservers), fn($ns) => ! empty($ns) && $ns !== '0');
 
             // Get current nameservers for the domain
             $infoFrame = new InfoDomain;
@@ -1150,30 +1218,32 @@ final class EppService
                         strpos($ns, $domain) !== false
                     ) {
 
-                    if (mb_strpos($responseXml, '<host:name avail="1">') !== false &&
-                        mb_strpos($ns, $domain) !== false) {
+                        if (
+                            mb_strpos($responseXml, '<host:name avail="1">') !== false &&
+                            mb_strpos($ns, $domain) !== false
+                        ) {
 
-                        Log::info("Creating subordinate host: {$ns}");
+                            Log::info("Creating subordinate host: {$ns}");
 
-                        // Create the host
-                        $createFrame = new CreateHost;
-                        $createFrame->setHost($ns);
+                            // Create the host
+                            $createFrame = new CreateHost;
+                            $createFrame->setHost($ns);
 
-                        // Add a default IP address for the host
-                        // This is required by some EPP registries for subordinate hosts
-                        $createFrame->addAddr('127.0.0.1');
+                            // Add a default IP address for the host
+                            // This is required by some EPP registries for subordinate hosts
+                            $createFrame->addAddr('127.0.0.1');
 
-                        $createResponse = $this->client->request($createFrame);
+                            $createResponse = $this->client->request($createFrame);
 
-                        if ($createResponse->code() !== 1000) {
-                            Log::warning("Failed to create host {$ns}: {$createResponse->message()}");
-                        } else {
-                            Log::info("Successfully created host {$ns}");
+                            if ($createResponse->code() !== 1000) {
+                                Log::warning("Failed to create host {$ns}: {$createResponse->message()}");
+                            } else {
+                                Log::info("Successfully created host {$ns}");
+                            }
                         }
                     }
                 }
             }
-
             // Now update the domain with the new nameservers
             // Following the example from the PHP-EPP2 library
 
@@ -1518,6 +1588,181 @@ final class EppService
             throw $e;
         }
     }
+    /**
+     * Get domain information including auth code
+     *
+     * @throws Exception
+     */
+    public function getDomainInfoData(string $domain): array
+    {
+        try {
+            $this->ensureConnection();
+
+            Log::info('Fetching domain info', [
+                'domain' => $domain,
+                'epp_host' => $this->config['host'],
+            ]);
+
+            $frame = new InfoDomain();
+            $frame->setDomain($domain);
+
+            $client = $this->getClient();
+            $response = $client->request($frame);
+
+            if (!($response instanceof \AfriCC\EPP\Frame\Response)) {
+                throw new Exception('Invalid response from registry');
+            }
+
+            $responseData = $response->data();
+            if (!is_array($responseData) || !isset($responseData['infData'])) {
+                throw new Exception('Unexpected response data format');
+            }
+
+            Log::debug('Domain info retrieved', [
+                'domain' => $domain,
+                'data' => $responseData['infData'],
+            ]);
+
+            return $responseData['infData'];
+        } catch (Exception $e) {
+            Log::error('Failed to fetch domain info: ' . $e->getMessage(), [
+                'domain' => $domain,
+                'epp_host' => $this->config['host'],
+                'trace' => $e->getTraceAsString(),
+            ]);
+            $this->connected = false;
+            throw $e;
+        }
+    }
+
+    /**
+     * Check if a domain is available or registered
+     *
+     * @throws Exception
+     * @return array{available: bool, reason?: string}
+     */
+    /**
+     * Check if a domain is available or registered
+     *
+     * @throws Exception
+     * @return array{available: bool, reason?: string}
+     */
+    /**
+     * Check if a domain is available or registered
+     *
+     * @throws Exception
+     * @return array{available: bool, reason?: string}
+     */
+    public function checkDomainForTransfer(string $domain): array
+    {
+        try {
+            $this->ensureConnection();
+
+            Log::info('Checking domain availability', [
+                'domain' => $domain,
+                'epp_host' => $this->config['host'],
+            ]);
+
+            $frame = new CheckDomain();
+            $frame->addDomain($domain);
+
+            $response = $this->client->request($frame);
+            if (!$response) {
+                throw new Exception('No response received from EPP server');
+            }
+
+            Log::debug('Raw EPP response', [
+                'domain' => $domain,
+                'response' => $response->saveXML(),
+            ]);
+
+            $results = [];
+            $data = $response->data();
+
+            Log::debug('Parsed EPP response', ['data' => $data]);
+
+            if (!empty($data) && isset($data['chkData']['cd'])) {
+                // Handle both single and multiple domain responses
+                $items = isset($data['chkData']['cd'][0]) ? $data['chkData']['cd'] : [$data['chkData']['cd']];
+
+                foreach ($items as $item) {
+                    // Extract domain name - handle both string and array formats
+                    $domainName = $item['name']['_text'] ?? $item['name'];
+
+                    // Extract availability - check both formats
+                    $available = false;
+                    if (isset($item['name']['@name']['avail'])) {
+                        $available = $item['name']['@name']['avail'] === '1' || $item['name']['@name']['avail'] === true;
+                    } elseif (isset($item['@name']['avail'])) {
+                        $available = $item['@name']['avail'] === '1' || $item['@name']['avail'] === true;
+                    }
+
+                    Log::debug('Processing domain result:', [
+                        'domainName' => $domainName,
+                        'available' => $available,
+                        'item' => $item,
+                    ]);
+
+                    $results[$domainName] = [
+                        'available' => $available,
+                        'reason' => $item['reason'] ?? null,
+                    ];
+                }
+            } else {
+                Log::warning('Unexpected response structure:', ['data' => $data]);
+                throw new Exception('Unexpected response data format: chkData or cd missing');
+            }
+
+            // Return result for the requested domain
+            if (!isset($results[$domain])) {
+                throw new Exception('No result found for domain: ' . $domain);
+            }
+
+            return $results[$domain];
+        } catch (Exception $e) {
+            Log::error('Domain check failed: ' . $e->getMessage(), [
+                'domain' => $domain,
+                'epp_host' => $this->config['host'],
+                'trace' => $e->getTraceAsString(),
+            ]);
+            $this->connected = false;
+            throw $e;
+        }
+    }
+
+    /**
+     * Transfer Domain
+     *
+     * @throws Exception
+     */
+    public function transferDomain(string $domain, string $authInfo, string $period = '1y'): TransferDomain
+    {
+        try {
+            $this->ensureConnection();
+
+            Log::info('Attempting domain transfer', [
+                'domain' => $domain,
+                'period' => $period,
+                'epp_host' => $this->config['host'],
+            ]);
+
+            $frame = new TransferDomain();
+            $frame->setDomain($domain);
+            $frame->setAuthInfo($authInfo);
+            $frame->setPeriod($period);
+
+            return $frame;
+        } catch (Exception $e) {
+            Log::error('Domain transfer failed: ' . $e->getMessage(), [
+                'domain' => $domain,
+                'period' => $period,
+                'epp_host' => $this->config['host'],
+                'trace' => $e->getTraceAsString(),
+            ]);
+            $this->connected = false;
+            throw $e;
+        }
+    }
 
     /**
      * Get the EPP client instance
@@ -1535,106 +1780,6 @@ final class EppService
         if (isset($this->client)) {
             $this->client->close();
             $this->connected = false;
-        }
-    }
-
-    /**
-     * Initialize the EPP client with retries
-     *
-     * @throws Exception
-     */
-    private function initializeClient(): void
-    {
-        $config = [
-            'host' => $this->config['host'],
-            'port' => (int) $this->config['port'],
-            'username' => $this->config['username'],
-            'password' => $this->config['password'],
-            'ssl' => (bool) $this->config['ssl'],
-            'local_cert' => $this->config['certificate'],
-            'verify_peer' => false,
-            'verify_peer_name' => false,
-            'verify_host' => false,
-            'debug' => (bool) ($this->config['debug'] ?? false),
-            'timeout' => 30, // Add timeout
-        ];
-
-        $attempts = 0;
-        $lastException = null;
-
-        while ($attempts < $this->maxRetries) {
-            try {
-                $this->client = new EPPClient($config);
-
-                return;
-            } catch (Exception $e) {
-                $lastException = $e;
-                $attempts++;
-                Log::warning("EPP Client initialization attempt $attempts failed: ".$e->getMessage());
-
-                if ($attempts < $this->maxRetries) {
-                    sleep($this->retryDelay);
-                }
-            }
-        }
-
-        Log::error('EPP Client initialization failed after '.$this->maxRetries.' attempts');
-        throw $lastException;
-    }
-
-    /**
-     * Check if client is connected and try to reconnect if not
-     *
-     * @throws Exception
-     */
-    private function ensureConnection(): void
-    {
-        if (! isset($this->client)) {
-            throw new Exception('EPP client not initialized');
-        }
-
-        try {
-            if (! $this->connected) {
-                $greeting = $this->connect();
-                Log::info('EPP connection established', [
-                    'greeting' => $greeting,
-                    'host' => $this->config['host'],
-                ]);
-            }
-
-            // Test connection with a simple check domain command
-            try {
-                $frame = new CheckDomain;
-                $frame->addDomain($this->config['host']); // Use host as test domain
-                $response = $this->client->request($frame);
-
-                if (! ($response instanceof Response)) {
-                    $this->connected = false;
-                    throw new Exception('EPP connection test failed - invalid response');
-                }
-
-                $result = $response->results()[0];
-                if (! $result) {
-                    $this->connected = false;
-                    throw new Exception('EPP connection test failed - no result');
-                }
-
-                Log::debug('EPP connection test successful', [
-                    'code' => $result->code(),
-                    'message' => $result->message(),
-                ]);
-
-            } catch (Exception $e) {
-                $this->connected = false;
-                throw new Exception('EPP connection test failed: '.$e->getMessage(), $e->getCode(), $e);
-            }
-        } catch (Exception $e) {
-            $this->connected = false;
-            Log::error('EPP connection error: '.$e->getMessage(), [
-                'host' => $this->config['host'],
-                'trace' => $e->getTraceAsString(),
-            ]);
-            throw new Exception('Failed to establish EPP connection: '.$e->getMessage(), $e->getCode(), $e);
         }
     }
 }

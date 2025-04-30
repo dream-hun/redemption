@@ -39,43 +39,9 @@
             <input type="hidden" name="period" value="1">
             <button type="submit" class="btn btn-success">Renew domain</button>
         </form>
-        <a href="{{ route('admin.domains.transfer.index', $domain->uuid) }}" class="btn btn-primary" style="display: inline-block;">
-            <i class="fas fa-exchange-alt"></i> Transfer Domain
-        </a>
 
-        <form action="{{ route('admin.domains.transfer.get-auth-code') }}" method="POST" style="display: inline-block;">
-            @csrf
-            <input type="hidden" name="uuid" value="{{ $domain->uuid }}" />
-            <button type="submit" class="btn btn-info">
-                <i class="fas fa-key"></i> Get Auth Code
-            </button>
-        </form>
+        <a href="{{ route('domains.auth_code.generate', $domain) }}" class="btn btn-sm btn-primary">Get Domain's Auth Code</a>
 
     </div>
-    <div class="modal fade" id="authCodeModal" tabindex="-1" role="dialog">
-        <div class="modal-dialog" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Domain Auth Code</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-                <div class="modal-body">
-                    <p><strong>Auth Code:</strong> <span id="authCodeValue">{{ session('auth_code') }}</span></p>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    @if (session('auth_code'))
-        <script>
-            $(document).ready(function() {
-                $('#authCodeModal').modal('show');
-            });
-        </script>
-    @endif
+   
 </div>
