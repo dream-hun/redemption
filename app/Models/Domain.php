@@ -105,6 +105,7 @@ final class Domain extends Model
     }
 
     public function expiresAt(): Attribute
+    public function expiresAt(): Attribute
     {
         return Attribute::make(
             get: fn ($value): string => Carbon::parse($value)->format('M d, Y')
@@ -112,12 +113,14 @@ final class Domain extends Model
     }
 
     public function sslExpiresAt(): Attribute
+    public function sslExpiresAt(): Attribute
     {
         return Attribute::make(
             get: fn ($value): ?string => $value ? Carbon::parse($value)->format('M d, Y') : null
         );
     }
 
+    public function lastRenewalAt(): Attribute
     public function lastRenewalAt(): Attribute
     {
         return Attribute::make(
@@ -132,9 +135,9 @@ final class Domain extends Model
     public function generateAuthCode(): string
     {
         if ($this->auth_code) {
-            return $this->auth_code; 
+            return $this->auth_code;
         }
-        $authCode = Str::random(16); 
+        $authCode = Str::random(16);
         $this->update(['auth_code' => $authCode]);
 
         return $authCode;

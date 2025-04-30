@@ -1,25 +1,29 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Services;
 
 use App\Models\Contact;
 use App\Models\Domain;
+use Exception;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-use Exception;
 
-class DomainService
+final class DomainService
 {
-    protected EppService $eppService;
+    private EppService $eppService;
 
     public function __construct(EppService $eppService)
     {
         $this->eppService = $eppService;
     }
-    public function getEppClient()
+
+    public function getEppClient(): \App\Services\EppService
     {
         return $this->eppService;
     }
+
     /**
      * Change registrant for a .rw domain
      */
@@ -30,7 +34,7 @@ class DomainService
 
             // Verify auth_code
             $authCheck = $this->eppService->verifyAuthCode($domain->name, $data['auth_code']);
-            if (!$authCheck['success']) {
+            if (! $authCheck['success']) {
                 return [
                     'success' => false,
                     'message' => $authCheck['message'],
@@ -52,7 +56,7 @@ class DomainService
             ];
 
             $contactResult = $this->eppService->createContact($contactData);
-            if (!$contactResult['success']) {
+            if (! $contactResult['success']) {
                 return [
                     'success' => false,
                     'message' => $contactResult['message'],
@@ -75,14 +79,16 @@ class DomainService
                 $domain->update(['registrant_id' => $data['new_registrant_id']]);
 
                 DB::commit();
+
                 return [
                     'success' => true,
-                    'message' => 'Registrant changed successfully for ' . $domain->name,
+                    'message' => 'Registrant changed successfully for '.$domain->name,
                     'data' => ['new_registrant_id' => $data['new_registrant_id']],
                 ];
             }
 
             DB::rollBack();
+
             return [
                 'success' => false,
                 'message' => $updateResult['message'],
@@ -95,9 +101,10 @@ class DomainService
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
             ]);
+
             return [
                 'success' => false,
-                'message' => 'Failed to change registrant: ' . $e->getMessage(),
+                'message' => 'Failed to change registrant: '.$e->getMessage(),
                 'code' => 500,
             ];
         } finally {
@@ -111,17 +118,17 @@ class DomainService
     public function getAuthCode(Domain $domain): array
     {
         try {
-            $result = $this->eppService->getAuthCode($domain->name);
-            return $result;
+            return $this->eppService->getAuthCode($domain->name);
         } catch (Exception $e) {
             Log::error('Auth code retrieval failed', [
                 'domain' => $domain->name,
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
             ]);
+
             return [
                 'success' => false,
-                'message' => 'Failed to retrieve auth code: ' . $e->getMessage(),
+                'message' => 'Failed to retrieve auth code: '.$e->getMessage(),
                 'code' => 500,
             ];
         }

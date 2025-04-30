@@ -25,7 +25,6 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/', LandingController::class)->name('home');
 
-
 Route::get('/hosting', [HostingController::class, 'index'])->name('hosting.index');
 
 Route::get('/hosting/shared', [HostingController::class, 'index'])->name('shared.index');
@@ -40,7 +39,6 @@ Route::post('/check-domains', [SearchDomainController::class, 'search'])->name('
 
 Route::get('/shopping-cart', [CartController::class, 'cart'])->name('cart.index');
 
-
 Route::group(['middleware' => 'auth', 'prefix' => 'admin', 'as' => 'admin.'], function (): void {
 
     Route::resource('settings', SettingController::class);
@@ -49,8 +47,7 @@ Route::group(['middleware' => 'auth', 'prefix' => 'admin', 'as' => 'admin.'], fu
     Route::resource('permissions', PermissionsController::class);
     Route::resource('domain-pricings', DomainPricingController::class)->except('show');
 
-    Route::resource('hostings', \App\Http\Controllers\Admin\HostingController::class)->except(['show']);
-
+    Route::resource('hostings', App\Http\Controllers\Admin\HostingController::class)->except(['show']);
 
     // Contact management (global)
     Route::group(['prefix' => 'contacts', 'as' => 'contacts.'], function (): void {
@@ -74,7 +71,6 @@ Route::group(['middleware' => 'auth', 'prefix' => 'admin', 'as' => 'admin.'], fu
         Route::get('/{domain:uuid}/edit', [DomainController::class, 'edit'])->name('edit');
         Route::put('/{domain:uuid}', [DomainController::class, 'update'])->name('update');
         Route::delete('/{domain:uuid}', [DomainController::class, 'destroy'])->name('destroy');
-
 
         // Domain operations
         Route::prefix('{domain:uuid}')->group(function (): void {

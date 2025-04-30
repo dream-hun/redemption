@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
@@ -22,7 +24,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
-class TransferDomainController extends Controller
+final class TransferDomainController extends Controller
 {
     protected $eppService;
 
@@ -228,7 +230,7 @@ class TransferDomainController extends Controller
                         ->with('warning', 'Domain transfer is already in your cart.');
                 }
 
-                $transferPrice = 0.00; 
+                $transferPrice = 0.00;
                 Cart::add([
                     'id' => $cartItemId,
                     'name' => $domainName,
