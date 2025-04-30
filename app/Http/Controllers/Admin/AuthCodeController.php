@@ -52,7 +52,7 @@ final class AuthCodeController extends Controller
         }
 
         try {
-            // Generate new or retrieve existing auth code
+            // Start Transfer by Generate new or retrieve existing auth code and send it to new owner
             $authCode = $domain->generateAuthCode();
 
             $domain->authCodeRequests()->create([
@@ -62,7 +62,7 @@ final class AuthCodeController extends Controller
                 'sent_at' => now(),
             ]);
 
-            // Send email to the new owner
+            // Send Transfer email to the new owner
             try {
                 Mail::to($request->recipient_email)->send(
                     new AuthCodeDelivery($domain, $authCode, $request->recipient_email, Auth::user())
@@ -71,16 +71,16 @@ final class AuthCodeController extends Controller
                 // Increment rate limiter
                 RateLimiter::hit($rateLimitKey, (5 * 60)); // again in 5 min
 
-                Log::info('Auth code sent', [
+                Log::info('Transfer email sent', [
                     'domain' => $domain->name,
                     'user_id' => Auth::id(),
                     'recipient_email' => $request->recipient_email,
                 ]);
 
                 return redirect()->route('admin.domains.index')
-                    ->with('success', 'Auth code sent to '.$request->recipient_email);
+                    ->with('success', 'Transfer started successfully, Invite is sent to '.$request->recipient_email);
             } catch (Exception $ee) {
-                Log::error('Auth code NOT sent', [
+                Log::error('Transfer email NOT sent', [
                     'Error: ' => $ee->getMessage(),
                     'domain' => $domain->name,
                     'user_id' => Auth::id(),
@@ -88,17 +88,17 @@ final class AuthCodeController extends Controller
                 ]);
 
                 return redirect()->back()
-                    ->with('error', 'Failed to send email with auth code: '.$ee->getMessage());
+                    ->with('error', 'Failed to send Transfer email: '.$ee->getMessage());
             }
         } catch (Exception $e) {
-            Log::error('Failed to send auth code: '.$e->getMessage(), [
+            Log::error('Failed to send Transfer: '.$e->getMessage(), [
                 'domain' => $domain->name,
                 'user_id' => Auth::id(),
                 'recipient_email' => $request->recipient_email,
             ]);
 
             return redirect()->back()
-                ->with('error', 'Failed to send auth code: '.$e->getMessage());
+                ->with('error', 'Failed to send Transfer : '.$e->getMessage());
         }
     }
 }

@@ -21,6 +21,7 @@ use App\Http\Controllers\LandingController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\RegisterDomainController;
 use App\Http\Controllers\SearchDomainController;
+use App\Http\Controllers\TransferInvitationController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', LandingController::class)->name('home');
@@ -112,13 +113,26 @@ Route::prefix('transfer')->name('transfer.')->group(function (): void {
     Route::post('/check', [TransferDomainController::class, 'checkDomain'])->name('check');
     Route::post('/auth-code', [TransferDomainController::class, 'submitAuthCode'])->name('auth-code');
     Route::post('/initiate', [TransferDomainController::class, 'initiateTransfer'])->name('initiate');
+    Route::get('/accept-invite/{domain}/{domuuid}/', [TransferDomainController::class, 'acceptInvitation'])->name('domain.transfer.invite.push');
 });
 Route::middleware('auth')->group(function (): void {
-    Route::get('domains/{domain}/auth-code', [AuthCodeController::class, 'showGenerateForm'])
+    Route::get('domains/{domain}/start-transfer', [AuthCodeController::class, 'showGenerateForm'])
         ->name('domains.auth_code.generate');
     Route::post('domains/{domain}/auth-code', [AuthCodeController::class, 'generateAndSend'])
         ->name('domains.auth_code.send');
 });
+Route::middleware('auth')->group(function () {
+    Route::get('domains/{domain}/transfer-invitation', [TransferInvitationController::class, 'showSendForm'])
+        ->name('domains.transfer.invitation');
+    Route::post('domains/{domain}/transfer-invitation', [TransferInvitationController::class, 'send'])
+        ->name('domains.transfer.send');
+});
+
+Route::get('domains/transfer/accept/{token}', [TransferInvitationController::class, 'accept'])
+    ->name('domains.transfer.accept');
+Route::post('domains/transfer/accept/{token}', [TransferInvitationController::class, 'processAccept'])
+    ->name('domains.transfer.process_accept');
+    
 Route::get('/dashboard', DashboardController::class)->middleware(['auth', 'verified'])->name('dashboard');
 // Domain registration routes
 Route::middleware(['auth', 'verified'])->group(function (): void {

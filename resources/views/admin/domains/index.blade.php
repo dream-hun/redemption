@@ -26,9 +26,9 @@
             <a class="btn btn-success" href="{{ route('domains.index') }}">
                 Register Domain
             </a>
-             <!-- Add Transfer Domain Button -->
-             <a href="{{ route('transfer.index') }}" class="btn btn-primary">
-                <i class="bi bi-arrow-right-circle"></i> Transfer a Domain
+            <!-- Add Transfer Domain Button -->
+            <a href="{{ route('transfer.index') }}" class="btn btn-primary">
+                <i class="bi bi-arrow-right-circle"></i> Transfer IN a Domain
             </a>
 
 
@@ -99,13 +99,15 @@
                                 </td>
                                 <td>
                                     @can('domain_edit')
-                                        <a class="btn btn-md btn-info" href="{{ route('admin.domains.edit', $domain->uuid) }}">
+                                        <a class="btn btn-xs btn-info" href="{{ route('admin.domains.edit', $domain->uuid) }}">
                                             <i class="bi bi-pencil"></i>
                                             Manage Domain
                                         </a>
                                     @endcan
-
-                                    <a href="{{ route('domains.auth_code.generate', $domain) }}" class="btn btn-sm btn-primary">Get Auth Code</a>
+                                    {{-- <a href="{{ route('domains.auth_code.generate', $domain) }}"
+                                        class="btn btn-xs btn-primary">Transfer this domain</a> <br> --}}
+                                    <a href="{{ route('domains.transfer.invitation', $domain) }}"
+                                        class="btn btn-xs btn-primary">Change Owner</a>
 
                                     @can('domain_delete')
                                         @if ($domain->owner_id === auth()->id())
@@ -114,7 +116,7 @@
                                                 style="display: inline-block;">
                                                 <input type="hidden" name="_method" value="DELETE">
                                                 <input type="hidden" name="_token" value="{{ csrf_token() }}">
-                                                <button type="submit" class="btn btn-md btn-danger">
+                                                <button type="submit" class="btn btn-xs btn-danger">
                                                     <i class="bi bi-trash"></i> {{ trans('global.delete') }}
                                                 </button>
                                             </form>

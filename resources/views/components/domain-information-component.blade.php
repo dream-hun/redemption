@@ -40,7 +40,9 @@
             <button type="submit" class="btn btn-success">Renew domain</button>
         </form>
 
-        <a href="{{ route('domains.auth_code.generate', $domain) }}" class="btn btn-sm btn-primary">Get Domain's Auth Code</a>
+        {{-- <a href="{{ route('domains.auth_code.generate', $domain) }}" class="btn btn-primary">Transfer This Domain</a> --}}
+        <a href="{{ route('domains.transfer.invitation', $domain) }}"
+                                        class="btn btn-primary">Change Domain Owner</a>
 
     </div>
    
