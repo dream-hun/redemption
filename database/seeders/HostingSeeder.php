@@ -17,6 +17,7 @@ final class HostingSeeder extends Seeder
     {
         $plans = [
             [
+                'uuid' => Str::uuid(),
                 'category_id' => 1,
                 'name' => 'Bronze',
                 'slug' => Str::slug('Bronze'),
@@ -26,6 +27,7 @@ final class HostingSeeder extends Seeder
                 'period' => 1,
             ],
             [
+                'uuid' => Str::uuid(),
                 'category_id' => 1,
                 'name' => 'White',
                 'slug' => Str::slug('White'),
@@ -36,6 +38,7 @@ final class HostingSeeder extends Seeder
 
             ],
             [
+                'uuid' => Str::uuid(),
                 'category_id' => 1,
                 'name' => 'Gold',
                 'slug' => Str::slug('Gold'),
@@ -45,6 +48,7 @@ final class HostingSeeder extends Seeder
                 'period' => 1,
             ],
             [
+                'uuid' => Str::uuid(),
                 'category_id' => 1,
                 'name' => 'Gold Premium',
                 'slug' => Str::slug('Gold Premium'),

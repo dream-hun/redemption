@@ -33,7 +33,7 @@ final class EppService
         $this->client = new EPPClient($this->config);
     }
 
-    public function getClient(): \AfriCC\EPP\Client
+    public function getClient(): EPPClient
     {
         return $this->client;
     }

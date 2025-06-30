@@ -6,6 +6,7 @@ namespace App\Models;
 
 use DateTimeInterface;
 use Exception;
+use Illuminate\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -14,10 +15,11 @@ use Illuminate\Support\Str;
 
 final class User extends Authenticatable
 {
-    use Notifiable;
+    use MustVerifyEmail,Notifiable;
 
     protected $fillable = [
-        'name',
+        'first_name',
+        'last_name',
         'email',
         'password',
         'client_code',
@@ -66,8 +68,8 @@ final class User extends Authenticatable
 
     public function getIsAdminAttribute(): bool
     {
-        // return $this->roles()->where('id', 1)->exists();
-        return true;
+        return $this->roles()->where('id', 1)->exists();
+
     }
 
     public function roles(): BelongsToMany

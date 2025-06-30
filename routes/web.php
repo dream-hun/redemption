@@ -121,7 +121,7 @@ Route::middleware('auth')->group(function (): void {
     Route::post('domains/{domain}/auth-code', [AuthCodeController::class, 'generateAndSend'])
         ->name('domains.auth_code.send');
 });
-Route::middleware('auth')->group(function () {
+Route::middleware('auth')->group(function (): void {
     Route::get('domains/{domain}/transfer-invitation', [TransferInvitationController::class, 'showSendForm'])
         ->name('domains.transfer.invitation');
     Route::post('domains/{domain}/transfer-invitation', [TransferInvitationController::class, 'send'])
@@ -132,7 +132,7 @@ Route::get('domains/transfer/accept/{token}', [TransferInvitationController::cla
     ->name('domains.transfer.accept');
 Route::post('domains/transfer/accept/{token}', [TransferInvitationController::class, 'processAccept'])
     ->name('domains.transfer.process_accept');
-    
+
 Route::get('/dashboard', DashboardController::class)->middleware(['auth', 'verified'])->name('dashboard');
 // Domain registration routes
 Route::middleware(['auth', 'verified'])->group(function (): void {

@@ -25,7 +25,7 @@ use Illuminate\Support\Str;
 
 final class TransferDomainController extends Controller
 {
-    private \App\Services\Epp\EppService $eppService;
+    private EppService $eppService;
 
     public function __construct(EppService $eppService)
     {

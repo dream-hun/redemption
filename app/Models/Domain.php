@@ -127,10 +127,12 @@ final class Domain extends Model
 
         return $authCode;
     }
+
     public function transferInvitations()
     {
         return $this->hasMany(TransferInvitation::class);
     }
+
     protected static function boot(): void
     {
         parent::boot();

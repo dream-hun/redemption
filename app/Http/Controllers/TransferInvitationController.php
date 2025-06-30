@@ -1,29 +1,30 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers;
 
 use App\Mail\TransferInvitation as MailTransferInvitation;
-use App\Models\Domain;
 use App\Mail\TransferInvitationConfirmation;
 use App\Models\Contact;
+use App\Models\Domain;
 use App\Models\DomainContact;
 use App\Models\Nameserver;
 use App\Models\TransferInvitation;
 use App\Services\Epp\EppService;
+use Exception;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\RateLimiter;
-use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Str;
-use Carbon\Carbon;
-use Exception;
 
-class TransferInvitationController extends Controller
+final class TransferInvitationController extends Controller
 {
-    protected $eppService;
+    protected EppService $eppService;
 
     public function __construct(EppService $eppService)
     {
@@ -40,7 +41,7 @@ class TransferInvitationController extends Controller
             abort(403, 'Unauthorized: You do not own this domain.');
         }
 
-        return view('admin.domains.transfer_invitation_send', compact('domain'));
+        return view('admin.domains.transfer_invitation_send', ['domain' => $domain]);
     }
 
     /**
@@ -56,7 +57,7 @@ class TransferInvitationController extends Controller
             'recipient_email' => ['required', 'email', 'max:255'],
         ]);
 
-        $rateLimitKey = 'transfer-invitation:' . Auth::id();
+        $rateLimitKey = 'transfer-invitation:'.Auth::id();
         if (RateLimiter::tooManyAttempts($rateLimitKey, 3)) {
             return redirect()->back()
                 ->with('error', 'Too many transfer invitation requests. Please try again later.');
@@ -92,17 +93,17 @@ class TransferInvitationController extends Controller
             DB::commit();
 
             return redirect()->route('admin.domains.index')
-                ->with('success', 'Transfer invitation sent to ' . $request->recipient_email);
+                ->with('success', 'Transfer invitation sent to '.$request->recipient_email);
         } catch (Exception $e) {
             DB::rollBack();
-            Log::error('Failed to send transfer invitation: ' . $e->getMessage(), [
+            Log::error('Failed to send transfer invitation: '.$e->getMessage(), [
                 'domain' => $domain->name,
                 'sender_id' => Auth::id(),
                 'recipient_email' => $request->recipient_email,
             ]);
 
             return redirect()->back()
-                ->with('error', 'Failed to send transfer invitation: ' . $e->getMessage());
+                ->with('error', 'Failed to send transfer invitation: '.$e->getMessage());
         }
     }
 
@@ -115,14 +116,14 @@ class TransferInvitationController extends Controller
             //   ->where('expires_at', '>', now())
             //   ->whereNull('accepted_at')
             ->firstOrFail();
-        //get domain associeted with invitation
+        // get domain associeted with invitation
         $domain = $invitation->domain;
         // Update domain set new owner id amd status befor transfer
         $domain->update([
             'status' => 'pending',
             'owner_id' => Auth::id(),
         ]);
-        //update invitation accpted by current user now
+        // update invitation accpted by current user now
         $invitation->update(['accepted_by_id' => Auth::id(), 'accepted_at' => now()]);
 
         //  dd($domain);
@@ -131,6 +132,7 @@ class TransferInvitationController extends Controller
             ->select('id', 'contact_id', 'name', 'organization', 'email', 'voice')
             ->orderBy('created_at', 'desc')
             ->get();
+
         return view('admin.domains.transfer_invitation_accept', ['invitation' => $invitation, 'contacts' => $contacts]);
     }
 
@@ -140,12 +142,12 @@ class TransferInvitationController extends Controller
     public function processAccept(Request $request, string $token): RedirectResponse
     {
         $invitation = TransferInvitation::where('token', $token)
-            //->where('expires_at', '>', now())
+            // ->where('expires_at', '>', now())
             // ->whereNull('accepted_at')
             ->firstOrFail();
 
         // only logged in user can accept transfer
-        if (!Auth::check()) {
+        if (! Auth::check()) {
             return redirect()->route('login')
                 ->with('error', 'Please log in to accept the transfer.')
                 ->with('redirect_to', route('domains.transfer.accept', $token));
@@ -166,7 +168,6 @@ class TransferInvitationController extends Controller
             $domain = $invitation->domain;
             $authInfo = $invitation->auth_code;
 
-
             // Create domain_contacts records
             $contacts = [
                 'registrant' => $request->input('registrant_contact_id'),
@@ -175,9 +176,9 @@ class TransferInvitationController extends Controller
                 'billing' => $request->input('billing_contact_id') ?? $request->input('registrant_contact_id'),
             ];
 
-            //  $domain->domainContacts()->delete(); 
+            //  $domain->domainContacts()->delete();
             foreach ($contacts as $type => $contactId) {
-                if (!$this->eppService->infoContact($contactId)) {
+                if (! $this->eppService->infoContact($contactId)) {
                     throw new Exception("Contact ID $contactId is not registered with the registry.");
                 }
                 DomainContact::create([
@@ -189,11 +190,11 @@ class TransferInvitationController extends Controller
             }
 
             $nameservers = $request->input('nameservers', []);
-            //  $domain->nameservers()->delete(); 
+            //  $domain->nameservers()->delete();
             foreach ($nameservers as $hostname) {
 
-                if (null !== $hostname) {
-                    if (!$this->eppService->checkNameserver($hostname)) {
+                if ($hostname !== null) {
+                    if (! $this->eppService->checkNameserver($hostname)) {
                         throw new Exception("Nameserver $hostname is not registered with the registry.");
                     }
                     $dnsProvider = explode('.', $hostname)[1] ?? 'unknown';
@@ -208,9 +209,9 @@ class TransferInvitationController extends Controller
             }
 
             // Send EPP transfer request
-            $isFreeTransfer = str_ends_with(strtolower($domain->name), '.rw');
+            $isFreeTransfer = str_ends_with(mb_strtolower($domain->name), '.rw');
             $period = 1; // Default 1 year
-            $periodForEpp = $period . 'y';
+            $periodForEpp = $period.'y';
             $frame = $this->eppService->transferDomain($domain->name, $authInfo, $periodForEpp);
             $client = $this->eppService->getClient();
             Log::debug('EPP Transfer Request', [
@@ -221,7 +222,7 @@ class TransferInvitationController extends Controller
             ]);
             $response = $client->request($frame);
 
-            if (!$response instanceof \AfriCC\EPP\Frame\Response) {
+            if (! $response instanceof \AfriCC\EPP\Frame\Response) {
                 throw new Exception('Invalid response from registry');
             }
 
@@ -236,7 +237,7 @@ class TransferInvitationController extends Controller
                 'response' => $response->saveXML(),
                 'responseData' => $responseData,
             ]);
-            if (!is_array($responseData)) {
+            if (! is_array($responseData)) {
                 throw new Exception('Unexpected response data format');
             }
 
@@ -264,14 +265,14 @@ class TransferInvitationController extends Controller
                 ->with('success', 'Domain transfer completed successfully.');
         } catch (Exception $e) {
             DB::rollBack();
-            Log::error('Failed to accept transfer invitation: ' . $e->getMessage(), [
+            Log::error('Failed to accept transfer invitation: '.$e->getMessage(), [
                 'domain' => $domain->name,
                 'accepted_by_id' => Auth::id(),
                 'recipient_email' => $invitation->recipient_email,
             ]);
 
             return redirect()->route('domains.transfer.accept', $token)
-                ->with('error', 'Failed to complete domain transfer: ' . $e->getMessage());
+                ->with('error', 'Failed to complete domain transfer: '.$e->getMessage());
         } finally {
             $this->eppService->disconnect();
         }

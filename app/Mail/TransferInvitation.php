@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Mail;
 
 use App\Models\TransferInvitation as ModelsTransferInvitation;
@@ -7,10 +9,13 @@ use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
 use Illuminate\Queue\SerializesModels;
 
-class TransferInvitation extends Mailable
+final class TransferInvitation extends Mailable
 {
     use Queueable, SerializesModels;
 
+    /**
+     * @var ModelsTransferInvitation
+     */
     public $invitation;
 
     public function __construct(ModelsTransferInvitation $invitation)
@@ -20,7 +25,7 @@ class TransferInvitation extends Mailable
 
     public function build()
     {
-        return $this->subject('Domain Transfer Invitation for ' . $this->invitation->domain->name)
+        return $this->subject('Domain Transfer Invitation for '.$this->invitation->domain->name)
             ->markdown('emails.domain_transfer_invitation')
             ->with([
                 'domainName' => $this->invitation->domain->name,
