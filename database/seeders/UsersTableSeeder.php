@@ -10,7 +10,7 @@ use Illuminate\Support\Str;
 
 final class UsersTableSeeder extends Seeder
 {
-    public function run()
+    public function run(): void
     {
         $users = [
             [

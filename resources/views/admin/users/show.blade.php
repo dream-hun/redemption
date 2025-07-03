@@ -1,5 +1,4 @@
-@extends('layouts.admin')
-@section('content')
+<x-admin-layout>
     <div class="card">
         <div class="card-header">
             {{ trans('global.show') }} {{ trans('cruds.user.title') }}
@@ -82,4 +81,4 @@
             </div>
         </div>
     </div>
-@endsection
+</x-admin-layout>

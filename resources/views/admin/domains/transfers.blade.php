@@ -1,6 +1,4 @@
-@extends('layouts.admin')
-
-@section('content')
+<x-admin-layout>
     <div class="container-fluid">
         <h1>Domain Transfers</h1>
 
@@ -171,4 +169,4 @@
             </script>
         @endif
     </div>
-@endsection
+</x-admin-layout>>

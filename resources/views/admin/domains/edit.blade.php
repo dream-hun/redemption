@@ -1,4 +1,4 @@
-@extends('layouts.admin')
+<x-admin-layout>
 @section('page-title')
     Domains
 @endsection
@@ -102,9 +102,4 @@
             </div>
         </div>
     </div>
-
-
-@endsection
-
-@section('scripts')
-@endsection
+</x-admin-layout>

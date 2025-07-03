@@ -1,4 +1,4 @@
-@extends('layouts.admin')
+<x-admin-layout>
 
 @section('page-title')
     {{ trans('cruds.domain.title_singular') }} {{ trans('global.show') }}
@@ -324,6 +324,4 @@
             @endif
         </div>
     </div>
-    
-    
-@endsection
+</x-admin-layout>

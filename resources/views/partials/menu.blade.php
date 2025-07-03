@@ -14,7 +14,7 @@
                 <img src="{{ Auth::user()?->getGravatarAttribute() }}" class="img-circle elevation-2" alt="User Image">
             </div>
             <div class="info">
-                <a href="#" class="d-block">{{ Auth::user()?->name }}</a>
+                <a href="#" class="d-block">{{ Auth::user()?->first_name }} {{ Auth::user()?->last_name }}</a>
             </div>
         </div>
 
@@ -144,12 +144,21 @@
                         </ul>
                     </li>
                 @endcan
+                <li class="nav-item">
+                    <a href="{{ route('profile.edit') }}"
+                       class="nav-link {{ request()->is('profile.edit') ? 'active' : '' }}">
+                        <i class="bi bi-person"></i>
+                        <p>
+                            My Profile
+                        </p>
+                    </a>
+                </li>
 
                 <li class="nav-item">
-                    <form id="logoutform" action="{{ route('logout') }}" method="POST" style="display: none;">
+                    <form id="log-out" action="{{ route('logout') }}" method="POST" style="display: none;">
                         @csrf
                     </form>
-                    <a href="#" class="nav-link" onclick="event.preventDefault(); document.getElementById('logoutform').submit();">
+                    <a href="#" class="nav-link" onclick="event.preventDefault(); document.getElementById('log-out').submit();">
                         <i class="bi bi-box-arrow-right"></i>
                         <p>{{ trans('global.logout') }}</p>
                     </a>

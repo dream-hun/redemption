@@ -1,27 +1,25 @@
-@extends('layouts.admin')
+<x-admin-layout>
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h4>Edit Contact</h4>
+                    </div>
+                    <div class="card-body">
+                        @if(session('success'))
+                            <div class="alert alert-success">
+                                {{ session('success') }}
+                            </div>
+                        @endif
 
-@section('content')
-<div class="container-fluid">
-    <div class="row">
-        <div class="col-12">
-            <div class="card">
-                <div class="card-header">
-                    <h4>Edit Contact</h4>
-                </div>
-                <div class="card-body">
-                    @if(session('success'))
-                        <div class="alert alert-success">
-                            {{ session('success') }}
-                        </div>
-                    @endif
+                        @if(session('error'))
+                            <div class="alert alert-danger">
+                                {{ session('error') }}
+                            </div>
+                        @endif
 
-                    @if(session('error'))
-                        <div class="alert alert-danger">
-                            {{ session('error') }}
-                        </div>
-                    @endif
-
-                    <form action="/admin/contacts/{{ $contact->uuid }}" method="POST">
+                        <form action="/admin/contacts/{{ $contact->uuid }}" method="POST">
                             @csrf
                             @method('PUT')
                             <div class="row">
@@ -149,9 +147,10 @@
                                 <button type="submit" class="btn btn-primary">Update Contact</button>
                             </div>
                         </form>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
-</div>
-@endsection
+</x-admin-layout>
+

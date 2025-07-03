@@ -1,6 +1,4 @@
-@extends('layouts.admin')
-
-@section('content')
+<x-admin-layout>
     <div class="container-fluid p-4">
         <h1>Accept Transfer for {{ $invitation->domain->name }}</h1>
 
@@ -15,7 +13,7 @@
             </div>
         @else
             <form action="{{ route('domains.transfer.process_accept', $invitation->token) }}" method="POST"
-                class="needs-validation" novalidate>
+                  class="needs-validation" novalidate>
                 @csrf
                 {{-- <div class="mb-3">
                     <label for="registrant_contact_id" class="form-label">Registrant Contact ID</label>
@@ -72,8 +70,8 @@
                                                 class="text-danger">*</span></label>
                                         <div class="input-group">
                                             <select name="{{ $type }}_contact_id"
-                                                class="form-control @error($type . '_contact_id') is-invalid @enderror"
-                                                required>
+                                                    class="form-control @error($type . '_contact_id') is-invalid @enderror"
+                                                    required>
                                                 <option value="">Select {{ $label }}</option>
 
                                                 @foreach ($contacts as $contact)
@@ -90,7 +88,7 @@
                                             </div>
                                         </div>
                                         @error($type . '_contact_id')
-                                            <div class="invalid-feedback d-block">{{ $message }}</div>
+                                        <div class="invalid-feedback d-block">{{ $message }}</div>
                                         @enderror
 
 
@@ -106,10 +104,10 @@
                         @for ($i = 0; $i < 4; $i++)
                             <div class="col-md-3">
                                 <input type="text" name="nameservers[]"
-                                    class="form-control mb-2 @error('nameservers.' . $i) is-invalid @enderror"
-                                    placeholder="e.g., ns1.ricta.org.rw" {{ $i < 2 ? 'required' : '' }}>
+                                       class="form-control mb-2 @error('nameservers.' . $i) is-invalid @enderror"
+                                       placeholder="e.g., ns1.ricta.org.rw" {{ $i < 2 ? 'required' : '' }}>
                                 @error('nameservers.' . $i)
-                                    <div class="invalid-feedback">{{ $message }}</div>
+                                <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
                             </div>
                         @endfor
@@ -137,4 +135,6 @@
             });
         })();
     </script>
-@endsection
+</x-admin-layout>
+
+

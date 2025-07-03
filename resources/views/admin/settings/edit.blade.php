@@ -1,5 +1,4 @@
-@extends('layouts.admin')
-@section('content')
+<x-admin-layout>
     <div class="card">
         <div class="card-header">
             {{ trans('global.edit') }} {{ trans('cruds.setting.title_singular') }}
@@ -12,7 +11,7 @@
                 <div class="form-group">
                     <label for="email">{{ trans('cruds.setting.fields.email') }}</label>
                     <input class="form-control {{ $errors->has('email') ? 'is-invalid' : '' }}" type="email" name="email"
-                        id="email" value="{{ old('email', $setting->email) }}">
+                           id="email" value="{{ old('email', $setting->email) }}">
                     @if ($errors->has('email'))
                         <div class="invalid-feedback">
                             {{ $errors->first('email') }}
@@ -23,7 +22,7 @@
                 <div class="form-group">
                     <label class="required" for="phone">{{ trans('cruds.setting.fields.phone') }}</label>
                     <input class="form-control {{ $errors->has('phone') ? 'is-invalid' : '' }}" type="text"
-                        name="phone" id="phone" value="{{ old('phone', $setting->phone) }}" required>
+                           name="phone" id="phone" value="{{ old('phone', $setting->phone) }}" required>
                     @if ($errors->has('phone'))
                         <div class="invalid-feedback">
                             {{ $errors->first('phone') }}
@@ -34,7 +33,7 @@
                 <div class="form-group">
                     <label for="address">{{ trans('cruds.setting.fields.address') }}</label>
                     <input class="form-control {{ $errors->has('address') ? 'is-invalid' : '' }}" type="text"
-                        name="address" id="address" value="{{ old('address', $setting->address) }}">
+                           name="address" id="address" value="{{ old('address', $setting->address) }}">
                     @if ($errors->has('address'))
                         <div class="invalid-feedback">
                             {{ $errors->first('address') }}
@@ -45,7 +44,7 @@
                 <div class="form-group">
                     <label for="twitter">{{ trans('cruds.setting.fields.twitter') }}</label>
                     <input class="form-control {{ $errors->has('twitter') ? 'is-invalid' : '' }}" type="text"
-                        name="twitter" id="twitter" value="{{ old('twitter', $setting->twitter) }}">
+                           name="twitter" id="twitter" value="{{ old('twitter', $setting->twitter) }}">
                     @if ($errors->has('twitter'))
                         <div class="invalid-feedback">
                             {{ $errors->first('twitter') }}
@@ -56,7 +55,7 @@
                 <div class="form-group">
                     <label for="instagram">{{ trans('cruds.setting.fields.instagram') }}</label>
                     <input class="form-control {{ $errors->has('instagram') ? 'is-invalid' : '' }}" type="text"
-                        name="instagram" id="instagram" value="{{ old('instagram', $setting->instagram) }}">
+                           name="instagram" id="instagram" value="{{ old('instagram', $setting->instagram) }}">
                     @if ($errors->has('instagram'))
                         <div class="invalid-feedback">
                             {{ $errors->first('instagram') }}
@@ -67,7 +66,7 @@
                 <div class="form-group">
                     <label for="youtube">{{ trans('cruds.setting.fields.youtube') }}</label>
                     <input class="form-control {{ $errors->has('youtube') ? 'is-invalid' : '' }}" type="text"
-                        name="youtube" id="youtube" value="{{ old('youtube', $setting->youtube) }}">
+                           name="youtube" id="youtube" value="{{ old('youtube', $setting->youtube) }}">
                     @if ($errors->has('youtube'))
                         <div class="invalid-feedback">
                             {{ $errors->first('youtube') }}
@@ -78,7 +77,7 @@
                 <div class="form-group">
                     <label for="linkedin">{{ trans('cruds.setting.fields.linkedin') }}</label>
                     <input class="form-control {{ $errors->has('linkedin') ? 'is-invalid' : '' }}" type="text"
-                        name="linkedin" id="linkedin" value="{{ old('linkedin', $setting->linkedin) }}">
+                           name="linkedin" id="linkedin" value="{{ old('linkedin', $setting->linkedin) }}">
                     @if ($errors->has('linkedin'))
                         <div class="invalid-feedback">
                             {{ $errors->first('linkedin') }}
@@ -94,4 +93,4 @@
             </form>
         </div>
     </div>
-@endsection
+</x-admin-layout>

@@ -22,28 +22,24 @@
     <!-- favicon -->
     <link rel="shortcut icon" type="image/x-icon" href="assets/images/fav.png">
 
-    <title>Login - Web Hosting & WHMCS Template</title>
-    <!-- Preconnect to Google Fonts and Google Fonts Static -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-
-    <!-- Importing Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500;600;700;800&display=swap"
-        rel="stylesheet">
-    <link
-        href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,500;0,600;0,700;1,400;1,800&display=swap"
-        rel="stylesheet">
-    <!-- all styles -->
-    <link rel="preload stylesheet" href="assets/css/plugins.min.css" as="style">
-    <!-- fontawesome css -->
-    <link rel="preload stylesheet" href="assets/css/plugins/fontawesome.min.css" as="style">
-    <!-- Custom css -->
-    <link rel="preload stylesheet" href="assets/css/style.css" as="style">
+    <title>@yield('page-title') - {{config('app.name')}}</title>
+    <!-- Fonts -->
+    <link rel="stylesheet" href="https://rsms.me/inter/inter.css">
+    <!--Load bootstrap-->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-LN+7fdVzj6u52u30Kp6M/trliBMCMKTyK833zpbD+pXdCLuTusPj697FH4R/5mcr" crossorigin="anonymous">
+    <style>
+        body {
+            font-family: "Inter", sans-serif !important;
+        }
+    </style>
+    @livewireStyles
 </head>
 
 <body>
     {{ $slot }}
-    
+
+    @livewireScripts
 </body>
 
 </html>

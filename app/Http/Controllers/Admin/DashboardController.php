@@ -28,7 +28,9 @@ final class DashboardController extends Controller
         });
 
         $customers = Cache::remember('dashboard.customers', 3600, function () {
-            return User::count();
+            return User::whereHas('roles', function ($query) {
+                $query->where('title', 'user');
+            })->count();
         });
         $domains = Cache::remember('dashboard.domains', 3600, function () {
             return Domain::count();

@@ -1,5 +1,7 @@
-@extends('layouts.admin')
-@section('content')
+<x-admin-layout>
+    @section('page-title')
+        Add New Hosting Plan
+    @endsection
     <div class="card">
         <div class="card-header d-flex justify-content-between align-items-center">
             <h3 class="card-title">Add New Hosting Plan</h3>
@@ -120,7 +122,7 @@
                         Ex: 50000
                     </p>
                 </div>
-                
+
                 <div class="form-group mt-4">
                     <button type="submit" class="btn btn-primary">
                         <span class="bi bi-save"></span> Save Hosting Plan
@@ -132,7 +134,7 @@
             </form>
         </div>
     </div>
-@endsection
+
 
 @push('scripts')
 <script>
@@ -147,3 +149,4 @@
     });
 </script>
 @endpush
+</x-admin-layout>

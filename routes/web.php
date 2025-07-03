@@ -40,7 +40,7 @@ Route::post('/check-domains', [SearchDomainController::class, 'search'])->name('
 
 Route::get('/shopping-cart', [CartController::class, 'cart'])->name('cart.index');
 
-Route::group(['middleware' => 'auth', 'prefix' => 'admin', 'as' => 'admin.'], function (): void {
+Route::group(['middleware' => 'auth', 'verified', 'prefix' => 'admin', 'as' => 'admin.'], function (): void {
 
     Route::resource('settings', SettingController::class);
     Route::resource('users', UsersController::class);
@@ -142,7 +142,7 @@ Route::middleware(['auth', 'verified'])->group(function (): void {
     Route::get('/domain/registration/success/{domain}', [RegisterDomainController::class, 'success'])->name('domain.registration.success');
 });
 
-Route::middleware('auth')->group(function (): void {
+Route::middleware(['auth', 'verified'])->group(function (): void {
 
     // Profile
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
@@ -155,12 +155,5 @@ Route::middleware('auth')->group(function (): void {
         Route::get('/contacts/{id}', [UserContactController::class, 'show'])->name('contacts.show');
     });
 });
-// Route::prefix('admin')->group(function () { // Remove middleware(['auth'])
-//     Route::prefix('domains')->name('domains.')->group(function () {
-//         Route::prefix('transfer')->name('transfer.')->group(function () {
-//             Route::get('/', [TransferDomainController::class, 'index'])->name('index');
-//             // ... other routes ...
-//         });
-//     });
-// });
+
 require __DIR__.'/auth.php';

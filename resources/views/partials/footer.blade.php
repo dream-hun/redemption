@@ -17,5 +17,5 @@
     <!-- Default to the left -->
     <strong>Copyright &copy; {{date('Y')}} <a href="https://bluhub.rw">{{config('app.name')}}.</a></strong> All rights reserved.
 </footer>
-</div>
+
 <!-- ./wrapper -->

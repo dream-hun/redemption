@@ -1,5 +1,7 @@
-@extends('layouts.admin')
-
+<x-admin-layout>
+    @section('page-title')
+        Renew {{ $domain->name }}
+    @endsection
 @section('content')
     <div class="container-fluid">
         @if ($errors->any())
@@ -285,4 +287,4 @@
             </div>
         </form>
     </div>
-@endsection
+</x-admin-layout>

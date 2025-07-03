@@ -1,85 +1,291 @@
 <x-guest-layout>
-    <div class="rts-sign-up-section">
-        <div class="section-inner">
-            <div class="logo-area">
-                <a href="{{ route('home') }}"><img src="{{ asset('logo.webp') }}" alt="{{ config('app.name') }} Logo"></a>
+    @section('page-title')
+        Register
+    @endsection
+
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+
+        .register-container {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .register-card {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            max-width: 450px;
+            width: 100%;
+        }
+
+        .logo-section {
+            text-align: center;
+            padding: 40px 40px 20px;
+        }
+
+        .logo-section img {
+            max-width: 80px;
+            height: auto;
+        }
+
+        .form-section {
+            padding: 20px 40px 40px;
+        }
+
+        .form-title {
+            font-size: 24px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+            color: #555;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: #007bff;
+            box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+        }
+
+        .btn-primary {
+            width: 100%;
+            padding: 12px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+        }
+
+        .btn-primary:hover {
+            background-color: #0056b3;
+        }
+
+        .signin-link {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 14px;
+            color: #666;
+        }
+
+        .signin-link a {
+            color: #007bff;
+            text-decoration: none;
+        }
+
+        .signin-link a:hover {
+            text-decoration: underline;
+        }
+
+        .footer {
+            background-color: #f8f9fa;
+            padding: 15px;
+            text-align: center;
+            font-size: 12px;
+            color: #666;
+            border-top: 1px solid #eee;
+        }
+
+        .error-text {
+            color: #dc3545;
+            font-size: 14px;
+            margin-top: 5px;
+        }
+
+        .status-message {
+            background-color: #d4edda;
+            color: #155724;
+            padding: 10px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+
+        .password-field {
+            position: relative;
+        }
+
+        .password-toggle {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: #666;
+            cursor: pointer;
+            font-size: 16px;
+            padding: 0;
+        }
+
+        .password-toggle:hover {
+            color: #333;
+        }
+
+        .form-row {
+            display: flex;
+            gap: 15px;
+        }
+
+        .form-row .form-group {
+            flex: 1;
+        }
+    </style>
+
+    <div class="register-container">
+        <div class="register-card">
+            <!-- Logo Section -->
+            <div class="logo-section">
+                <a href="{{ route('home') }}">
+                    <img src="{{ asset('logo.webp') }}" alt="{{ config('app.name') }} Logo">
+                </a>
             </div>
 
-            <form method="POST" action="{{ route('register') }}">
-                @csrf
-                <h2 class="form-title">Create Account</h2>
-                <div class="form-inner">
-                    <div class="single-wrapper">
-                        <input type="text"
-                               placeholder="Full name"
-                               name="name"
-                               value="{{ old('name') }}"
-                               class="@error('name') is-invalid @enderror"
-                               required
-                               autofocus>
-                        @error('name')
-                            <div class="invalid-feedback">{{ $message }}</div>
-                        @enderror
+            <!-- Form Section -->
+            <div class="form-section">
+                <!-- Session Status -->
+                @if (session('status'))
+                    <div class="status-message">
+                        {{ session('status') }}
                     </div>
+                @endif
 
-                    <div class="single-wrapper">
-                        <input type="email"
-                               placeholder="Email address"
-                               name="email"
-                               value="{{ old('email') }}"
-                               class="@error('email') is-invalid @enderror"
-                               required>
-                        @error('email')
-                            <div class="invalid-feedback">{{ $message }}</div>
-                        @enderror
-                    </div>
+                <form method="POST" action="{{ route('register') }}">
+                    @csrf
+                    <h2 class="form-title">Create Account</h2>
 
-                    <div class="single-wrapper">
-                        <input type="password"
-                               name="password"
-                               placeholder="Password"
-                               class="@error('password') is-invalid @enderror"
-                               required>
-                        @error('password')
-                            <div class="invalid-feedback">{{ $message }}</div>
-                        @enderror
-                    </div>
-
-                    <div class="single-wrapper">
-                        <input type="password"
-                               name="password_confirmation"
-                               placeholder="Confirm Password"
-                               required>
-                    </div>
-
-                    {{--<div class="check">
-                        <div class="check-box-area">
-                            <input type="checkbox"
-                                   id="terms"
-                                   name="terms"
-                                   class="@error('terms') is-invalid @enderror"
-                                   required>
-                            <label for="terms">I agree to the <a href="{{ route('terms') }}" target="_blank">Terms of Service</a></label>
-                            @error('terms')
-                                <div class="invalid-feedback">{{ $message }}</div>
+                    <!-- Name Fields Row -->
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="first_name" class="form-label">First Name</label>
+                            <input id="first_name"
+                                   type="text"
+                                   name="first_name"
+                                   class="form-control"
+                                   value="{{ old('first_name') }}"
+                                   required
+                                   autofocus>
+                            @error('first_name')
+                            <div class="error-text">{{ $message }}</div>
                             @enderror
                         </div>
-                    </div>--}}
 
-                    <div class="form-btn">
-                        <button type="submit" class="primary__btn">
-                            <i class="fas fa-user-plus"></i> Register
+                        <div class="form-group">
+                            <label for="last_name" class="form-label">Last Name</label>
+                            <input id="last_name"
+                                   type="text"
+                                   name="last_name"
+                                   class="form-control"
+                                   value="{{ old('last_name') }}"
+                                   required>
+                            @error('last_name')
+                            <div class="error-text">{{ $message }}</div>
+                            @enderror
+                        </div>
+                    </div>
+
+                    <!-- Email -->
+                    <div class="form-group">
+                        <label for="email" class="form-label">Email</label>
+                        <input id="email"
+                               type="email"
+                               name="email"
+                               class="form-control"
+                               value="{{ old('email') }}"
+                               required
+                               autocomplete="username">
+                        @error('email')
+                        <div class="error-text">{{ $message }}</div>
+                        @enderror
+                    </div>
+
+                    <!-- Password -->
+                    <div class="form-group" x-data="{ showPassword: false }">
+                        <label for="password" class="form-label">Password</label>
+                        <div class="password-field">
+                            <input id="password"
+                                   :type="showPassword ? 'text' : 'password'"
+                                   name="password"
+                                   class="form-control"
+                                   required
+                                   autocomplete="new-password">
+                            <button type="button"
+                                    class="password-toggle"
+                                    @click="showPassword = !showPassword"
+                                    :title="showPassword ? 'Hide password' : 'Show password'">
+                                <span x-show="!showPassword">👁️</span>
+                                <span x-show="showPassword">🙈</span>
+                            </button>
+                        </div>
+                        @error('password')
+                        <div class="error-text">{{ $message }}</div>
+                        @enderror
+                    </div>
+
+                    <!-- Confirm Password -->
+                    <div class="form-group" x-data="{ showConfirmPassword: false }">
+                        <label for="password_confirmation" class="form-label">Confirm Password</label>
+                        <div class="password-field">
+                            <input id="password_confirmation"
+                                   :type="showConfirmPassword ? 'text' : 'password'"
+                                   name="password_confirmation"
+                                   class="form-control"
+                                   required
+                                   autocomplete="new-password">
+                            <button type="button"
+                                    class="password-toggle"
+                                    @click="showConfirmPassword = !showConfirmPassword"
+                                    :title="showConfirmPassword ? 'Hide password' : 'Show password'">
+                                <span x-show="!showConfirmPassword">👁️</span>
+                                <span x-show="showConfirmPassword">🙈</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Register Button -->
+                    <div class="form-group">
+                        <button type="submit" class="btn-primary">
+                            Register
                         </button>
                     </div>
-                </div>
-                <p class="sign-in-option">Already have an account? <a href="{{ route('login') }}">Sign In</a></p>
-            </form>
-        </div>
-        <div class="copyright-area">
-            <p>&copy;{{ date('Y') }} {{ config('app.name') }}. All Rights Reserved.</p>
+
+                    <!-- Sign In Link -->
+                    <div class="signin-link">
+                        Already have an account? <a href="{{ route('login') }}">Sign In</a>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Footer -->
+            <div class="footer">
+                <p>&copy; {{ date('Y') }} {{ config('app.name') }}. All Rights Reserved.</p>
+            </div>
         </div>
     </div>
 </x-guest-layout>
-
-
-

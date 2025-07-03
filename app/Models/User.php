@@ -6,16 +6,17 @@ namespace App\Models;
 
 use DateTimeInterface;
 use Exception;
-use Illuminate\Auth\MustVerifyEmail;
+
+use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Str;
 
-final class User extends Authenticatable
+final class User extends Authenticatable implements MustVerifyEmail
 {
-    use MustVerifyEmail,Notifiable;
+    use Notifiable;
 
     protected $fillable = [
         'first_name',
@@ -48,17 +49,20 @@ final class User extends Authenticatable
     public static function generateCustomerNumber(): string
     {
         $lastUser = self::orderBy('id', 'desc')->first();
+
         if (! $lastUser) {
-            return 'BLUCL-000001';
+            return 'BLCL-000001';
         }
+
         preg_match('/\d+/', $lastUser->client_code, $matches);
+
         if (! isset($matches[0])) {
-            throw new Exception('Invalid format for reg_number');
+            throw new Exception('Invalid format for client_code');
         }
 
-        $number = (int) ($matches[0]) + 1;
+        $number = (int) $matches[0] + 1;
 
-        return 'BLCL-'.mb_str_pad($number, 6, '0', STR_PAD_LEFT);
+        return 'BLCL-'.mb_str_pad((string) $number, 6, '0', STR_PAD_LEFT);
     }
 
     public function domains(): HasMany

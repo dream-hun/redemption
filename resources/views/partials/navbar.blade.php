@@ -8,13 +8,18 @@
         <li class="nav-item d-none d-sm-inline-block">
             <a href="{{ route('dashboard') }}" class="nav-link">Home</a>
         </li>
-        <li class="nav-item d-none d-sm-inline-block">
-            <a href="/shopping-cart" class="nav-link"> <i class="fa fa-cart"></i> Cart</a>
-        </li>
+
     </ul>
 
     <!-- Right navbar links -->
     <ul class="navbar-nav ml-auto">
+        <li class="nav-item">
+            <a class="nav-link" href="{{ route('cart.index') }}">
+                <i class="bi bi-cart"></i>
+                <span class="badge badge-danger navbar-badge">3</span>
+            </a>
+        </li>
+
         <!-- Notifications Dropdown Menu -->
         <li class="nav-item dropdown">
             <a class="nav-link" data-toggle="dropdown" href="#">

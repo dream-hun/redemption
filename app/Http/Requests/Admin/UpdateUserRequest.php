@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\Gate;
 
 final class UpdateUserRequest extends FormRequest
 {
-    public function authorize()
+    public function authorize(): bool
     {
         return Gate::allows('user_edit');
     }
@@ -17,10 +17,9 @@ final class UpdateUserRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => [
-                'string',
-                'required',
-            ],
+            'first_name' => ['required', 'string'],
+            'last_name' => ['required', 'string'],
+
             'email' => [
                 'required',
                 'unique:users,email,'.request()->route('user')->id,

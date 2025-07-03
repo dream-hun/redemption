@@ -1,6 +1,4 @@
-@extends('layouts.admin')
-
-@section('content')
+<x-admin-layout>
     <div class="container">
         <h2>Changing Domain Owner</h2>
         <h3>Send Transfer Invitation for {{ $domain->name }}</h3>
@@ -46,4 +44,4 @@
             });
         })();
     </script>
-@endsection
+</x-admin-layout>

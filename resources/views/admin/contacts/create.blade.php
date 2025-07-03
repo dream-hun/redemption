@@ -1,6 +1,4 @@
-@extends('layouts.admin')
-
-@section('content')
+<x-admin-layout>
     <div class="container col-md-12 py-5">
         <div class="card shadow-sm">
             <h2 class="card-header">Contact Information</h2>
@@ -12,9 +10,9 @@
 
                             <label class="required">Name</label>
                             <input type="text" name="name" class="form-control @error('name') is-invalid @enderror"
-                                value="{{ old('name', Auth::user()->name) }}" required>
+                                   value="{{ old('name', Auth::user()->name) }}" required>
                             @error('name')
-                                <div class="invalid-feedback">{{ $message }}</div>
+                            <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
 
                         </div>
@@ -36,12 +34,12 @@
                             <label class="required">Street Address</label>
 
 
-                                <input type="text" name="street1"
-                                       class="form-control @error('street1') is-invalid @enderror mt-2"
-                                       value="{{old('street1')}}" required>
-                                @error('street1')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
+                            <input type="text" name="street1"
+                                   class="form-control @error('street1') is-invalid @enderror mt-2"
+                                   value="{{old('street1')}}" required>
+                            @error('street1')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
 
 
                         </div>
@@ -65,18 +63,19 @@
                         <div class="col-md-6 mb-3">
                             <label class="form-label">City</label>
                             <input type="text" name="city" class="form-control @error('city') is-invalid @enderror"
-                                value="{{ old('city') }}" required>
+                                   value="{{ old('city') }}" required>
                             @error('city')
-                                <div class="invalid-feedback">{{ $message }}</div>
+                            <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>
                         <div class="col-md-6 mb-3">
                             <label class="form-label">Province/State</label>
                             <input type="text" name="province"
-                                class="form-control @error('province') is-invalid @enderror" value="{{ old('province') }}"
-                                required>
+                                   class="form-control @error('province') is-invalid @enderror"
+                                   value="{{ old('province') }}"
+                                   required>
                             @error('province')
-                                <div class="invalid-feedback">{{ $message }}</div>
+                            <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>
                     </div>
@@ -84,16 +83,16 @@
                         <div class="col-md-6 mb-3">
                             <label class="form-label">Postal Code</label>
                             <input type="text" name="postal_code"
-                                class="form-control @error('postal_code') is-invalid @enderror"
-                                value="{{ old('postal_code') }}">
+                                   class="form-control @error('postal_code') is-invalid @enderror"
+                                   value="{{ old('postal_code') }}">
                             @error('postal_code')
-                                <div class="invalid-feedback">{{ $message }}</div>
+                            <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>
                         <div class="col-md-6 mb-3">
                             <label class="form-label">Country</label>
                             <select name="country_code" class="form-control @error('country_code') is-invalid @enderror"
-                                required>
+                                    required>
                                 <option value="">Select a country</option>
                                 @foreach ($countries as $country)
                                     <option value="{{ $country->code }}" {{ old('country_code') == $country->code ? 'selected' : '' }}>
@@ -102,25 +101,25 @@
                                 @endforeach
                             </select>
                             @error('country_code')
-                                <div class="invalid-feedback">{{ $message }}</div>
+                            <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Phone</label>
                         <input type="tel" name="voice" class="form-control @error('voice') is-invalid @enderror"
-                            value="{{ old('voice') }}" required>
+                               value="{{ old('voice') }}" required>
                         <div class="form-text">Include country code (e.g., +1.2025551234)</div>
                         @error('voice')
-                            <div class="invalid-feedback">{{ $message }}</div>
+                        <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Email</label>
                         <input type="email" name="email" class="form-control @error('email') is-invalid @enderror"
-                            value="{{ old('email', Auth::user()->email) }}" required>
+                               value="{{ old('email', Auth::user()->email) }}" required>
                         @error('email')
-                            <div class="invalid-feedback">{{ $message }}</div>
+                        <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
                     </div>
                     <button type="submit" class="btn btn-primary">Continue to Domain Registration</button>
@@ -128,5 +127,6 @@
             </div>
         </div>
     </div>
-@endsection
+</x-admin-layout>
+
 

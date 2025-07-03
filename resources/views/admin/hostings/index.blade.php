@@ -1,6 +1,7 @@
-@extends('layouts.admin')
-@section('content')
-
+<x-admin-layout>
+    @section('page-title')
+        Hosting Plans
+    @endsection
     @can('hosting_create')
         <div style="margin-bottom: 10px;" class="row">
             <div class="col-lg-12">
@@ -24,7 +25,7 @@
 
                         </th>
                         <th>
-                           Category
+                            Category
                         </th>
                         <th>
                             Name
@@ -74,7 +75,9 @@
                                         <input type="hidden" name="_token" value="{{ csrf_token() }}">
 
                                         <button type="submit" class="btn btn-danger"
-                                                value="{{ trans('global.delete') }}"><span class="bi bi-trash"></span> Delete</button>
+                                                value="{{ trans('global.delete') }}"><span class="bi bi-trash"></span>
+                                            Delete
+                                        </button>
                                     </form>
                                 @endcan
 
@@ -87,29 +90,32 @@
             </div>
         </div>
     </div>
-@endsection
-@section('scripts')
-    @parent
-    <script>
-        $(function() {
-            let dtButtons = $.extend(true, [], $.fn.dataTable.defaults.buttons)
+    @section('scripts')
+        @parent
+        <script>
+            $(function () {
+                let dtButtons = $.extend(true, [], $.fn.dataTable.defaults.buttons)
 
 
-            $.extend(true, $.fn.dataTable.defaults, {
-                order: [
-                    [1, 'desc']
-                ],
-                pageLength: 100,
-            });
-            $('.datatable-Hosting:not(.ajaxTable)').DataTable({
-                buttons: dtButtons
+                $.extend(true, $.fn.dataTable.defaults, {
+                    order: [
+                        [1, 'desc']
+                    ],
+                    pageLength: 100,
+                });
+                $('.datatable-Hosting:not(.ajaxTable)').DataTable({
+                    buttons: dtButtons
+                })
+                $('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
+                    $($.fn.dataTable.tables(true)).DataTable()
+                        .columns.adjust();
+                });
             })
-            $('a[data-toggle="tab"]').on('shown.bs.tab', function(e) {
-                $($.fn.dataTable.tables(true)).DataTable()
-                    .columns.adjust();
-            });
-        })
-    </script>
-@endsection
+        </script>
+    @endsection
+
+</x-admin-layout>
+
+
 
 

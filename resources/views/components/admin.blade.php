@@ -2,23 +2,19 @@
 <html>
 
 <head>
-    <meta name="csrf-token" content="{{ csrf_token() }}">
     <meta charset="UTF-8">
-    <title>@yield('page-title')-{{config('app.name')}}</title>
+    <title>@yield('title')-{{config('app.title')}}</title>
 
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css" rel="stylesheet"/>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.5/css/select2.min.css" rel="stylesheet"/>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datetimepicker/4.17.47/css/bootstrap-datetimepicker.min.css"
-          rel="stylesheet"/>
+    <link
+        href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datetimepicker/4.17.47/css/bootstrap-datetimepicker.min.css"
+        rel="stylesheet"/>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/css/adminlte.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-    <!-- Fonts -->
-    <link rel="stylesheet" href="https://rsms.me/inter/inter.css">
+    <link href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700" rel="stylesheet"/>
     <link href="https://cdn.datatables.net/1.10.19/css/jquery.dataTables.min.css" rel="stylesheet"/>
     <style>
-        body {
-            font-family: "Inter", sans-serif !important;
-        }
         [x-cloak] {
             display: none !important;
         }
@@ -28,6 +24,7 @@
     <link href="https://cdn.datatables.net/buttons/1.2.4/css/buttons.dataTables.min.css" rel="stylesheet"/>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/dropzone/5.5.1/min/dropzone.min.css" rel="stylesheet"/>
     <link href="{{ asset('css/custom.css') }}" rel="stylesheet"/>
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <script>
         window.fetchContactDetails = async function (contactId) {
             if (!contactId) {
@@ -57,6 +54,8 @@
             }
         };
     </script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+
     @livewireStyles
     @yield('styles')
 
@@ -65,8 +64,14 @@
 <body class="hold-transition sidebar-mini">
 <div class="wrapper">
     @include('partials.navbar')
+    <!-- /.navbar -->
+
+    <!-- Main Sidebar Container -->
     @include('partials.menu')
+
+    <!-- Content Wrapper. Contains page content -->
     <div class="content-wrapper" style="min-height: 818px;">
+        <!-- Content Header (Page header) -->
         <section class="content-header">
             <div class="container-fluid">
                 <div class="row mb-2">
@@ -81,6 +86,8 @@
                 </div>
             </div><!-- /.container-fluid -->
         </section>
+
+        <!-- Main content -->
         <section class="content">
             @if(session('message'))
                 <div class="row mb-2">
@@ -112,7 +119,7 @@
                     </ul>
                 </div>
             @endif
-            {{$slot}}
+                {{ $slot }}
         </section>
         <!-- /.content -->
     </div>
@@ -143,7 +150,8 @@
 <script src="https://cdn.rawgit.com/bpampuch/pdfmake/0.1.18/build/vfs_fonts.js"></script>
 <script src="//cdnjs.cloudflare.com/ajax/libs/jszip/2.5.0/jszip.min.js"></script>
 <script src="https://cdn.ckeditor.com/ckeditor5/16.0.0/classic/ckeditor.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datetimepicker/4.17.47/js/bootstrap-datetimepicker.min.js"></script>
+<script
+    src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datetimepicker/4.17.47/js/bootstrap-datetimepicker.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/dropzone/5.5.1/min/dropzone.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/js/adminlte.min.js"></script>
 <script src="{{ asset('js/main.js') }}"></script>

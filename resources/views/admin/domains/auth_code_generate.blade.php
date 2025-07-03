@@ -1,6 +1,4 @@
-@extends('layouts.admin')
-
-@section('content')
+<x-admin-layout>
     <div class="container">
         <h1>Transfer Domain: {{ $domain->name }}</h1>
         <small>With a change of ownership, you fully relinquish ownership of the domain (along with some associated
@@ -28,21 +26,23 @@
             <a href="{{ route('domains.index') }}" class="btn btn-secondary">Cancel</a>
         </form>
     </div>
+    @section('scripts')
+        <script>
+            // Bootstrap form validation
+            (function () {
+                'use strict';
+                const forms = document.querySelectorAll('.needs-validation');
+                Array.from(forms).forEach(form => {
+                    form.addEventListener('submit', event => {
+                        if (!form.checkValidity()) {
+                            event.preventDefault();
+                            event.stopPropagation();
+                        }
+                        form.classList.add('was-validated');
+                    }, false);
+                });
+            })();
+        </script>
+    @endsection
+</x-admin-layout>
 
-    <script>
-        // Bootstrap form validation
-        (function() {
-            'use strict';
-            const forms = document.querySelectorAll('.needs-validation');
-            Array.from(forms).forEach(form => {
-                form.addEventListener('submit', event => {
-                    if (!form.checkValidity()) {
-                        event.preventDefault();
-                        event.stopPropagation();
-                    }
-                    form.classList.add('was-validated');
-                }, false);
-            });
-        })();
-    </script>
-@endsection

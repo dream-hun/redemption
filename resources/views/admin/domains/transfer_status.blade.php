@@ -1,6 +1,4 @@
-@extends('layouts.admin')
-
-@section('content')
+<x-admin-layout>
     <div class="container-fluid">
         @if ($errors->any())
             <div class="alert alert-danger">
@@ -25,7 +23,7 @@
         @endif
 
         <form action="/admin/domains/transfer/init-transfer" method="POST" id="domainTransferForm" class="needs-validation"
-            novalidate>
+              novalidate>
             @method('PUT')
             @csrf
             <input type="hidden" name="domain_name" value="{{ $domain_name }}" required>
@@ -66,14 +64,14 @@
                                                         class="text-danger">*</span></label>
                                                 <div class="input-group">
                                                     <select name="{{ $type }}_contact_id"
-                                                        class="form-control @error($type . '_contact_id') is-invalid @enderror"
-                                                        required>
+                                                            class="form-control @error($type . '_contact_id') is-invalid @enderror"
+                                                            required>
                                                         <option value="">Select {{ $label }}</option>
 
                                                         @foreach ($contacts as $contact)
                                                             @if ($type !== 'registrant' && $eppInfo['contacts'][$type] !== null)
                                                                 <option value="{{ $contact->id }}"
-                                                                    @if (in_array($contact->contact_id, $eppInfo['contacts'][$type])) selected @endif>
+                                                                        @if (in_array($contact->contact_id, $eppInfo['contacts'][$type])) selected @endif>
                                                                     {{ $contact->name }} ({{ $contact->email }})
                                                                 </option>
                                                             @endif
@@ -93,13 +91,13 @@
                                                     </select>
                                                     <div class="input-group-append">
                                                         <a href="{{ route('admin.contacts.create') }}"
-                                                            class="btn btn-primary">
+                                                           class="btn btn-primary">
                                                             <i class="bi bi-plus-lg"></i>
                                                         </a>
                                                     </div>
                                                 </div>
                                                 @error($type . '_contact_id')
-                                                    <div class="invalid-feedback d-block">{{ $message }}</div>
+                                                <div class="invalid-feedback d-block">{{ $message }}</div>
                                                 @enderror
 
                                                 <!-- Contact Details Card -->
@@ -110,8 +108,8 @@
                                                                 class="card-header bg-light d-flex justify-content-between align-items-center">
                                                                 <h6 class="mb-0">Contact Details</h6>
                                                                 <button type="button"
-                                                                    class="btn btn-sm btn-outline-secondary"
-                                                                    @click="contact.details = null">
+                                                                        class="btn btn-sm btn-outline-secondary"
+                                                                        @click="contact.details = null">
                                                                     <i class="bi bi-x"></i>
                                                                 </button>
                                                             </div>
@@ -168,7 +166,7 @@
                             <div class="card-body">
                                 <div class="form-check form-check-inline">
                                     <input type="checkbox" class="form-check-input" id="disable_dns" name="disable_dns"
-                                        x-model="disableDNS">
+                                           x-model="disableDNS">
                                     <label class="form-check-label ms-2" for="disable_dns">
                                         Don't delegate this domain now
                                     </label>
@@ -184,12 +182,12 @@
                                                     @endif
                                                 </label>
                                                 <input type="text" name="nameservers[]"
-                                                    class="form-control @error('nameservers.' . $loop->index - 1) is-invalid @enderror"
-                                                    placeholder="{{ $nmserv }}" value="{{ $nmserv }}"
-                                                    :required="!disableDNS && {{ $loop->index <= 2 ? 'true' : 'false' }}"
-                                                    :readonly="disableDNS" :disabled="disableDNS">
+                                                       class="form-control @error('nameservers.' . $loop->index - 1) is-invalid @enderror"
+                                                       placeholder="{{ $nmserv }}" value="{{ $nmserv }}"
+                                                       :required="!disableDNS && {{ $loop->index <= 2 ? 'true' : 'false' }}"
+                                                       :readonly="disableDNS" :disabled="disableDNS">
                                                 @error('nameservers.' . $loop->index - 1)
-                                                    <div class="invalid-feedback">{{ $message }}</div>
+                                                <div class="invalid-feedback">{{ $message }}</div>
                                                 @enderror
                                             </div>
                                         </div>
@@ -208,12 +206,12 @@
                                                         @endif
                                                     </label>
                                                     <input type="text" name="nameservers[]"
-                                                        class="form-control @error('nameservers.' . $i - 1) is-invalid @enderror"
-                                                        placeholder="ns{{ $i }}.example.com"
-                                                        :required="!disableDNS && {{ $i <= 2 ? 'true' : 'false' }}"
-                                                        :readonly="disableDNS" :disabled="disableDNS">
+                                                           class="form-control @error('nameservers.' . $i - 1) is-invalid @enderror"
+                                                           placeholder="ns{{ $i }}.example.com"
+                                                           :required="!disableDNS && {{ $i <= 2 ? 'true' : 'false' }}"
+                                                           :readonly="disableDNS" :disabled="disableDNS">
                                                     @error('nameservers.' . $i - 1)
-                                                        <div class="invalid-feedback">{{ $message }}</div>
+                                                    <div class="invalid-feedback">{{ $message }}</div>
                                                     @enderror
                                                 </div>
                                             </div>
@@ -256,7 +254,7 @@
                             <div class="card-body">
                                 <div class="form-check">
                                     <input type="checkbox" class="form-check-input" id="privacy_protection"
-                                        name="privacy_protection" value="1"
+                                           name="privacy_protection" value="1"
                                         {{ old('privacy_protection') ? 'checked' : '' }}>
                                     <label class="form-check-label" for="privacy_protection">
                                         Enable WHOIS Privacy Protection
@@ -304,4 +302,6 @@
             </div>
         </form>
     </div>
-@endsection
+</x-admin-layout>
+
+
