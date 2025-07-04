@@ -1,6 +1,6 @@
-<div x-data="{ showCartFooter: false }" x-init="window.addEventListener('scroll', () => { showCartFooter = window.scrollY > 200 })">
+<div>
     @if($this->cartItemsCount > 0)
-        <div x-show="showCartFooter" x-transition.opacity class="cart-summary-container fixed-bottom bg-white shadow-lg p-3 border-top" style="z-index: 1000;">
+        <div class="cart-summary-container fixed-bottom bg-white shadow-lg p-3 border-top" style="z-index: 1000;">
             <div class="container">
                 <div class="row align-items-center">
                     <div class="col-md-4">
