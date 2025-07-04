@@ -41,6 +41,21 @@
             animation: spin 1s linear infinite;
             margin: 0 auto 1rem;
         }
+        .btn-spinner {
+            display: inline-block;
+            width: 1rem;
+            height: 1rem;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top: 2px solid #ffffff;
+            animation: spin 1s linear infinite;
+            margin-right: 0.5rem;
+            vertical-align: middle;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
         /* Custom height for hero section */
         .rts-hero-three {
             max-height: 550px !important;
@@ -239,7 +254,7 @@
                                                 </span>
 
                                             </div>
-                                            <div class="col-md-3 text-center">          
+                                            <div class="col-md-3 text-center">
                                                 @if ($primaryResult['available'])
                                                     <div class="price-area">
                                                         <span class="now h4">{{ $primaryResult['formatted_price'] }}</span>
@@ -253,6 +268,7 @@
                                                         wire:loading.class="opacity-75"
                                                         wire:target="{{ $primaryResult['in_cart'] ? 'removeFromCart(\'' . $primaryDomain . '\')' : 'addToCart(\'' . $primaryDomain . '\', ' . $primaryResult['register_price'] . ')' }}"
                                                         class="btn btn-lg text-white {{ $primaryResult['in_cart'] ? 'bg-danger' : 'bg-success' }} w-50">
+                                                        <span wire:loading wire:target="{{ $primaryResult['in_cart'] ? 'removeFromCart(\'' . $primaryDomain . '\')' : 'addToCart(\'' . $primaryDomain . '\', ' . $primaryResult['register_price'] . ')' }}" class="btn-spinner"></span>
                                                         {{ $primaryResult['in_cart'] ? 'Remove from cart' : 'Add to Cart' }}
                                                     </button>
                                                 @endif
@@ -292,6 +308,7 @@
                                                                 wire:target="{{ $result['in_cart'] ? 'removeFromCart(\'' . $domain . '\')' : 'addToCart(\'' . $domain . '\', ' . $result['register_price'] . ')' }}"
                                                                 class="btn btn-lg text-white {{ $result['in_cart'] ? 'bg-danger' : 'bg-success' }} w-50"
                                                             >
+                                                                <span wire:loading wire:target="{{ $result['in_cart'] ? 'removeFromCart(\'' . $domain . '\')' : 'addToCart(\'' . $domain . '\', ' . $result['register_price'] . ')' }}" class="btn-spinner"></span>
                                                                 {{ $result['in_cart'] ? 'Remove from cart' : 'Add to Cart' }}
                                                             </button>
                                                         @endif
@@ -303,9 +320,11 @@
                                 </div>
                             @endif
                         @endif
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
     </section>
+    <livewire:cart-summary/>
 </div>

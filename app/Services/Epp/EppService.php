@@ -717,6 +717,8 @@ final class EppService
             foreach ($nameservers as $host) {
                 if (! empty($host)) {
                     // Make sure the host is properly formatted
+                    // Ensure $host is a string before passing to mb_trim
+                    $host = is_null($host) ? '' : (string) $host;
                     $host = mb_trim($host);
                     if ($host !== '' && $host !== '0') {
                         // Log the nameserver being added
@@ -966,7 +968,8 @@ final class EppService
             // Filter out empty nameservers and normalize hostnames
             $nameservers = array_filter(array_map(function ($ns): string {
                 // Normalize nameserver hostname (remove trailing dot if present)
-
+                // Ensure $ns is a string before passing to mb_trim
+                $ns = is_null($ns) ? '' : (string) $ns;
                 return mb_rtrim(mb_trim($ns), '.');
             }, $nameservers), fn ($ns): bool => $ns !== '' && $ns !== '0');
 

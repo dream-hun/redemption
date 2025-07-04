@@ -163,6 +163,8 @@ final class RegisterDomainController extends Controller
 
             // Filter out empty nameservers
             $nameservers = array_filter($request->nameservers ?? [], function ($ns): bool {
+                // Ensure $ns is a string before passing to mb_trim
+                $ns = is_null($ns) ? '' : (string) $ns;
                 return ! in_array(mb_trim($ns), ['', '0'], true);
             });
 

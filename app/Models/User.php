@@ -83,7 +83,9 @@ final class User extends Authenticatable implements MustVerifyEmail
 
     public function getGravatarAttribute(): string
     {
-        $email = md5(mb_strtolower(mb_trim($this->email)));
+        // Ensure email is a string before passing to mb_trim
+        $emailStr = is_null($this->email) ? '' : (string) $this->email;
+        $email = md5(mb_strtolower(mb_trim($emailStr)));
 
         return "https://www.gravatar.com/avatar/$email";
     }

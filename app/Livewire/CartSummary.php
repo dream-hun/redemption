@@ -11,7 +11,7 @@ use Illuminate\Contracts\View\View;
 use Illuminate\Foundation\Application;
 use Livewire\Component;
 
-final class CartTotal extends Component
+final class CartSummary extends Component
 {
     protected $listeners = ['refreshCart' => '$refresh'];
 
@@ -27,6 +27,6 @@ final class CartTotal extends Component
 
     public function render(): Factory|Application|View|\Illuminate\View\View
     {
-        return view('livewire.cart-total');
+        return view('livewire.cart-summary');
     }
 }

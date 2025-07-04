@@ -70,7 +70,7 @@
         /* Main Navigation */
         .main-nav {
             background-color: white;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
             padding: 10px 0;
         }
 
@@ -124,35 +124,35 @@
 
 <body>
 
-    <div class="top-nav">
-        <div class="container">
-            <div class="row">
-                <div class="col-lg-6 support-email">
-                    <i class="bi bi-envelope-fill"></i>
-                    <span>support@bluhub.rw</span>
-                </div>
-                <div class="col-lg-6 top-nav-right">
-                    <a href="#" class="live-chat">
-                        <i class="bi bi-chat-fill"></i>
-                        <span>Live Chat</span>
-                    </a>
-                    <a href="#" class="cart">
-                       <livewire:cart-total/>
-                    </a>
-                </div>
+<div class="top-nav">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-6 support-email">
+                <i class="bi bi-envelope-fill"></i>
+                <span>support@bluhub.rw</span>
+            </div>
+            <div class="col-lg-6 top-nav-right">
+                <a href="#" class="live-chat">
+                    <i class="bi bi-chat-fill"></i>
+                    <span>Live Chat</span>
+                </a>
+                <a href="#" class="cart">
+                    <livewire:cart-total/>
+                </a>
             </div>
         </div>
     </div>
-    <iframe src="{{ route('cart.menu') }}" style="width: 100%; height: 600px; border: none;"></iframe>
+</div>
+<iframe src="{{ route('cart.menu') }}" style="width: 100%; height: 600px; border: none;"></iframe>
 
-    <div class="container-fluid">
-        @yield('content')
-    </div>
+<div class="container-fluid">
+    @yield('content')
+</div>
 
 
-    @include('custom.cart-footer')
-    <!-- Bootstrap JavaScript Bundle with Popper -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+@include('components.cart-footer')
+<!-- Bootstrap JavaScript Bundle with Popper -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
 
 </body>
 

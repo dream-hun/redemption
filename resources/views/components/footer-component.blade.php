@@ -1,4 +1,4 @@
-<div>
+<div xmlns:livewire="http://www.w3.org/1999/html">
     <!-- FOOTER AREA -->
     <footer class="rts-footer site-footer-one section__padding">
         <div class="container">
@@ -106,8 +106,11 @@
                 </div>
                 <!-- widget end -->
             </div>
+
         </div>
+
         <div class="container">
+
             <div class="row">
                 <div class="rts-footer__copyright text-center">
                     <p>&copy; {{ config('app.name') }} {{ date('Y') }}. All Rights Reserved.</p>
