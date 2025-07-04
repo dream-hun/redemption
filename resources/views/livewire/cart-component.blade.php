@@ -50,7 +50,8 @@
                                     wire:loading.class="opacity-75"
                                     wire:target="removeItem('{{ $item->id }}')"
                                     class="btn__long btn-outline-danger btn-danger text-white px-4 w-50 d-flex align-items-center gap-2">
-                                    <i class="bi bi-trash3-fill me-2"></i>
+                                    <i class="bi bi-trash3-fill me-2" wire:loading.remove wire:target="removeItem('{{ $item->id }}')"></i>
+                                    <span wire:loading wire:target="removeItem('{{ $item->id }}')" class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
                                     Remove
                                 </button>
                             </div>
