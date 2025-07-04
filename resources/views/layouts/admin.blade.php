@@ -64,7 +64,7 @@
 
 <body class="hold-transition sidebar-mini">
 <div class="wrapper">
-    @include('partials.navbar')
+    <livewire:navbar-component/>
     @include('partials.menu')
     <div class="content-wrapper" style="min-height: 818px;">
         <section class="content-header">

@@ -90,6 +90,7 @@ final class EppService
 
     /**
      * Create new registrant contact
+     *
      * @throws Exception
      */
     public function createContact(array $contactData): array
@@ -132,6 +133,7 @@ final class EppService
 
     /**
      * Update domain registrant
+     *
      * @throws Exception
      */
     public function updateRegistrant(string $domain, string $newRegistrantId, string $authCode): array

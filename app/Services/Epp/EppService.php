@@ -970,6 +970,7 @@ final class EppService
                 // Normalize nameserver hostname (remove trailing dot if present)
                 // Ensure $ns is a string before passing to mb_trim
                 $ns = is_null($ns) ? '' : (string) $ns;
+
                 return mb_rtrim(mb_trim($ns), '.');
             }, $nameservers), fn ($ns): bool => $ns !== '' && $ns !== '0');
 

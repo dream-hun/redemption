@@ -6,7 +6,6 @@ namespace App\Models;
 
 use DateTimeInterface;
 use Exception;
-
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
