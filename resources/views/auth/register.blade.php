@@ -239,8 +239,8 @@
                                     class="password-toggle"
                                     @click="showPassword = !showPassword"
                                     :title="showPassword ? 'Hide password' : 'Show password'">
-                                <span x-show="!showPassword">👁️</span>
-                                <span x-show="showPassword">🙈</span>
+                                <span x-show="!showPassword"><i class="bi bi-eye"></i></span>
+                                <span x-show="showPassword"><i class="bi bi-eye-slash"></i></span>
                             </button>
                         </div>
                         @error('password')
@@ -262,8 +262,8 @@
                                     class="password-toggle"
                                     @click="showConfirmPassword = !showConfirmPassword"
                                     :title="showConfirmPassword ? 'Hide password' : 'Show password'">
-                                <span x-show="!showConfirmPassword">👁️</span>
-                                <span x-show="showConfirmPassword">🙈</span>
+                                <span x-show="!showConfirmPassword"><i class="bi bi-eye"></i></span>
+                                <span x-show="showConfirmPassword"><i class="bi bi-eye-slash"></i></span>
                             </button>
                         </div>
                     </div>
