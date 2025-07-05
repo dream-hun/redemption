@@ -149,7 +149,7 @@
                     </div>
                 @endif
 
-                <form method="POST" action="{{ route('password.store') }}">
+                <form method="POST" action="{{ route('password.store') }}" id="resetForm">
                     @csrf
 
                     <!-- Token -->
@@ -234,12 +234,12 @@
         @push('scripts')
             <script>
                 grecaptcha.ready(function () {
-                    document.getElementById('registerForm').addEventListener("submit", function (event) {
+                    document.getElementById('resetForm').addEventListener("submit", function (event) {
                         event.preventDefault();
-                        grecaptcha.execute('{{ config('services.recaptcha.site_key') }}', {action: 'register'})
+                        grecaptcha.execute('{{ config('services.recaptcha.site_key') }}', {action: 'reset'})
                             .then(function (token) {
                                 document.getElementById("recaptcha_token").value = token;
-                                document.getElementById('registerForm').submit();
+                                document.getElementById('resetForm').submit();
                             });
                     });
                 });

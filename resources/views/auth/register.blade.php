@@ -176,7 +176,7 @@
                     </div>
                 @endif
 
-                <form method="POST" action="{{ route('register') }}">
+                <form method="POST" action="{{ route('register') }}" id="registerForm">
                     @csrf
                     <h2 class="form-title">Create Account</h2>
 

@@ -150,7 +150,7 @@
                     </div>
                 @endif
 
-                <form method="POST" action="{{ route('password.email') }}">
+                <form method="POST" action="{{ route('password.email') }}" id="forgotForm">
                     @csrf
                     <h2 class="form-title">Reset Password</h2>
 
@@ -188,12 +188,12 @@
         @push('scripts')
             <script>
                 grecaptcha.ready(function () {
-                    document.getElementById('registerForm').addEventListener("submit", function (event) {
+                    document.getElementById('forgotForm').addEventListener("submit", function (event) {
                         event.preventDefault();
-                        grecaptcha.execute('{{ config('services.recaptcha.site_key') }}', {action: 'register'})
+                        grecaptcha.execute('{{ config('services.recaptcha.site_key') }}', {action: 'forgot'})
                             .then(function (token) {
                                 document.getElementById("recaptcha_token").value = token;
-                                document.getElementById('registerForm').submit();
+                                document.getElementById('forgotForm').submit();
                             });
                     });
                 });

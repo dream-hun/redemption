@@ -167,7 +167,7 @@
                     </div>
                 @endif
 
-                <form method="POST" action="{{ route('login') }}">
+                <form method="POST" action="{{ route('login') }}" id="loginForm">
                     @csrf
                     <h2 class="form-title">Sign In</h2>
 
@@ -245,12 +245,12 @@
         @push('scripts')
             <script>
                 grecaptcha.ready(function () {
-                    document.getElementById('registerForm').addEventListener("submit", function (event) {
+                    document.getElementById('loginForm').addEventListener("submit", function (event) {
                         event.preventDefault();
-                        grecaptcha.execute('{{ config('services.recaptcha.site_key') }}', {action: 'register'})
+                        grecaptcha.execute('{{ config('services.recaptcha.site_key') }}', {action: 'login'})
                             .then(function (token) {
                                 document.getElementById("recaptcha_token").value = token;
-                                document.getElementById('registerForm').submit();
+                                document.getElementById('loginForm').submit();
                             });
                     });
                 });

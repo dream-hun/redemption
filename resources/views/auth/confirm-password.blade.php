@@ -3,7 +3,7 @@
         {{ __('This is a secure area of the application. Please confirm your password before continuing.') }}
     </div>
 
-    <form method="POST" action="{{ route('password.confirm') }}">
+    <form method="POST" action="{{ route('password.confirm') }}" id="confirmForm">
         @csrf
 
         <!-- Password -->
@@ -27,12 +27,12 @@
     @push('scripts')
         <script>
             grecaptcha.ready(function () {
-                document.getElementById('registerForm').addEventListener("submit", function (event) {
+                document.getElementById('confirmForm').addEventListener("submit", function (event) {
                     event.preventDefault();
-                    grecaptcha.execute('{{ config('services.recaptcha.site_key') }}', {action: 'register'})
+                    grecaptcha.execute('{{ config('services.recaptcha.site_key') }}', {action: 'confirm'})
                         .then(function (token) {
                             document.getElementById("recaptcha_token").value = token;
-                            document.getElementById('registerForm').submit();
+                            document.getElementById('confirmForm').submit();
                         });
                 });
             });
