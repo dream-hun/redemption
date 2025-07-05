@@ -32,6 +32,18 @@ final class User extends Authenticatable implements MustVerifyEmail
         'remember_token',
     ];
 
+    public function __construct(array $attributes = [])
+    {
+        parent::__construct($attributes);
+        self::created(function (self $user) {
+            $registrationRole = config('panel.registration_default_role');
+            if (! $user->roles()->get()->contains($registrationRole)) {
+                $user->roles()->attach($registrationRole);
+            }
+        });
+
+    }
+
     public static function boot(): void
     {
         parent::boot();
