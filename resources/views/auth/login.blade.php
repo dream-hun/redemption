@@ -169,6 +169,7 @@
 
                 <form method="POST" action="{{ route('login') }}" id="loginForm">
                     @csrf
+                    <input type="hidden" name="recaptcha_token" id="recaptcha_token">
                     <h2 class="form-title">Sign In</h2>
 
                     <!-- Email -->

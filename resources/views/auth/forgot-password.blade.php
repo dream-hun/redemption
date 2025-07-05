@@ -152,6 +152,7 @@
 
                 <form method="POST" action="{{ route('password.email') }}" id="forgotForm">
                     @csrf
+                    <input type="hidden" name="recaptcha_token" id="recaptcha_token">
                     <h2 class="form-title">Reset Password</h2>
 
                     <div class="form-group">

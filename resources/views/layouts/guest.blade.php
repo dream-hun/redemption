@@ -4,6 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="description" content="Your Ultimate Solution for Web Hosting & WHMCS">
     <meta name="keywords" content="Hosting, Domain, Transfer, Buy Domain, WHMCS">

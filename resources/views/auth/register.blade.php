@@ -178,6 +178,7 @@
 
                 <form method="POST" action="{{ route('register') }}" id="registerForm">
                     @csrf
+                    <input type="hidden" name="recaptcha_token" id="recaptcha_token">
                     <h2 class="form-title">Create Account</h2>
 
                     <!-- Name Fields Row -->

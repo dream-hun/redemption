@@ -5,7 +5,7 @@
 
     <form method="POST" action="{{ route('password.confirm') }}" id="confirmForm">
         @csrf
-
+        <input type="hidden" name="recaptcha_token" id="recaptcha_token">
         <!-- Password -->
         <div>
             <x-input-label for="password" :value="__('Password')" />
