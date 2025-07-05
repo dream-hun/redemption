@@ -24,7 +24,7 @@ use Illuminate\Support\Str;
 
 final class TransferInvitationController extends Controller
 {
-    protected EppService $eppService;
+    private EppService $eppService;
 
     public function __construct(EppService $eppService)
     {
@@ -178,7 +178,7 @@ final class TransferInvitationController extends Controller
 
             //  $domain->domainContacts()->delete();
             foreach ($contacts as $type => $contactId) {
-                if (! $this->eppService->infoContact($contactId)) {
+                if (in_array($this->eppService->infoContact($contactId), [null, []], true)) {
                     throw new Exception("Contact ID $contactId is not registered with the registry.");
                 }
                 DomainContact::create([
