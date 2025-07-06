@@ -1,4 +1,7 @@
 <x-admin-layout>
+    @section('page-title')
+        User management
+    @endsection
     @can('user_create')
         <div style="margin-bottom: 10px;" class="row">
             <div class="col-lg-12">
@@ -33,17 +36,13 @@
                         <th>
                             {{ trans('cruds.user.fields.email_verified_at') }}
                         </th>
-                        <th>
-                            {{ trans('cruds.user.fields.two_factor') }}
-                        </th>
+
                         <th>
                             {{ trans('cruds.user.fields.roles') }}
                         </th>
+
                         <th>
-                            {{ trans('cruds.user.fields.phone') }}
-                        </th>
-                        <th>
-                            &nbsp;
+                            Actions
                         </th>
                     </tr>
                     </thead>
@@ -57,7 +56,7 @@
                                 {{ $user->id ?? '' }}
                             </td>
                             <td>
-                                {{ $user->name ?? '' }}
+                                {{ $user->first_name ?? '' }} {{ $user->last_name }}
                             </td>
                             <td>
                                 {{ $user->email ?? '' }}
@@ -65,18 +64,13 @@
                             <td>
                                 {{ $user->email_verified_at ?? '' }}
                             </td>
-                            <td>
-                                <span style="display:none">{{ $user->two_factor ?? '' }}</span>
-                                <input type="checkbox" disabled="disabled" {{ $user->two_factor ? 'checked' : '' }}>
-                            </td>
+
                             <td>
                                 @foreach ($user->roles as $key => $item)
                                     <span class="badge badge-info">{{ $item->title }}</span>
                                 @endforeach
                             </td>
-                            <td>
-                                {{ $user->phone ?? '' }}
-                            </td>
+
                             <td>
                                 @can('user_show')
                                     <a class="btn btn-xs btn-primary" href="{{ route('admin.users.show', $user->id) }}">
