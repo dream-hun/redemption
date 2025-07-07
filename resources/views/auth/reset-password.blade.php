@@ -154,6 +154,7 @@
 
                     <!-- Token -->
                     <input type="hidden" name="token" value="{{ $request->route('token') }}">
+                    <input type="hidden" name="recaptcha_token" id="recaptcha_token">
 
                     <h2 class="form-title">Reset Password</h2>
 
