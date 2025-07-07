@@ -56,6 +56,6 @@ final class RegisteredUserController extends Controller
 
         Auth::login($user);
 
-        return redirect(route('dashboard', absolute: false));
+        return redirect()->back()->with('success', 'An activation email has been sent to your email address.');
     }
 }

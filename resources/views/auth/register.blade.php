@@ -170,9 +170,9 @@
             <!-- Form Section -->
             <div class="form-section">
                 <!-- Session Status -->
-                @if (session('status'))
+                @if (session('success'))
                     <div class="status-message">
-                        {{ session('status') }}
+                        {{ session('success') }}
                     </div>
                 @endif
 
