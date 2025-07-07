@@ -10,7 +10,8 @@ final class HostingController extends Controller
 {
     public function index()
     {
-        $plans=Hosting::all();
-        return view('hosting.shared',['plans'=>$plans]);
+        $plans = Hosting::all();
+
+        return view('hosting.shared', ['plans' => $plans]);
     }
 }

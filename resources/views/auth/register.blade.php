@@ -71,6 +71,10 @@
             box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
         }
 
+        .form-control.error {
+            border-color: #dc3545;
+        }
+
         .btn-primary {
             width: 100%;
             padding: 12px;
@@ -127,6 +131,15 @@
             font-size: 14px;
         }
 
+        .error-message {
+            background-color: #f8d7da;
+            color: #721c24;
+            padding: 10px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+
         .password-field {
             position: relative;
         }
@@ -156,6 +169,11 @@
         .form-row .form-group {
             flex: 1;
         }
+
+        .recaptcha-error {
+            text-align: center;
+            margin-top: 10px;
+        }
     </style>
 
     <div class="register-container">
@@ -176,6 +194,17 @@
                     </div>
                 @endif
 
+                <!-- General Error Messages -->
+                @if ($errors->any() && !$errors->has('first_name') && !$errors->has('last_name') && !$errors->has('email') && !$errors->has('password') && !$errors->has('recaptcha_token'))
+                    <div class="error-message">
+                        <ul style="margin: 0; padding-left: 20px;">
+                            @foreach ($errors->all() as $error)
+                                <li>{{ $error }}</li>
+                            @endforeach
+                        </ul>
+                    </div>
+                @endif
+
                 <form method="POST" action="{{ route('register') }}" id="registerForm">
                     @csrf
                     <input type="hidden" name="recaptcha_token" id="recaptcha_token">
@@ -188,7 +217,7 @@
                             <input id="first_name"
                                    type="text"
                                    name="first_name"
-                                   class="form-control"
+                                   class="form-control {{ $errors->has('first_name') ? 'error' : '' }}"
                                    value="{{ old('first_name') }}"
                                    required
                                    autofocus>
@@ -202,7 +231,7 @@
                             <input id="last_name"
                                    type="text"
                                    name="last_name"
-                                   class="form-control"
+                                   class="form-control {{ $errors->has('last_name') ? 'error' : '' }}"
                                    value="{{ old('last_name') }}"
                                    required>
                             @error('last_name')
@@ -217,7 +246,7 @@
                         <input id="email"
                                type="email"
                                name="email"
-                               class="form-control"
+                               class="form-control {{ $errors->has('email') ? 'error' : '' }}"
                                value="{{ old('email') }}"
                                required
                                autocomplete="username">
@@ -233,7 +262,7 @@
                             <input id="password"
                                    :type="showPassword ? 'text' : 'password'"
                                    name="password"
-                                   class="form-control"
+                                   class="form-control {{ $errors->has('password') ? 'error' : '' }}"
                                    required
                                    autocomplete="new-password">
                             <button type="button"
@@ -256,7 +285,7 @@
                             <input id="password_confirmation"
                                    :type="showConfirmPassword ? 'text' : 'password'"
                                    name="password_confirmation"
-                                   class="form-control"
+                                   class="form-control {{ $errors->has('password_confirmation') ? 'error' : '' }}"
                                    required
                                    autocomplete="new-password">
                             <button type="button"
@@ -267,6 +296,9 @@
                                 <span x-show="showConfirmPassword"><i class="bi bi-eye-slash"></i></span>
                             </button>
                         </div>
+                        @error('password_confirmation')
+                        <div class="error-text">{{ $message }}</div>
+                        @enderror
                     </div>
 
                     <!-- Register Button -->
@@ -275,6 +307,11 @@
                             Register
                         </button>
                     </div>
+
+                    <!-- reCAPTCHA Error Display -->
+                    @error('recaptcha_token')
+                    <div class="error-text recaptcha-error">{{ $message }}</div>
+                    @enderror
 
                     <!-- Sign In Link -->
                     <div class="signin-link">
