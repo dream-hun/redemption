@@ -90,14 +90,12 @@
                                 <a href="#" class="hostie-dropdown-main-element">Domain</a>
                                 <ul class="hostie-submenu list-unstyled menu-pages">
                                     <li class="nav-item"><a class="nav-link"
-                                            href="{{ route('domains.index') }}">Domain
-                                            Checker</a></li>
-                                    <li class="nav-item"><a class="nav-link" href="#">Domain
-                                            Transfer</a></li>
+                                                            href="{{ route('domains.index') }}">Register Domain</a></li>
                                     <li class="nav-item"><a class="nav-link"
-                                            href="{{ route('domains.index') }}">Domain
-                                            Registration</a></li>
-                                    <li class="nav-item"><a class="nav-link" href="#">Whois</a></li>
+                                                            href="{{route('admin.domains.transfer.check')}}">Transfer
+                                            Domain
+                                        </a></li>
+
                                 </ul>
                             </li>
                             <li class="menu-item hostie-has-dropdown">
@@ -121,7 +119,7 @@
                                     <li class="nav-item"><a class="nav-link" href="#">Support</a></li>
                                     <li class="nav-item"><a class="nav-link" href="#">Contact</a></li>
                                     <li class="nav-item"><a class="nav-link"
-                                            href="knowledgebase.html">Knowledgebase</a></li>
+                                                            href="#">Knowledgebase</a></li>
 
                                 </ul>
                             </li>
@@ -137,7 +135,8 @@
                             <a href="{{ route('login') }}" class="login__btn">Login</a>
                         @endauth
                     @endif
-
+                        <button id="menu-btn" aria-label="Menu" class="mobile__active menu-btn"><i
+                                class="fa-sharp fa-solid fa-bars"></i></button>
 
                 </div>
             </div>
