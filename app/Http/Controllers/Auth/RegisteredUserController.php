@@ -10,7 +10,6 @@ use App\Models\User;
 use Exception;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
@@ -40,9 +39,7 @@ final class RegisteredUserController extends Controller
             'password' => Hash::make($request->password),
         ]);
 
-        event(new Registered($user));
-
-        Auth::login($user);
+        /* event(new Registered($user)); */
 
         return redirect()->back()->with('success', 'An activation email has been sent to your email address.');
     }
