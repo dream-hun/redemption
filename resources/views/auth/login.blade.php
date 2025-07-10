@@ -50,63 +50,57 @@
 
             .reset-password-page .form-label {
                 display: block;
-                margin-bottom: 8px;
+                margin-bottom: 5px;
                 font-weight: 500;
                 color: #555;
-                font-size: 14px;
             }
 
             .reset-password-page .form-control {
-                width: 100% !important;
-                padding: 14px 16px !important;
-                border: 2px solid #e1e5e9 !important;
-                border-radius: 8px !important;
-                font-size: 16px !important;
-                transition: all 0.3s ease !important;
-                background-color: #fafbfc !important;
+                width: 100%;
+                padding: 12px;
+                border: 1px solid #ddd;
+                border-radius: 4px;
+                font-size: 16px;
             }
 
             .reset-password-page .form-control:focus {
-                outline: none !important;
-                border-color: #007bff !important;
-                box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1) !important;
-                background-color: white !important;
+                outline: none;
+                border-color: #007bff;
+                box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+            }
+
+            .reset-password-page .form-control.error {
+                border-color: #dc3545;
             }
 
             .reset-password-page .password-field {
-                position: relative !important;
+                position: relative;
             }
 
             .reset-password-page .password-toggle {
-                position: absolute !important;
-                right: 16px !important;
-                top: 50% !important;
-                transform: translateY(-50%) !important;
-                background: none !important;
-                border: none !important;
-                color: #666 !important;
-                cursor: pointer !important;
-                font-size: 18px !important;
-                padding: 8px !important;
-                border-radius: 4px !important;
-                transition: all 0.2s ease !important;
-                z-index: 10 !important;
+                position: absolute;
+                right: 12px;
+                top: 50%;
+                transform: translateY(-50%);
+                background: none;
+                border: none;
+                color: #666;
+                cursor: pointer;
+                font-size: 16px;
+                padding: 0;
+                margin-right: -160px;
             }
 
             .reset-password-page .password-toggle:hover {
-                color: #333 !important;
-
+                color: #333;
             }
 
-            /*.reset-password-page .password-toggle:focus {
-                outline: 2px solid #007bff !important;
-                outline-offset: 2px !important;
-            }*/
+
 
             .reset-password-page .btn-primary {
                 width: 100%;
                 padding: 16px;
-                background: linear-gradient(135deg, #007bff, #0056b3);
+                background:#007bff;
                 color: white;
                 border: none;
                 border-radius: 8px;
@@ -119,7 +113,7 @@
             }
 
             .reset-password-page .btn-primary:hover {
-                background: linear-gradient(135deg, #0056b3, #003d82);
+                background:  #0056b3;
                 transform: translateY(-2px);
                 box-shadow: 0 5px 15px rgba(0, 123, 255, 0.3);
             }
@@ -205,75 +199,9 @@
                 border: 1px solid #c3e6cb;
             }
 
-            /* Responsive Design */
-            @media (max-width: 768px) {
-                .reset-password-page .login-container {
-                    padding: 15px;
-                    margin-top: 20px;
-                    min-height: calc(100vh - 160px);
-                }
 
-                .reset-password-page .form-section {
-                    padding: 30px 25px;
-                }
 
-                .reset-password-page .form-title {
-                    font-size: 24px;
-                }
 
-                .reset-password-page .remember-forgot-row {
-                    flex-direction: column;
-                    align-items: stretch;
-                    gap: 15px;
-                }
-
-                .reset-password-page .remember-me {
-                    justify-content: flex-start;
-                }
-
-                .reset-password-page .forgot-link {
-                    text-align: center;
-                    display: block;
-                }
-            }
-
-            @media (max-width: 480px) {
-                .reset-password-page .form-section {
-                    padding: 25px 20px;
-                }
-
-                .reset-password-page .form-title {
-                    font-size: 22px;
-                }
-
-                .reset-password-page .form-control {
-                    padding: 12px 14px !important;
-                    font-size: 16px !important; /* Prevent zoom on iOS */
-                }
-
-                .reset-password-page .password-toggle {
-                    right: 14px !important;
-                }
-            }
-
-            @media (max-width: 360px) {
-                .reset-password-page .login-container {
-                    padding: 10px;
-                }
-
-                .reset-password-page .form-section {
-                    padding: 20px 15px;
-                }
-            }
-
-            /* Focus states for better accessibility */
-            .reset-password-page .form-control:focus,
-            .reset-password-page .btn-primary:focus,
-            .reset-password-page .forgot-link:focus,
-            .reset-password-page .signup-link a:focus {
-                outline: 2px solid #007bff;
-                outline-offset: 2px;
-            }
         </style>
     @endpush
 
@@ -309,15 +237,14 @@
 
                     <!-- Email -->
                     <div class="form-group">
-                        <label for="email" class="form-label">Email Address</label>
+                        <label for="email" class="form-label">Email</label>
                         <input id="email"
                                type="email"
                                name="email"
-                               class="form-control"
-                               placeholder="Enter your email"
+                               class="form-control {{ $errors->has('email') ? 'error' : '' }}"
                                value="{{ old('email') }}"
                                required
-                               autofocus
+                               placeholder="Enter your email"
                                autocomplete="username">
                         @error('email')
                         <div class="error-text">{{ $message }}</div>
@@ -331,11 +258,11 @@
                             <input id="password"
                                    :type="showPassword ? 'text' : 'password'"
                                    name="password"
-                                   class="form-control"
-                                   placeholder="Enter your password"
+                                   class="form-control {{ $errors->has('password') ? 'error' : '' }}"
                                    required
-                                   autocomplete="current-password">
-                            <button type="button" style="margin-right: -160px"
+                                   placeholder="Enter password"
+                                   autocomplete="off">
+                            <button type="button"
                                     class="password-toggle"
                                     @click="showPassword = !showPassword"
                                     :title="showPassword ? 'Hide password' : 'Show password'">
