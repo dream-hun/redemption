@@ -4,19 +4,20 @@
     @endsection
 
     <style>
-        body {
+        .reset-password-page body {
             background-color: #f8f9fa;
+            font-family: "Inter", sans-serif;
         }
 
-        .register-container {
-            min-height: 100vh;
+        .reset-password-page .register-container {
             display: flex;
             align-items: center;
             justify-content: center;
             padding: 20px;
+            margin-top: 100px;
         }
 
-        .register-card {
+        .reset-password-page .register-card {
             background: white;
             border-radius: 8px;
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
@@ -24,21 +25,12 @@
             width: 100%;
         }
 
-        .logo-section {
-            text-align: center;
-            padding: 40px 40px 20px;
-        }
 
-        .logo-section img {
-            max-width: 80px;
-            height: auto;
-        }
-
-        .form-section {
+        .reset-password-page .form-section {
             padding: 20px 40px 40px;
         }
 
-        .form-title {
+        .reset-password-page .form-title {
             font-size: 24px;
             font-weight: 600;
             color: #333;
@@ -46,18 +38,18 @@
             text-align: center;
         }
 
-        .form-group {
+        .reset-password-page .form-group {
             margin-bottom: 20px;
         }
 
-        .form-label {
+        .reset-password-page .form-label {
             display: block;
             margin-bottom: 5px;
             font-weight: 500;
             color: #555;
         }
 
-        .form-control {
+        .reset-password-page .form-control {
             width: 100%;
             padding: 12px;
             border: 1px solid #ddd;
@@ -65,17 +57,17 @@
             font-size: 16px;
         }
 
-        .form-control:focus {
+        .reset-password-page .form-control:focus {
             outline: none;
             border-color: #007bff;
             box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
         }
 
-        .form-control.error {
+        .reset-password-page .form-control.error {
             border-color: #dc3545;
         }
 
-        .btn-primary {
+        .reset-password-page .btn-primary {
             width: 100%;
             padding: 12px;
             background-color: #007bff;
@@ -87,42 +79,34 @@
             cursor: pointer;
         }
 
-        .btn-primary:hover {
+        .reset-password-page .btn-primary:hover {
             background-color: #0056b3;
         }
 
-        .signin-link {
+        .reset-password-page .signin-link {
             text-align: center;
             margin-top: 20px;
             font-size: 14px;
             color: #666;
         }
 
-        .signin-link a {
+        .reset-password-page .signin-link a {
             color: #007bff;
             text-decoration: none;
         }
 
-        .signin-link a:hover {
+        .reset-password-page .signin-link a:hover {
             text-decoration: underline;
         }
 
-        .footer {
-            background-color: #f8f9fa;
-            padding: 15px;
-            text-align: center;
-            font-size: 12px;
-            color: #666;
-            border-top: 1px solid #eee;
-        }
 
-        .error-text {
+        .reset-password-page .error-text {
             color: #dc3545;
             font-size: 14px;
             margin-top: 5px;
         }
 
-        .status-message {
+        .reset-password-page .status-message {
             background-color: #d4edda;
             color: #155724;
             padding: 10px;
@@ -131,7 +115,7 @@
             font-size: 14px;
         }
 
-        .error-message {
+        .reset-password-page .error-message {
             background-color: #f8d7da;
             color: #721c24;
             padding: 10px;
@@ -140,11 +124,11 @@
             font-size: 14px;
         }
 
-        .password-field {
+        .reset-password-page .password-field {
             position: relative;
         }
 
-        .password-toggle {
+        .reset-password-page .password-toggle {
             position: absolute;
             right: 12px;
             top: 50%;
@@ -155,35 +139,45 @@
             cursor: pointer;
             font-size: 16px;
             padding: 0;
+            margin-right: -160px;
         }
 
-        .password-toggle:hover {
+        .reset-password-page .password-toggle:hover {
             color: #333;
         }
 
-        .form-row {
+        .reset-password-page .form-row {
             display: flex;
             gap: 15px;
         }
 
-        .form-row .form-group {
+        .reset-password-page .form-row .form-group {
             flex: 1;
         }
 
-        .recaptcha-error {
+        .reset-password-page .recaptcha-error {
             text-align: center;
             margin-top: 10px;
         }
     </style>
+    <div class="rts-hosting-banner rts-hosting-banner-bg">
+        <div class="container">
+            <div class="row">
+                <div class="banner-area">
+                    <div class="rts-hosting-banner rts-hosting-banner__content about__banner">
+                        <h1 class="banner-title sal-animate" data-sal="slide-down" data-sal-delay="200"
+                            data-sal-duration="800">
+                            Register
+                        </h1>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <div class="register-container">
         <div class="register-card">
-            <!-- Logo Section -->
-            <div class="logo-section">
-                <a href="{{ route('home') }}">
-                    <img src="{{ asset('logo.webp') }}" alt="{{ config('app.name') }} Logo">
-                </a>
-            </div>
+
 
             <!-- Form Section -->
             <div class="form-section">
@@ -318,11 +312,6 @@
                         Already have an account? <a href="{{ route('login') }}">Sign In</a>
                     </div>
                 </form>
-            </div>
-
-            <!-- Footer -->
-            <div class="footer">
-                <p>&copy; {{ date('Y') }} {{ config('app.name') }}. All Rights Reserved.</p>
             </div>
         </div>
     </div>

@@ -2,144 +2,158 @@
     @section('page-title')
         Reset Password
     @endsection
+        @push('styles')
+            <style>
+                .reset-password-page body {
+                    background-color: #f8f9fa !important;
+                }
 
-    <style>
-        body {
-            background-color: #f8f9fa;
-        }
+                .reset-password-page .reset-container {
+                    display: flex !important;
+                    align-items: center !important;
+                    justify-content: center !important;
+                    padding: 20px !important;
+                    margin-top: 100px !important;
+                }
 
-        .reset-container {
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-        }
+                .reset-password-page .reset-card {
+                    background: white !important;
+                    border-radius: 8px !important;
+                    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1) !important;
+                    max-width: 450px !important;
+                    width: 100% !important;
+                }
 
-        .reset-card {
-            background: white;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-            max-width: 450px;
-            width: 100%;
-        }
+                .reset-password-page .logo-section {
+                    text-align: center !important;
+                    padding: 40px 40px 20px !important;
+                }
 
-        .logo-section {
-            text-align: center;
-            padding: 40px 40px 20px;
-        }
+                .reset-password-page .logo-section img {
+                    max-width: 80px !important;
+                    height: auto !important;
+                }
 
-        .logo-section img {
-            max-width: 80px;
-            height: auto;
-        }
+                .reset-password-page .form-section {
+                    padding: 20px 40px 40px !important;
+                }
 
-        .form-section {
-            padding: 20px 40px 40px;
-        }
+                .reset-password-page .form-title {
+                    font-size: 24px !important;
+                    font-weight: 600 !important;
+                    color: #333 !important;
+                    margin-bottom: 30px !important;
+                    text-align: center !important;
+                }
 
-        .form-title {
-            font-size: 24px;
-            font-weight: 600;
-            color: #333;
-            margin-bottom: 30px;
-            text-align: center;
-        }
+                .reset-password-page .form-group {
+                    margin-bottom: 20px !important;
+                }
 
-        .form-group {
-            margin-bottom: 20px;
-        }
+                .reset-password-page .form-label {
+                    display: block !important;
+                    margin-bottom: 5px !important;
+                    font-weight: 500 !important;
+                    color: #555 !important;
+                }
 
-        .form-label {
-            display: block;
-            margin-bottom: 5px;
-            font-weight: 500;
-            color: #555;
-        }
+                .reset-password-page .form-control {
+                    width: 100% !important;
+                    padding: 12px !important;
+                    border: 1px solid #ddd !important;
+                    border-radius: 4px !important;
+                    font-size: 16px !important;
+                }
 
-        .form-control {
-            width: 100%;
-            padding: 12px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            font-size: 16px;
-        }
+                .reset-password-page .form-control:focus {
+                    outline: none !important;
+                    border-color: #007bff !important;
+                    box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25) !important;
+                }
 
-        .form-control:focus {
-            outline: none;
-            border-color: #007bff;
-            box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
-        }
+                .reset-password-page .btn-primary {
+                    width: 100% !important;
+                    padding: 12px !important;
+                    background-color: #007bff !important;
+                    color: white !important;
+                    border: none !important;
+                    border-radius: 4px !important;
+                    font-size: 16px !important;
+                    font-weight: 500 !important;
+                    cursor: pointer !important;
+                }
 
-        .btn-primary {
-            width: 100%;
-            padding: 12px;
-            background-color: #007bff;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            font-size: 16px;
-            font-weight: 500;
-            cursor: pointer;
-        }
+                .reset-password-page .btn-primary:hover {
+                    background-color: #0056b3 !important;
+                }
 
-        .btn-primary:hover {
-            background-color: #0056b3;
-        }
+                .reset-password-page .footer {
+                    background-color: #f8f9fa !important;
+                    padding: 15px !important;
+                    text-align: center !important;
+                    font-size: 12px !important;
+                    color: #666 !important;
+                    border-top: 1px solid #eee !important;
+                }
 
-        .footer {
-            background-color: #f8f9fa;
-            padding: 15px;
-            text-align: center;
-            font-size: 12px;
-            color: #666;
-            border-top: 1px solid #eee;
-        }
+                .reset-password-page .error-text {
+                    color: #dc3545 !important;
+                    font-size: 14px !important;
+                    margin-top: 5px !important;
+                }
 
-        .error-text {
-            color: #dc3545;
-            font-size: 14px;
-            margin-top: 5px;
-        }
+                .reset-password-page .status-message {
+                    background-color: #d4edda !important;
+                    color: #155724 !important;
+                    padding: 10px !important;
+                    border-radius: 4px !important;
+                    margin-bottom: 20px !important;
+                    font-size: 14px !important;
+                }
 
-        .status-message {
-            background-color: #d4edda;
-            color: #155724;
-            padding: 10px;
-            border-radius: 4px;
-            margin-bottom: 20px;
-            font-size: 14px;
-        }
-        .password-field {
-            position: relative;
-        }
+                .reset-password-page .password-field {
+                    position: relative !important;
+                }
 
-        .password-toggle {
-            position: absolute;
-            right: 12px;
-            top: 50%;
-            transform: translateY(-50%);
-            background: none;
-            border: none;
-            color: #666;
-            cursor: pointer;
-            font-size: 16px;
-            padding: 0;
-        }
+                .reset-password-page .password-toggle {
+                    position: absolute !important;
+                    right: 12px !important;
+                    top: 50% !important;
+                    transform: translateY(-50%) !important;
+                    background: none !important;
+                    border: none !important;
+                    color: #666 !important;
+                    cursor: pointer !important;
+                    font-size: 16px !important;
+                    padding: 0 !important;
+                }
 
-        .password-toggle:hover {
-            color: #333;
-        }
-    </style>
+                .reset-password-page .password-toggle:hover {
+                    color: #333 !important;
+                }
+            </style>
 
+        @endpush
+        <div class="rts-hosting-banner rts-hosting-banner-bg">
+            <div class="container">
+                <div class="row">
+                    <div class="banner-area">
+                        <div class="rts-hosting-banner rts-hosting-banner__content about__banner">
+
+                            <h1 class="banner-title sal-animate" data-sal="slide-down" data-sal-delay="200"
+                                data-sal-duration="800">
+                                Reset Password
+                            </h1>
+
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
     <div class="reset-container">
         <div class="reset-card">
-            <!-- Logo Section -->
-            <div class="logo-section">
-                <a href="{{ route('home') }}">
-                    <img src="{{ asset('logo.webp') }}" alt="{{ config('app.name') }} Logo">
-                </a>
-            </div>
+
 
             <!-- Form Section -->
             <div class="form-section">
@@ -187,7 +201,7 @@
                             <button type="button"
                                     class="password-toggle"
                                     @click="showPassword = !showPassword"
-                                    :title="showPassword ? 'Hide password' : 'Show password'">
+                                    :title="showPassword ? 'Hide password' : 'Show password'" style="margin-right: -160px">
                                 <span x-show="!showPassword"><i class="bi bi-eye"></i></span>
                                 <span x-show="showPassword"><i class="bi bi-eye-slash"></i></span>
                             </button>
@@ -210,7 +224,7 @@
                             <button type="button"
                                     class="password-toggle"
                                     @click="showConfirmPassword = !showConfirmPassword"
-                                    :title="showConfirmPassword ? 'Hide password' : 'Show password'">
+                                    :title="showConfirmPassword ? 'Hide password' : 'Show password'" style="margin-right: -160px">
                                 <span x-show="!showConfirmPassword"><i class="bi bi-eye"></i></span>
                                 <span x-show="showConfirmPassword"><i class="bi bi-eye-slash"></i></span>
                             </button>
@@ -224,11 +238,6 @@
                         </button>
                     </div>
                 </form>
-            </div>
-
-            <!-- Footer -->
-            <div class="footer">
-                <p>&copy; {{ date('Y') }} {{ config('app.name') }}. All Rights Reserved.</p>
             </div>
         </div>
     </div>

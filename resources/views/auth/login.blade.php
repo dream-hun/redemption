@@ -3,162 +3,297 @@
         Login
     @endsection
 
-    <style>
-        body {
-            background-color: #f8f9fa;
-        }
+    @push('styles')
+        <style>
+            * {
+                box-sizing: border-box;
+            }
 
-        .login-container {
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-        }
+            .reset-password-page body {
+                background-color: #f8f9fa;
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            }
 
-        .login-card {
-            background: white;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-            max-width: 400px;
-            width: 100%;
-        }
+            .reset-password-page .login-container {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                padding: 20px;
+                margin-top: 40px;
+                min-height: calc(100vh - 200px);
+            }
 
-        .logo-section {
-            text-align: center;
-            padding: 40px 40px 20px;
-        }
+            .reset-password-page .login-card {
+                background: white;
+                border-radius: 12px;
+                box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+                max-width: 400px;
+                width: 100%;
+                overflow: hidden;
+            }
 
-        .logo-section img {
-            max-width: 80px;
-            height: auto;
-        }
+            .reset-password-page .form-section {
+                padding: 40px;
+            }
 
-        .form-section {
-            padding: 20px 40px 40px;
-        }
+            .reset-password-page .form-title {
+                font-size: 28px;
+                font-weight: 600;
+                color: #333;
+                margin-bottom: 30px;
+                text-align: center;
+            }
 
-        .form-title {
-            font-size: 24px;
-            font-weight: 600;
-            color: #333;
-            margin-bottom: 30px;
-            text-align: center;
-        }
+            .reset-password-page .form-group {
+                margin-bottom: 20px;
+            }
 
-        .form-group {
-            margin-bottom: 20px;
-        }
+            .reset-password-page .form-label {
+                display: block;
+                margin-bottom: 8px;
+                font-weight: 500;
+                color: #555;
+                font-size: 14px;
+            }
 
-        .form-label {
-            display: block;
-            margin-bottom: 5px;
-            font-weight: 500;
-            color: #555;
-        }
+            .reset-password-page .form-control {
+                width: 100% !important;
+                padding: 14px 16px !important;
+                border: 2px solid #e1e5e9 !important;
+                border-radius: 8px !important;
+                font-size: 16px !important;
+                transition: all 0.3s ease !important;
+                background-color: #fafbfc !important;
+            }
 
-        .form-control {
-            width: 100%;
-            padding: 12px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            font-size: 16px;
-        }
+            .reset-password-page .form-control:focus {
+                outline: none !important;
+                border-color: #007bff !important;
+                box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1) !important;
+                background-color: white !important;
+            }
 
-        .form-control:focus {
-            outline: none;
-            border-color: #007bff;
-            box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
-        }
+            .reset-password-page .password-field {
+                position: relative !important;
+            }
 
-        .btn-primary {
-            width: 100%;
-            padding: 12px;
-            background-color: #007bff;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            font-size: 16px;
-            font-weight: 500;
-            cursor: pointer;
-        }
+            .reset-password-page .password-toggle {
+                position: absolute !important;
+                right: 16px !important;
+                top: 50% !important;
+                transform: translateY(-50%) !important;
+                background: none !important;
+                border: none !important;
+                color: #666 !important;
+                cursor: pointer !important;
+                font-size: 18px !important;
+                padding: 8px !important;
+                border-radius: 4px !important;
+                transition: all 0.2s ease !important;
+                z-index: 10 !important;
+            }
 
-        .btn-primary:hover {
-            background-color: #0056b3;
-        }
+            .reset-password-page .password-toggle:hover {
+                color: #333 !important;
 
-        .signup-link {
-            text-align: center;
-            margin-top: 20px;
-            font-size: 14px;
-            color: #666;
-        }
+            }
 
-        .signup-link a {
-            color: #007bff;
-            text-decoration: none;
-        }
+            /*.reset-password-page .password-toggle:focus {
+                outline: 2px solid #007bff !important;
+                outline-offset: 2px !important;
+            }*/
 
-        .signup-link a:hover {
-            text-decoration: underline;
-        }
+            .reset-password-page .btn-primary {
+                width: 100%;
+                padding: 16px;
+                background: linear-gradient(135deg, #007bff, #0056b3);
+                color: white;
+                border: none;
+                border-radius: 8px;
+                font-size: 16px;
+                font-weight: 600;
+                cursor: pointer;
+                transition: all 0.3s ease;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+            }
 
-        .footer {
-            background-color: #f8f9fa;
-            padding: 15px;
-            text-align: center;
-            font-size: 12px;
-            color: #666;
-            border-top: 1px solid #eee;
-        }
+            .reset-password-page .btn-primary:hover {
+                background: linear-gradient(135deg, #0056b3, #003d82);
+                transform: translateY(-2px);
+                box-shadow: 0 5px 15px rgba(0, 123, 255, 0.3);
+            }
 
-        .error-text {
-            color: #dc3545;
-            font-size: 14px;
-            margin-top: 5px;
-        }
+            .reset-password-page .btn-primary:active {
+                transform: translateY(0);
+            }
 
-        .status-message {
-            background-color: #d4edda;
-            color: #155724;
-            padding: 10px;
-            border-radius: 4px;
-            margin-bottom: 20px;
-            font-size: 14px;
-        }
+            .reset-password-page .btn-primary:disabled {
+                opacity: 0.6;
+                cursor: not-allowed;
+                transform: none;
+            }
 
-        .password-field {
-            position: relative;
-        }
+            .reset-password-page .remember-forgot-row {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin-bottom: 25px;
+                flex-wrap: wrap;
+                gap: 10px;
+            }
 
-        .password-toggle {
-            position: absolute;
-            right: 12px;
-            top: 50%;
-            transform: translateY(-50%);
-            background: none;
-            border: none;
-            color: #666;
-            cursor: pointer;
-            font-size: 16px;
-            padding: 0;
-        }
+            .reset-password-page .remember-me {
+                display: flex;
+                align-items: center;
+                font-size: 14px;
+                color: #555;
+                user-select: none;
+            }
 
-        .password-toggle:hover {
-            color: #333;
-        }
-    </style>
+            .reset-password-page .remember-me input[type="checkbox"] {
+                margin-right: 8px;
+                width: 16px;
+                height: 16px;
+                cursor: pointer;
+            }
+
+            .reset-password-page .forgot-link {
+                font-size: 14px;
+                color: #007bff;
+                text-decoration: none;
+                font-weight: 500;
+                transition: color 0.2s ease;
+            }
+
+            .reset-password-page .forgot-link:hover {
+                color: #0056b3;
+                text-decoration: underline;
+            }
+
+            .reset-password-page .signup-link {
+                text-align: center;
+                margin-top: 25px;
+                font-size: 14px;
+                color: #666;
+            }
+
+            .reset-password-page .signup-link a {
+                color: #007bff;
+                text-decoration: none;
+                font-weight: 500;
+            }
+
+            .reset-password-page .signup-link a:hover {
+                text-decoration: underline;
+            }
+
+            .reset-password-page .error-text {
+                color: #dc3545;
+                font-size: 13px;
+                margin-top: 5px;
+                font-weight: 500;
+            }
+
+            .reset-password-page .status-message {
+                background-color: #d4edda;
+                color: #155724;
+                padding: 12px 16px;
+                border-radius: 8px;
+                margin-bottom: 20px;
+                font-size: 14px;
+                border: 1px solid #c3e6cb;
+            }
+
+            /* Responsive Design */
+            @media (max-width: 768px) {
+                .reset-password-page .login-container {
+                    padding: 15px;
+                    margin-top: 20px;
+                    min-height: calc(100vh - 160px);
+                }
+
+                .reset-password-page .form-section {
+                    padding: 30px 25px;
+                }
+
+                .reset-password-page .form-title {
+                    font-size: 24px;
+                }
+
+                .reset-password-page .remember-forgot-row {
+                    flex-direction: column;
+                    align-items: stretch;
+                    gap: 15px;
+                }
+
+                .reset-password-page .remember-me {
+                    justify-content: flex-start;
+                }
+
+                .reset-password-page .forgot-link {
+                    text-align: center;
+                    display: block;
+                }
+            }
+
+            @media (max-width: 480px) {
+                .reset-password-page .form-section {
+                    padding: 25px 20px;
+                }
+
+                .reset-password-page .form-title {
+                    font-size: 22px;
+                }
+
+                .reset-password-page .form-control {
+                    padding: 12px 14px !important;
+                    font-size: 16px !important; /* Prevent zoom on iOS */
+                }
+
+                .reset-password-page .password-toggle {
+                    right: 14px !important;
+                }
+            }
+
+            @media (max-width: 360px) {
+                .reset-password-page .login-container {
+                    padding: 10px;
+                }
+
+                .reset-password-page .form-section {
+                    padding: 20px 15px;
+                }
+            }
+
+            /* Focus states for better accessibility */
+            .reset-password-page .form-control:focus,
+            .reset-password-page .btn-primary:focus,
+            .reset-password-page .forgot-link:focus,
+            .reset-password-page .signup-link a:focus {
+                outline: 2px solid #007bff;
+                outline-offset: 2px;
+            }
+        </style>
+    @endpush
+
+    <div class="rts-hosting-banner rts-hosting-banner-bg">
+        <div class="container">
+            <div class="row">
+                <div class="banner-area">
+                    <div class="rts-hosting-banner rts-hosting-banner__content about__banner">
+                        <h1 class="banner-title sal-animate" data-sal="slide-down" data-sal-delay="200"
+                            data-sal-duration="800">
+                            Sign In
+                        </h1>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <div class="login-container">
         <div class="login-card">
-            <!-- Logo Section -->
-            <div class="logo-section">
-                <a href="{{ route('home') }}">
-                    <img src="{{ asset('logo.webp') }}" alt="{{ config('app.name') }} Logo">
-                </a>
-            </div>
-
-            <!-- Form Section -->
             <div class="form-section">
                 <!-- Session Status -->
                 @if (session('status'))
@@ -174,11 +309,12 @@
 
                     <!-- Email -->
                     <div class="form-group">
-                        <label for="email" class="form-label">Email</label>
+                        <label for="email" class="form-label">Email Address</label>
                         <input id="email"
                                type="email"
                                name="email"
                                class="form-control"
+                               placeholder="Enter your email"
                                value="{{ old('email') }}"
                                required
                                autofocus
@@ -196,9 +332,10 @@
                                    :type="showPassword ? 'text' : 'password'"
                                    name="password"
                                    class="form-control"
+                                   placeholder="Enter your password"
                                    required
                                    autocomplete="current-password">
-                            <button type="button"
+                            <button type="button" style="margin-right: -160px"
                                     class="password-toggle"
                                     @click="showPassword = !showPassword"
                                     :title="showPassword ? 'Hide password' : 'Show password'">
@@ -212,23 +349,22 @@
                     </div>
 
                     <!-- Remember Me and Forgot Password -->
-                    <div class="form-group" style="display: flex; justify-content: space-between; align-items: center;">
-                        <label style="display: flex; align-items: center; font-size: 14px; color: #555;">
-                            <input type="checkbox" name="remember" style="margin-right: 5px;">
+                    <div class="remember-forgot-row">
+                        <label class="remember-me">
+                            <input type="checkbox" name="remember" {{ old('remember') ? 'checked' : '' }}>
                             Remember Me
                         </label>
-                        <a href="{{ route('password.request') }}" style="font-size: 14px; color: #007bff; text-decoration: none;">
+                        <a href="{{ route('password.request') }}" class="forgot-link">
                             Forgot Password?
                         </a>
                     </div>
 
                     <!-- Login Button -->
                     <div class="form-group">
-                        <button type="submit" class="btn-primary">
-                            Login
+                        <button type="submit" class="btn-primary" id="loginButton">
+                            Sign In
                         </button>
                     </div>
-
 
                     <!-- Sign Up Link -->
                     <div class="signup-link">
@@ -236,25 +372,41 @@
                     </div>
                 </form>
             </div>
-
-            <!-- Footer -->
-            <div class="footer">
-                <p>&copy; {{ date('Y') }} {{ config('app.name') }}. All Rights Reserved.</p>
-            </div>
         </div>
     </div>
-        @push('scripts')
-            <script>
-                grecaptcha.ready(function () {
-                    document.getElementById('loginForm').addEventListener("submit", function (event) {
-                        event.preventDefault();
-                        grecaptcha.execute('{{ config('services.recaptcha.site_key') }}', {action: 'login'})
-                            .then(function (token) {
-                                document.getElementById("recaptcha_token").value = token;
-                                document.getElementById('loginForm').submit();
-                            });
-                    });
+
+    @push('scripts')
+        <script>
+            // Add loading state to button on form submission
+            document.getElementById('loginForm').addEventListener('submit', function() {
+                const submitButton = document.getElementById('loginButton');
+                submitButton.disabled = true;
+                submitButton.textContent = 'Signing In...';
+            });
+
+            // reCAPTCHA integration
+            @if(config('services.recaptcha.site_key'))
+            grecaptcha.ready(function () {
+                document.getElementById('loginForm').addEventListener("submit", function (event) {
+                    event.preventDefault();
+
+                    const submitButton = document.getElementById('loginButton');
+                    submitButton.disabled = true;
+                    submitButton.textContent = 'Verifying...';
+
+                    grecaptcha.execute('{{ config('services.recaptcha.site_key') }}', {action: 'login'})
+                        .then(function (token) {
+                            document.getElementById("recaptcha_token").value = token;
+                            document.getElementById('loginForm').submit();
+                        })
+                        .catch(function(error) {
+                            console.error('reCAPTCHA error:', error);
+                            submitButton.disabled = false;
+                            submitButton.textContent = 'Sign In';
+                        });
                 });
-            </script>
-        @endpush
+            });
+            @endif
+        </script>
+    @endpush
 </x-guest-layout>

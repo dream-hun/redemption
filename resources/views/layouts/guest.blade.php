@@ -4,8 +4,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mospanle-web-app-capable" content="yes">
+    <meta name="apple-mospanle-web-app-capable" content="yes">
     <meta name="description" content="Your Ultimate Solution for Web Hosting & WHMCS">
     <meta name="keywords" content="Hosting, Domain, Transfer, Buy Domain, WHMCS">
     <link rel="canonical" href="https://bluhub.rw">
@@ -22,27 +22,28 @@
     <meta name="twitter:image" content="https://bluhub.rw/assets/images/banner/slider-img-01.webp">
     <!-- favicon -->
     <link rel="shortcut icon" type="image/x-icon" href="assets/images/fav.png">
-
     <title>@yield('page-title') - {{config('app.name')}}</title>
     <!-- Fonts -->
     <link rel="stylesheet" href="https://rsms.me/inter/inter.css">
-    <!--Load bootstrap-->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet"
-          integrity="sha384-LN+7fdVzj6u52u30Kp6M/trliBMCMKTyK833zpbD+pXdCLuTusPj697FH4R/5mcr" crossorigin="anonymous">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-    <style>
-        body {
-            font-family: "Inter", sans-serif !important;
-        }
-    </style>
+    <link rel="stylesheet" href="{{asset('font/bootstrap-icons.min.css')}}">
+    <!-- all styles -->
+    <link rel="preload stylesheet" href="{{ asset('assets/css/plugins.min.css') }}" as="style">
+    <!-- fontawesome css -->
+    <link rel="preload stylesheet" href="{{ asset('assets/css/plugins/fontawesome.min.css') }}" as="style">
+    <!-- Custom css -->
+    <link rel="preload stylesheet" href="{{ asset('assets/css/style.css') }}" as="style">
+
     <script src="https://www.google.com/recaptcha/api.js?render={{ config('services.recaptcha.site_key') }}"></script>
     @livewireStyles
     @stack('styles')
 </head>
 
-<body>
+<body class="loaded reset-password-page">
+<x-menu-component />
+
 {{ $slot }}
 
+<x-footer-component></x-footer-component>
 @livewireScripts
 @stack('scripts')
 

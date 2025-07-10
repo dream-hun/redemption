@@ -2,143 +2,136 @@
     @section('page-title')
         Forgot Password
     @endsection
+        @push('styles')
+            <style>
+                .reset-password-page body {
+                    background-color: #f8f9fa;
+                }
 
-    <style>
-        body {
-            background-color: #f8f9fa;
-        }
+                .reset-password-page .register-container {
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    padding: 20px;
+                    margin-top: 100px;
+                }
 
-        .register-container {
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-        }
+                .reset-password-page .register-card {
+                    background: white;
+                    border-radius: 8px;
+                    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+                    max-width: 450px;
+                    width: 100%;
+                }
 
-        .register-card {
-            background: white;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-            max-width: 450px;
-            width: 100%;
-        }
 
-        .logo-section {
-            text-align: center;
-            padding: 40px 40px 20px;
-        }
+                .reset-password-page .form-section {
+                    padding: 20px 40px 40px;
+                }
 
-        .logo-section img {
-            max-width: 80px;
-            height: auto;
-        }
+                .reset-password-page .form-title {
+                    font-size: 24px;
+                    font-weight: 600;
+                    color: #333;
+                    margin-bottom: 20px;
+                    text-align: center;
+                }
 
-        .form-section {
-            padding: 20px 40px 40px;
-        }
+                .reset-password-page .form-group {
+                    margin-bottom: 20px;
+                }
 
-        .form-title {
-            font-size: 24px;
-            font-weight: 600;
-            color: #333;
-            margin-bottom: 20px;
-            text-align: center;
-        }
+                .form-label {
+                    display: block;
+                    margin-bottom: 5px;
+                    font-weight: 500;
+                    color: #555;
+                }
 
-        .form-group {
-            margin-bottom: 20px;
-        }
+                .reset-password-page .form-control {
+                    width: 100%;
+                    padding: 12px;
+                    border: 1px solid #ddd;
+                    border-radius: 4px;
+                    font-size: 16px;
+                }
 
-        .form-label {
-            display: block;
-            margin-bottom: 5px;
-            font-weight: 500;
-            color: #555;
-        }
+                .reset-password-page .form-control:focus {
+                    outline: none;
+                    border-color: #007bff;
+                    box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+                }
 
-        .form-control {
-            width: 100%;
-            padding: 12px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            font-size: 16px;
-        }
+                .reset-password-page .btn-primary {
+                    width: 100%;
+                    padding: 12px;
+                    background-color: #007bff;
+                    color: white;
+                    border: none;
+                    border-radius: 4px;
+                    font-size: 16px;
+                    font-weight: 500;
+                    cursor: pointer;
+                }
 
-        .form-control:focus {
-            outline: none;
-            border-color: #007bff;
-            box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
-        }
+                .reset-password-page .btn-primary:hover {
+                    background-color: #0056b3;
+                }
 
-        .btn-primary {
-            width: 100%;
-            padding: 12px;
-            background-color: #007bff;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            font-size: 16px;
-            font-weight: 500;
-            cursor: pointer;
-        }
+                .reset-password-page .signin-link {
+                    text-align: center;
+                    margin-top: 20px;
+                    font-size: 14px;
+                    color: #666;
+                }
 
-        .btn-primary:hover {
-            background-color: #0056b3;
-        }
+                .reset-password-page .signin-link a {
+                    color: #007bff;
+                    text-decoration: none;
+                }
 
-        .signin-link {
-            text-align: center;
-            margin-top: 20px;
-            font-size: 14px;
-            color: #666;
-        }
+                .reset-password-page .signin-link a:hover {
+                    text-decoration: underline;
+                }
 
-        .signin-link a {
-            color: #007bff;
-            text-decoration: none;
-        }
 
-        .signin-link a:hover {
-            text-decoration: underline;
-        }
+                .reset-password-page .error-text {
+                    color: #dc3545;
+                    font-size: 14px;
+                    margin-top: 5px;
+                }
 
-        .footer {
-            background-color: #f8f9fa;
-            padding: 15px;
-            text-align: center;
-            font-size: 12px;
-            color: #666;
-            border-top: 1px solid #eee;
-        }
+                .reset-password-page .status-message {
+                    background-color: #d4edda;
+                    color: #155724;
+                    padding: 10px;
+                    border-radius: 4px;
+                    margin-bottom: 20px;
+                    font-size: 14px;
+                }
+            </style>
 
-        .error-text {
-            color: #dc3545;
-            font-size: 14px;
-            margin-top: 5px;
-        }
-
-        .status-message {
-            background-color: #d4edda;
-            color: #155724;
-            padding: 10px;
-            border-radius: 4px;
-            margin-bottom: 20px;
-            font-size: 14px;
-        }
-    </style>
+        @endpush
+        <div class="rts-hosting-banner rts-hosting-banner-bg">
+            <div class="container">
+                <div class="row">
+                    <div class="banner-area">
+                        <div class="rts-hosting-banner rts-hosting-banner__content about__banner">
+                            <h1 class="banner-title sal-animate" data-sal="slide-down" data-sal-delay="200"
+                                data-sal-duration="800">
+                                Reset Password
+                            </h1>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
 
     <div class="register-container">
         <div class="register-card">
-            <!-- Logo Section -->
-            <div class="logo-section">
-                <a href="{{ route('home') }}">
-                    <img src="{{ asset('logo.webp') }}" alt="{{ config('app.name') }} Logo">
-                </a>
-            </div>
-
             <!-- Form Section -->
             <div class="form-section">
+                <h2 class="form-title">Reset Password</h2>
                 <p style="text-align: center; margin-bottom: 20px;">
                     {{ __('Forgot your password? No problem. Just let us know your email address and we will email you a password reset link.') }}
                 </p>
@@ -153,7 +146,7 @@
                 <form method="POST" action="{{ route('password.email') }}" id="forgotForm">
                     @csrf
                     <input type="hidden" name="recaptcha_token" id="recaptcha_token">
-                    <h2 class="form-title">Reset Password</h2>
+
 
                     <div class="form-group">
                         <label for="email" class="form-label">Email</label>
@@ -180,10 +173,6 @@
                 </form>
             </div>
 
-            <!-- Footer -->
-            <div class="footer">
-                <p>&copy; {{ date('Y') }} {{ config('app.name') }}. All Rights Reserved.</p>
-            </div>
         </div>
     </div>
         @push('scripts')
