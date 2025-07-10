@@ -24,6 +24,6 @@ final class VerifyEmailController extends Controller
             event(new Verified($request->user()));
         }
 
-        return to_route('login')->with('status', 'Your email has been successfully verified. You can now log in.');
+        return to_route('login')->with('status', 'Your account is verified and activated. You can now log in.');
     }
 }
