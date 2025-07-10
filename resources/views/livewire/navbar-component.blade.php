@@ -17,8 +17,8 @@
             <li class="nav-item position-relative">
                 <a class="nav-link" href="{{ route('cart.index') }}">
                     <i class="bi bi-cart"></i>
-                    <span class="badge badge-danger navbar-badge position-absolute">{{ $this->cartItemsCount }}</span>
-                    {{--<span class="d-none d-md-inline-block ml-1">{{ $this->formattedTotal }}</span>--}}
+                    <span class="badge badge-danger navbar-badge" style="font-size: 13px;">{{ $this->cartItemsCount }}</span>
+
                 </a>
             </li>
 
