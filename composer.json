@@ -15,7 +15,7 @@
         "cknow/laravel-money": "^8.4.0",
         "darryldecode/cart": "^4.2.5",
         "laravel/framework": "^11.45.1",
-        "laravel/nightwatch": "^1.10",
+        "laravel/nightwatch": "^1.10.3",
         "laravel/socialite": "^5.21",
         "laravel/tinker": "^2.10.1",
         "livewire/livewire": "^3.6.3",
