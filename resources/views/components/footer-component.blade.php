@@ -1,6 +1,6 @@
 <div xmlns:livewire="http://www.w3.org/1999/html">
     <!-- FOOTER AREA -->
-    <footer class="rts-footer site-footer-one section__padding">
+    <footer class="rts-footer site-footer-one section__padding" style="margin-top: -50px !important;">
         <div class="container">
             <div class="row">
                 <!-- widget -->

@@ -13,7 +13,7 @@
                     align-items: center !important;
                     justify-content: center !important;
                     padding: 20px !important;
-                    margin-top: 100px !important;
+                    margin-top: 180px;
                 }
 
                 .reset-password-page .reset-card {
@@ -134,27 +134,9 @@
             </style>
 
         @endpush
-        <div class="rts-hosting-banner rts-hosting-banner-bg">
-            <div class="container">
-                <div class="row">
-                    <div class="banner-area">
-                        <div class="rts-hosting-banner rts-hosting-banner__content about__banner">
 
-                            <h1 class="banner-title sal-animate" data-sal="slide-down" data-sal-delay="200"
-                                data-sal-duration="800">
-                                Reset Password
-                            </h1>
-
-                        </div>
-                    </div>
-
-                </div>
-            </div>
-        </div>
     <div class="reset-container">
         <div class="reset-card">
-
-
             <!-- Form Section -->
             <div class="form-section">
                 @if (session('status'))

@@ -35,11 +35,16 @@
 
     <script src="https://www.google.com/recaptcha/api.js?render={{ config('services.recaptcha.site_key') }}"></script>
     @livewireStyles
+    <style>
+        body{
+            font-family: 'Inter', sans-serif;
+        }
+    </style>
     @stack('styles')
 </head>
 
 <body class="loaded reset-password-page">
-<x-menu-component />
+<x-guest-menu-component/>
 
 {{ $slot }}
 
