@@ -23,6 +23,17 @@ final class UsersTableSeeder extends Seeder
                 'password' => bcrypt('password'),
                 'remember_token' => null,
             ],
+            [
+                'id' => 2,
+                'uuid' => Str::uuid(),
+                'client_code' => 'BLCL-000002',
+                'first_name' => 'Aline',
+                'last_name' => 'MUSANGWA',
+                'email' => 'minisimbi@gmail.com',
+                'password' => bcrypt('password'),
+                'remember_token' => null,
+
+            ],
         ];
 
         User::insert($users);

@@ -81,9 +81,9 @@ final class User extends Authenticatable implements MustVerifyEmail
         return $this->hasMany(Domain::class);
     }
 
-    public function getIsAdminAttribute(): bool
+    public function isAdmin(): bool
     {
-        return $this->roles()->where('id', 1)->exists();
+        return $this->roles()->where('roles.id', 1)->exists();
 
     }
 
@@ -94,7 +94,6 @@ final class User extends Authenticatable implements MustVerifyEmail
 
     public function getGravatarAttribute(): string
     {
-        // Ensure email is a string before passing to mb_trim
         $emailStr = is_null($this->email) ? '' : (string) $this->email;
         $email = md5(mb_strtolower(mb_trim($emailStr)));
 
@@ -107,6 +106,19 @@ final class User extends Authenticatable implements MustVerifyEmail
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+
+    public function getRedirectRoute()
+    {
+        $role = $this->roles()->first();
+        if (!$role) {
+            return route('account.dashboard.index');
+        }
+
+        return match ((int)$role->id) {
+            1 => route('dashboard'),
+            default => route('account.dashboard.index'),
+        };
     }
 
     protected function serializeDate(DateTimeInterface $date): string

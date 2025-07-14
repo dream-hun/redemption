@@ -50,5 +50,4 @@ return [
         'redirect' => 'http://domain.test/auth/callback',
     ],
 
-
 ];

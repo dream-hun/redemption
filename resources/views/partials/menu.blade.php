@@ -145,8 +145,8 @@
                     </li>
                 @endcan
                 <li class="nav-item">
-                    <a href="{{ route('profile.edit') }}"
-                       class="nav-link {{ request()->is('profile.edit') ? 'active' : '' }}">
+                    <a href="{{ route('admin.profile.edit') }}"
+                       class="nav-link {{ request()->is('admin.profile.edit') ? 'active' : '' }}">
                         <i class="bi bi-person"></i>
                         <p>
                             My Profile
