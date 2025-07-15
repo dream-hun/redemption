@@ -69,7 +69,7 @@
                 <div class="inner">
                     <h3>{{$ssls}}</h3>
 
-                    <p>SSL Crtificates</p>
+                    <p>SSL Certificates</p>
                 </div>
                 <div class="icon">
                     <i class="ion ion-pie-graph"></i>
