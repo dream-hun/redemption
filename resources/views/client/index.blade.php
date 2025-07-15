@@ -37,7 +37,7 @@
                 <div class="inner">
                     <h3>{{ $hosts }}</h3>
 
-                    <p>Customers</p>
+                    <p>Hosting Plans</p>
                 </div>
                 <div class="icon">
                     <i class="ion ion-stats-bars"></i>
@@ -53,7 +53,7 @@
                 <div class="inner">
                     <h3>{{$vps}}</h3>
 
-                    <p>VPS</p>
+                    <p>Hosting VPS</p>
                 </div>
                 <div class="icon">
                     <i class="ion ion-person-add"></i>
@@ -67,9 +67,9 @@
             <!-- small box -->
             <div class="small-box bg-danger">
                 <div class="inner">
-                    <h3>{{$hosts}}</h3>
+                    <h3>{{$ssls}}</h3>
 
-                    <p>Hosting Plan</p>
+                    <p>SSL Crtificates</p>
                 </div>
                 <div class="icon">
                     <i class="ion ion-pie-graph"></i>
