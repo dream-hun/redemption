@@ -24,7 +24,7 @@ final class Recaptcha implements ValidationRule
             'ip' => request()->ip(),
         ]);
 
-        if (! $response->successful() || ! $response->json('success') || ! ($response->json('score') > config('services.recaptcha.min_score'))) {
+        if (! $response->successful() || ! $response->json('success') || $response->json('score') <= config('services.recaptcha.min_score')) {
             $fail($this->message());
         }
     }

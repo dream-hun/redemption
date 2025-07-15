@@ -31,15 +31,13 @@ final class RegisteredUserController extends Controller
      */
     public function store(RegisterUserRequest $request): RedirectResponse
     {
-        $user = User::create([
+        User::create([
             'client_code' => User::generateCustomerNumber(),
             'first_name' => $request->first_name,
             'last_name' => $request->last_name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
         ]);
-
-        /* event(new Registered($user)); */
 
         return redirect()->back()->with('success', 'An activation email has been sent to your email address.');
     }

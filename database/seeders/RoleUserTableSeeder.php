@@ -9,8 +9,9 @@ use Illuminate\Database\Seeder;
 
 final class RoleUserTableSeeder extends Seeder
 {
-    public function run()
+    public function run(): void
     {
         User::findOrFail(1)->roles()->sync(1);
+        User::findOrFail(2)->roles()->sync(2);
     }
 }

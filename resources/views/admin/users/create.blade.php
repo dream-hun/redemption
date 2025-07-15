@@ -8,13 +8,22 @@
             <form method="POST" action="{{ route('admin.users.store') }}" enctype="multipart/form-data">
                 @csrf
                 <div class="form-group">
-                    <label class="required" for="name">{{ trans('cruds.user.fields.name') }}</label>
-                    <input class="form-control {{ $errors->has('name') ? 'is-invalid' : '' }}" type="text" name="name"
-                        id="name" value="{{ old('name', '') }}" required>
-                    @if ($errors->has('name'))
-                        <span class="text-danger">{{ $errors->first('name') }}</span>
+                    <label class="required" for="firstname">First Name</label>
+                    <input class="form-control {{ $errors->has('first_name') ? 'is-invalid' : '' }}" type="text" name="name"
+                        id="first_name" value="{{ old('first_name', '') }}" required>
+                    @if ($errors->has('first_name'))
+                        <span class="text-danger">{{ $errors->first('first_name') }}</span>
                     @endif
-                    <span class="help-block">{{ trans('cruds.user.fields.name_helper') }}</span>
+
+                </div>
+                <div class="form-group">
+                    <label class="required" for="name">Last Name</label>
+                    <input class="form-control {{ $errors->has('last_name') ? 'is-invalid' : '' }}" type="text" name="name"
+                           id="last_name" value="{{ old('name', '') }}" required>
+                    @if ($errors->has('last_name'))
+                        <span class="text-danger">{{ $errors->first('last_name') }}</span>
+                    @endif
+
                 </div>
                 <div class="form-group">
                     <label class="required" for="email">{{ trans('cruds.user.fields.email') }}</label>
@@ -54,15 +63,7 @@
                     @endif
                     <span class="help-block">{{ trans('cruds.user.fields.roles_helper') }}</span>
                 </div>
-                <div class="form-group">
-                    <label class="required" for="phone">{{ trans('cruds.user.fields.phone') }}</label>
-                    <input class="form-control {{ $errors->has('phone') ? 'is-invalid' : '' }}" type="text"
-                        name="phone" id="phone" value="{{ old('phone', '') }}" required>
-                    @if ($errors->has('phone'))
-                        <span class="text-danger">{{ $errors->first('phone') }}</span>
-                    @endif
-                    <span class="help-block">{{ trans('cruds.user.fields.phone_helper') }}</span>
-                </div>
+
                 <div class="form-group">
                     <button class="btn btn-danger" type="submit">
                         {{ trans('global.save') }}

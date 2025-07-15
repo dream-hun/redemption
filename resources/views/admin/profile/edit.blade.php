@@ -1,4 +1,4 @@
-<x-client-layout>
+<x-admin-layout>
     @section('page-title')
         My profile
     @endsection
@@ -11,11 +11,11 @@
 
     <div class="row">
         <div class="col-md-6">
-            @include('profile.partials.update-profile-information-form')
+            @include('admin.profile.partials.update-profile-information-form')
         </div>
 
         <div class="col-md-6">
-            @include('profile.partials.update-password-form')
+            @include('admin.profile.partials.update-password-form')
         </div>
     </div>
     {{--<div class="row">
@@ -27,4 +27,4 @@
 
     </div>--}}
 
-</x-client-layout>
+</x-admin-layout>

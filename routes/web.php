@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+use App\Http\Controllers\AccountController;
+use App\Http\Controllers\Admin\AdminProfileController;
 use App\Http\Controllers\Admin\AuthCodeController;
 use App\Http\Controllers\Admin\ContactController;
 use App\Http\Controllers\Admin\DashboardController;
@@ -40,7 +42,7 @@ Route::post('/check-domains', [SearchDomainController::class, 'search'])->name('
 
 Route::get('/shopping-cart', [CartController::class, 'cart'])->name('cart.index');
 
-Route::group(['middleware' => 'auth', 'verified', 'prefix' => 'admin', 'as' => 'admin.'], function (): void {
+Route::group(['middleware' => ['auth', 'admin', 'verified', 'admin'], 'prefix' => 'admin', 'as' => 'admin.'], function (): void {
 
     Route::resource('settings', SettingController::class);
     Route::resource('users', UsersController::class);
@@ -106,16 +108,20 @@ Route::group(['middleware' => 'auth', 'verified', 'prefix' => 'admin', 'as' => '
             Route::get('/{domain:uuid}/success', [DomainRegistrationController::class, 'success'])->name('success');
         });
     });
+
+    Route::get('/profile', [AdminProfileController::class, 'edit'])->name('profile.edit');
+    Route::patch('/profile', [AdminProfileController::class, 'update'])->name('profile.update');
+    Route::delete('/profile', [AdminProfileController::class, 'destroy'])->name('profile.destroy');
 });
 // Transfer routes
-Route::prefix('transfer')->name('transfer.')->group(function (): void {
+Route::prefix('transfer')->middleware(['auth', 'verified'])->name('transfer.')->group(function (): void {
     Route::get('/', [TransferDomainController::class, 'index'])->name('index');
     Route::post('/check', [TransferDomainController::class, 'checkDomain'])->name('check');
     Route::post('/auth-code', [TransferDomainController::class, 'submitAuthCode'])->name('auth-code');
     Route::post('/initiate', [TransferDomainController::class, 'initiateTransfer'])->name('initiate');
     Route::get('/accept-invite/{domain}/{domuuid}/', [TransferDomainController::class, 'acceptInvitation'])->name('domain.transfer.invite.push');
 });
-Route::middleware('auth')->group(function (): void {
+Route::middleware(['auth', 'verified'])->group(function (): void {
     Route::get('domains/{domain}/start-transfer', [AuthCodeController::class, 'showGenerateForm'])
         ->name('domains.auth_code.generate');
     Route::post('domains/{domain}/auth-code', [AuthCodeController::class, 'generateAndSend'])
@@ -133,7 +139,8 @@ Route::get('domains/transfer/accept/{token}', [TransferInvitationController::cla
 Route::post('domains/transfer/accept/{token}', [TransferInvitationController::class, 'processAccept'])
     ->name('domains.transfer.process_accept');
 
-Route::get('/dashboard', DashboardController::class)->middleware(['auth', 'verified'])->name('dashboard');
+Route::get('/dashboard', DashboardController::class)->middleware(['auth', 'verified', 'admin'])->name('dashboard');
+
 // Domain registration routes
 Route::middleware(['auth', 'verified'])->group(function (): void {
     Route::get('/domain/register', [RegisterDomainController::class, 'index'])->name('domain.register');
@@ -142,8 +149,16 @@ Route::middleware(['auth', 'verified'])->group(function (): void {
     Route::get('/domain/registration/success/{domain}', [RegisterDomainController::class, 'success'])->name('domain.registration.success');
 });
 
-Route::middleware(['auth', 'verified'])->group(function (): void {
+Route::group(['middleware' => ['auth', 'verified'], 'prefix' => 'account', 'as' => 'account.'], function (): void {
+    Route::get('/dashboard', AccountController::class)->name('dashboard.index');
+    Route::get('/contacts', [App\Http\Controllers\Client\MyContactController::class, 'index'])->name('contacts.index');
+    Route::get('/contacts/create', [App\Http\Controllers\Client\MyContactController::class, 'create'])->name('contacts.create');
+    Route::post('/contacts', [App\Http\Controllers\Client\MyContactController::class, 'store'])->name('contacts.store');
+    Route::get('/contacts/{contact:uuid}', [App\Http\Controllers\Client\MyContactController::class, 'edit'])->name('contacts.edit');
+    Route::put('/contacts/{uuid}', [App\Http\Controllers\Client\MyContactController::class, 'update'])->name('contacts.update');
+    Route::delete('/contacts/{uuid}', [App\Http\Controllers\Client\MyContactController::class, 'destroy'])->name('contacts.destroy');
 
+    Route::get('/domains', [App\Http\Controllers\Client\MyDomainController::class, 'index'])->name('domains.index');
     // Profile
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
