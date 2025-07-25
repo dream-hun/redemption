@@ -1,4 +1,4 @@
-<x-client-layout>
+<x-admin-layout>
     @section('page-title')
         My profile
     @endsection
@@ -27,4 +27,4 @@
 
     </div>--}}
 
-</x-client-layout>
+</x-admin-layout>

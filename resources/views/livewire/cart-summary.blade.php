@@ -1,7 +1,7 @@
 <div>
     @if($this->cartItemsCount > 0)
-        <div class="cart-summary-container fixed-bottom bg-white shadow-lg p-3 border-top" style="z-index: 1000;">
-            <div class="container">
+        <div class="cart-summary-container fixed-bottom bg-white shadow-lg p-3 border-top" style="z-index: 999;">
+            <div class="container" style="font-size: 18px !important;">
                 <div class="row align-items-center">
                     <div class="col-md-4">
                         <div class="d-flex align-items-center">

@@ -14,74 +14,78 @@
             {{ session('status') }}
         </div>
     @endif
+    @if(auth()->user()->isAdmin())
+        <div class="row">
+            <div class="col-lg-3 col-6">
+                <!-- small box -->
+                <div class="small-box bg-info">
+                    <div class="inner">
+                        <h3>{{$tlds}}</h3>
 
-
-    <div class="row">
-        <div class="col-lg-3 col-6">
-            <!-- small box -->
-            <div class="small-box bg-info">
-                <div class="inner">
-                    <h3>{{$tlds}}</h3>
-
-                    <p>Available TLDs</p>
+                        <p>Available TLDs</p>
+                    </div>
+                    <div class="icon">
+                        <i class="ion ion-bag"></i>
+                    </div>
+                    <a href="{{ route('admin.domain-pricings.index') }}" class="small-box-footer">More info
+                        <i
+                            class="bi bi-arrow-right"></i>
+                    </a>
                 </div>
-                <div class="icon">
-                    <i class="ion ion-bag"></i>
-                </div>
-                <a href="{{ route('admin.domain-pricings.index') }}" class="small-box-footer">More info <i
-                        class="bi bi-arrow-right"></i></a>
             </div>
-        </div>
-        <!-- ./col -->
-        <div class="col-lg-3 col-6">
-            <!-- small box -->
-            <div class="small-box bg-success">
-                <div class="inner">
-                    <h3>{{ $customers }}</h3>
+            <!-- ./col -->
+            <div class="col-lg-3 col-6">
+                <!-- small box -->
+                <div class="small-box bg-success">
+                    <div class="inner">
+                        <h3>{{ $customers }}</h3>
 
-                    <p>Customers</p>
+                        <p>Customers</p>
+                    </div>
+                    <div class="icon">
+                        <i class="ion ion-stats-bars"></i>
+                    </div>
+                    <a href="{{ route('admin.users.index') }}" class="small-box-footer">More info <i
+                            class="bi bi-arrow-right"></i></a>
                 </div>
-                <div class="icon">
-                    <i class="ion ion-stats-bars"></i>
-                </div>
-                <a href="{{ route('admin.users.index') }}" class="small-box-footer">More info <i
-                        class="bi bi-arrow-right"></i></a>
             </div>
-        </div>
-        <!-- ./col -->
-        <div class="col-lg-3 col-6">
-            <!-- small box -->
-            <div class="small-box bg-warning">
-                <div class="inner">
-                    <h3>{{$domains}}</h3>
+            <!-- ./col -->
+            <div class="col-lg-3 col-6">
+                <!-- small box -->
+                <div class="small-box bg-warning">
+                    <div class="inner">
+                        <h3>{{$domains}}</h3>
 
-                    <p>Registered Domains</p>
+                        <p>Registered Domains</p>
+                    </div>
+                    <div class="icon">
+                        <i class="ion ion-person-add"></i>
+                    </div>
+                    <a href="{{ route('admin.domains.index') }}" class="small-box-footer">More info <i
+                            class="bi bi-arrow-right"></i></a>
                 </div>
-                <div class="icon">
-                    <i class="ion ion-person-add"></i>
-                </div>
-                <a href="{{ route('admin.domains.index') }}" class="small-box-footer">More info <i
-                        class="bi bi-arrow-right"></i></a>
             </div>
-        </div>
-        <!-- ./col -->
-        <div class="col-lg-3 col-6">
-            <!-- small box -->
-            <div class="small-box bg-danger">
-                <div class="inner">
-                    <h3>{{$plans}}</h3>
+            <!-- ./col -->
+            <div class="col-lg-3 col-6">
+                <!-- small box -->
+                <div class="small-box bg-danger">
+                    <div class="inner">
+                        <h3>{{$plans}}</h3>
 
-                    <p>Hosting Plan</p>
+                        <p>Hosting Plan</p>
+                    </div>
+                    <div class="icon">
+                        <i class="ion ion-pie-graph"></i>
+                    </div>
+                    <a href="{{ route('admin.hostings.index') }}" class="small-box-footer">More info <i
+                            class="fas fa-arrow-circle-right"></i></a>
                 </div>
-                <div class="icon">
-                    <i class="ion ion-pie-graph"></i>
-                </div>
-                <a href="{{ route('admin.hostings.index') }}" class="small-box-footer">More info <i
-                        class="fas fa-arrow-circle-right"></i></a>
             </div>
+            <!-- ./col -->
         </div>
-        <!-- ./col -->
-    </div>
+    @else
+        <x-user-data-component/>
+    @endif
 
     <div class="row">
         <div class="col-md-6">

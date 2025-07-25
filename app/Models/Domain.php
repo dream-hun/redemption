@@ -4,16 +4,19 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Models\Scopes\DomainScope;
 use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Attributes\ScopedBy;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Str;
 
+#[ScopedBy([DomainScope::class])]
 final class Domain extends Model
 {
-    public const STATUS_SELECT = [
+    public const array STATUS_SELECT = [
         'active' => 'Active',
         'pending' => 'Pending',
         'expired' => 'Expired',
@@ -112,7 +115,7 @@ final class Domain extends Model
         );
     }
 
-    public function authCodeRequests()
+    public function authCodeRequests(): self|HasMany
     {
         return $this->hasMany(AuthCodeRequest::class);
     }

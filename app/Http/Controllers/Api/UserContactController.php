@@ -6,6 +6,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Contact;
+use App\Models\DomainContact;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -24,7 +25,7 @@ final class UserContactController extends Controller
         // Get the domain contacts to determine the contact type
         $contacts->each(function ($contact): void {
             // Get the domain contact types for this contact
-            $domainContacts = \App\Models\DomainContact::where('contact_id', $contact->id)
+            $domainContacts = DomainContact::where('contact_id', $contact->id)
                 ->distinct('type')
                 ->pluck('type')
                 ->toArray();
@@ -57,7 +58,7 @@ final class UserContactController extends Controller
         }
 
         // Get the domain contact type for this contact
-        $domainContact = \App\Models\DomainContact::where('contact_id', $contact->id)
+        $domainContact = DomainContact::where('contact_id', $contact->id)
             ->first();
 
         if ($domainContact) {

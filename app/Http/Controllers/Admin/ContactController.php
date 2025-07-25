@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Admin;
 
+use App\Actions\Contacts\ListContactAction;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\CreateContactRequest;
 use App\Http\Requests\Admin\UpdateContactRequest;
@@ -29,10 +30,10 @@ final class ContactController extends Controller
         $this->eppService = $eppService;
     }
 
-    public function index()
+    public function index(ListContactAction $action): View
     {
         abort_if(Gate::denies('contact_access'), Response::HTTP_FORBIDDEN, '403 Forbidden');
-        $contacts = Contact::where('user_id', '=', auth()->id())->get();
+        $contacts = $action->handle();
 
         return view('admin.contacts.index', ['contacts' => $contacts]);
     }
@@ -105,7 +106,7 @@ final class ContactController extends Controller
             // Create EPP contact
             $eppResult = $this->eppService->createContacts($contactData);
             // dd($eppResult);
-            if ($eppResult === [] || ! is_array($eppResult) || $eppResult === []) {
+            if ($eppResult === []) {
                 throw new Exception('Failed to create contact in registry: '.($eppResult['message'] ?? 'Unknown error'));
             }
 

@@ -43,7 +43,7 @@
                         <li><a class="mobile-menu-link" href="#">Support</a></li>
                         <li><a class="mobile-menu-link" href="#">Whois</a></li>
                         <li><a class="mobile-menu-link" href="#">Contact</a></li>
-                        <li><a class="mobile-menu-link" href="#">Knowledgebase</a></li>
+                        <li><a class="mobile-menu-link" href="#">Knowledge base</a></li>
                     </ul>
                 </li>
             </ul>
@@ -60,5 +60,5 @@
                         class="fa-brands fa-facebook-f"></i></a></li>
         </ul>
     </div>
-    <!-- mobile menu area end -->
+
 </div>

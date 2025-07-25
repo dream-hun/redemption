@@ -96,7 +96,7 @@ return [
         ],
     ],
     'contact' => [
-        'title' => 'Contact',
+        'title' => 'Contact Management',
         'title_singular' => 'Contact',
         'fields' => [
             'id' => 'ID',
@@ -126,7 +126,7 @@ return [
         ],
     ],
     'domain' => [
-        'title' => 'Domain',
+        'title' => 'Domain Management',
         'title_singular' => 'Domain',
         'fields' => [
             'id' => 'ID',

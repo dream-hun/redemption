@@ -33,6 +33,8 @@ final class DomainSearch extends Component
 
     public $quantity = 1;
 
+    protected $listeners = ['refreshCart' => '$refresh'];
+
     private EppService $eppService;
 
     public function boot(EppService $eppService): void
@@ -204,6 +206,7 @@ final class DomainSearch extends Component
 
             // Dispatch cart update event
             $this->dispatch('update-cart')->to(CartTotal::class);
+            $this->dispatch('refreshCart');
 
             // Update the in_cart status for this domain in results
             if (isset($this->results[$domain])) {

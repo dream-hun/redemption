@@ -43,9 +43,7 @@
                 <table class=" table table-bordered table-striped table-hover datatable datatable-Domain">
                     <thead>
                         <tr>
-                            <th width="10">
 
-                            </th>
                             <th>
                                 {{ trans('cruds.domain.fields.id') }}
                             </th>
@@ -73,9 +71,7 @@
                     <tbody>
                         @foreach ($domains as $key => $domain)
                             <tr data-entry-id="{{ $domain->id }}">
-                                <td>
 
-                                </td>
                                 <td>
                                     {{ $domain->id ?? '' }}
                                 </td>
@@ -93,7 +89,7 @@
                                 </td>
 
                                 <td>
-                                    {{ $domain->owner->name ?? '' }}
+                                    {{ $domain->owner->first_name ?? '' }} {{ $domain->owner->last_name ?? '' }}
                                 </td>
                                 <td>
                                     @can('domain_edit')

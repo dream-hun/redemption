@@ -84,7 +84,6 @@ final class User extends Authenticatable implements MustVerifyEmail
     public function isAdmin(): bool
     {
         return $this->roles()->where('roles.id', 1)->exists();
-
     }
 
     public function roles(): BelongsToMany
@@ -106,19 +105,6 @@ final class User extends Authenticatable implements MustVerifyEmail
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
-    }
-
-    public function getRedirectRoute()
-    {
-        $role = $this->roles()->first();
-        if (!$role) {
-            return route('account.dashboard.index');
-        }
-
-        return match ((int)$role->id) {
-            1 => route('dashboard'),
-            default => route('account.dashboard.index'),
-        };
     }
 
     protected function serializeDate(DateTimeInterface $date): string

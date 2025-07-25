@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Admin;
 
+use App\Actions\Domains\ListDomainAction;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\UpdateDomainRequest;
 use App\Http\Requests\UpdateNameserversRequest;
 use App\Models\Contact;
 use App\Models\Country;
 use App\Models\Domain;
-use App\Models\Nameserver;
 use App\Services\Epp\EppService;
 use Exception;
 use Illuminate\Http\JsonResponse;
@@ -31,12 +31,11 @@ final class DomainController extends Controller
         $this->eppService = $eppService;
     }
 
-    public function index(): View
+    public function index(ListDomainAction $action): View
     {
         abort_if(Gate::denies('domain_access'), Response::HTTP_FORBIDDEN, '403 Forbidden');
 
-        $domains = Domain::with(['owner', 'contacts.contact', 'nameservers'])
-            ->where('owner_id', auth()->id())->get();
+        $domains = $action->handle();
 
         return view('admin.domains.index', ['domains' => $domains]);
     }
