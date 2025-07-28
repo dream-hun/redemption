@@ -64,9 +64,6 @@ final class Contact extends Model
         return $this->hasMany(DomainContact::class, 'contact_id');
     }
 
-    /**
-     * Get the route key for the model.
-     */
     public function getRouteKeyName(): string
     {
         return 'uuid';

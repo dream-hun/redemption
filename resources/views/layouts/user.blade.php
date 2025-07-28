@@ -33,7 +33,7 @@
     <link
         href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,500;0,600;0,700;1,400;1,800&display=swap"
         rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="{{asset('font/bootstrap-icons.min.css')}}">
     <!-- all styles -->
     <link rel="preload stylesheet" href="{{ asset('assets/css/plugins.min.css') }}" as="style">
     <!-- fontawesome css -->
@@ -41,6 +41,7 @@
     <!-- Custom css -->
     <link rel="preload stylesheet" href="{{ asset('assets/css/style.css') }}" as="style">
     @yield('styles')
+
 
 </head>
 
