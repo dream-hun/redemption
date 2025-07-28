@@ -15,13 +15,13 @@
                     <div class="col-md-4 text-end">
                         <a href="{{ route('cart.index') }}"
                            class="btn btn-primary me-2"
-                           style="font-size: 16px; line-height: 26px; padding: 10px 20px; border-radius: 8px;">
-                            View Cart
+                           style="font-size: 16px; line-height: 26px; padding: 5px 10px; border-radius: 8px;">
+                            <bi class="bi bi-cart-fill"></bi> View Cart
                         </a>
                         <a href="{{ route('domain.register') }}"
                            class="btn btn-success"
-                           style="font-size: 16px; line-height: 26px; padding: 10px 20px; border-radius: 8px;">
-                            Checkout
+                           style="font-size: 16px; line-height: 26px; padding: 5px 10px; border-radius: 8px;">
+                             Checkout
                         </a>
                     </div>
                 </div>
