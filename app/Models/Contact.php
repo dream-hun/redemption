@@ -39,11 +39,11 @@ final class Contact extends Model
 
     public static function generateContactIds(): string
     {
-        // Format: RW-XXXX-YYYY where X is random letter and Y is random number
+        // Format: RW-XXXX-YYYY where X is a random letter, and Y is a random number
         $letters = mb_strtoupper(Str::random(4));
         $numbers = mb_str_pad(rand(1, 9999).'', 4, '0', STR_PAD_LEFT);
 
-        return "RW-{$letters}-{$numbers}";
+        return "RW-$letters-$numbers";
     }
 
     public static function boot(): void
